@@ -5,8 +5,7 @@ import { AntibodyGenerator } from '@/immunix/antibody';
 import { SandboxVerifier } from '@/immunix/sandbox';
 import { PullRequestBot } from '@/immunix/pr-bot';
 import { ADAPTER_REGISTRY } from '@/immunix/adapters';
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
+import db from '@/lib/db';
 
 // Global in-memory singleton detector and bot state
 const detector = new PathogenDetector();
@@ -14,15 +13,8 @@ const generator = new AntibodyGenerator();
 const verifier = new SandboxVerifier();
 const prBot = new PullRequestBot();
 
-function getDb(): DatabaseSync | null {
-  try {
-    const dbPath = path.join(process.cwd(), 'data', 'immunix.sqlite');
-    const db = new DatabaseSync(dbPath);
-    db.exec('PRAGMA journal_mode = WAL;');
-    return db;
-  } catch {
-    return null;
-  }
+function getDb() {
+  return db;
 }
 
 // Fallback in-memory seeds if database is unavailable
