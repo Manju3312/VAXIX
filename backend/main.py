@@ -248,6 +248,63 @@ def cluster_anomalies(req: TelemetryBatchRequest):
     result = ml_detector.analyze_telemetry_batch(req.events)
     return result
 
+@app.get("/api/pathogens")
+def list_pathogens():
+    try:
+        conn = get_db_connection()
+        cur = conn.execute("SELECT * FROM pathogens ORDER BY detected_at DESC")
+        rows = [dict(row) for row in cur.fetchall()]
+        conn.close()
+        for r in rows:
+            for field in ["old_shape", "new_shape", "mutation_vector", "evidence_payload"]:
+                if r.get(field):
+                    try:
+                        r[field] = json.loads(r[field])
+                    except Exception:
+                        pass
+        return {"pathogens": rows}
+    except Exception as e:
+        return {"pathogens": [], "error": str(e)}
+
+@app.get("/api/antibodies")
+def list_antibodies():
+    try:
+        conn = get_db_connection()
+        cur = conn.execute("SELECT * FROM antibodies ORDER BY created_at DESC")
+        rows = [dict(row) for row in cur.fetchall()]
+        conn.close()
+        return {"antibodies": rows}
+    except Exception as e:
+        return {"antibodies": [], "error": str(e)}
+
+@app.get("/api/pull-requests")
+def list_pull_requests():
+    try:
+        conn = get_db_connection()
+        cur = conn.execute("SELECT * FROM pull_requests ORDER BY pr_number ASC")
+        rows = [dict(row) for row in cur.fetchall()]
+        conn.close()
+        return {"pull_requests": rows}
+    except Exception as e:
+        return {"pull_requests": [], "error": str(e)}
+
+@app.get("/api/immune-log")
+def list_immune_log():
+    try:
+        conn = get_db_connection()
+        cur = conn.execute("SELECT * FROM immune_logs ORDER BY timestamp DESC LIMIT 50")
+        rows = [dict(row) for row in cur.fetchall()]
+        conn.close()
+        for r in rows:
+            if r.get("metadata"):
+                try:
+                    r["metadata"] = json.loads(r["metadata"])
+                except Exception:
+                    pass
+        return {"immune_log": rows}
+    except Exception as e:
+        return {"immune_log": [], "error": str(e)}
+
 @app.get("/api/keys")
 def list_keys():
     try:

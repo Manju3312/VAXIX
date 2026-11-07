@@ -1,301 +1,208 @@
-# 🧬 IMMUNIX (`immunix.network`)
-### *The Autonomous Software Immune Network*
-**Ultra-Luxury White & Imperial Gold Sovereign Design System • Next.js 16 • TypeScript 5.7+ • Three.js 3D DNA Mesh • BreakMyAPI Live Arena**
+# 🧬 Immunix
+
+> **"Your integrations, immune to vendor surprises."**
+
+Immunix is an autonomous immune system for third-party API integrations. It detects when SaaS APIs change (schema drift, deprecations, retired endpoints) and automatically proposes a verified code fix as a pull request for human approval.
 
 ---
 
-## 🏛️ Executive Summary & Core Thesis
+## 💥 The Problem
 
-**IMMUNIX** is the world’s first autonomous immune system for cloud software. 
-Modern enterprise platforms rely on hundreds of external APIs (Stripe, Twilio, Salesforce, OpenAI, Plaid, internal microservices). When upstream providers deploy silent contract drifts, property renames, or endpoint relocations at 3:00 AM, traditional monitoring suites alert developers **after** customers crash and revenue is dropped.
+Modern software platforms rely on external SaaS APIs like **Stripe**, **OpenAI**, and **Twilio**. Upstream vendors routinely change field names, sunset endpoints, or deprecate models without warning:
+- `source` ➔ `payment_method` on `/v1/charges`
+- `customer_email` ➔ `email_address` on `/v1/payment_intents`
+- `/v1/charges` ➔ `/v2/checkout/pay`
+- `choices[0].text` ➔ `choices[0].message.content`
 
-IMMUNIX operates as a biological immune network:
-1. **Speed 1: Wire-Time Inception (< 0.4ms)**: Intercepts broken payloads inside the Linux kernel socket ring buffer (`sock_recvmsg` via eBPF/WASM), synthesizing backwards-compatible responses so checkout orders succeed with **zero customer downtime**.
-2. **Speed 2: Deterministic AST Codebase Repair**: Mathematically crawls Git repositories using the TypeScript Compiler API (`ts-morph`), refactors call sites with zero hallucinations, verifies the patch against live upstream staging in an isolated Firecracker microVM, and opens a verified GitHub Pull Request.
-3. **Global Herd Immunity**: When an antibody is synthesized in Tokyo, the cryptographically signed Ed25519 vaccine rule is gossiped across **14,280 clusters globally in 3.4ms** before regional rollouts reach your VPC.
+When this happens, customer apps begin throwing `400 Bad Request`, `404 Not Found`, or `422 Unprocessable Entity`. Payments fail, checkout breaks, and engineers scramble at 3:00 AM to diagnose the breakage and fix it by hand.
 
----
-
-## 📐 Canonical 3-Tier Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 2. CONTROL PLANE (Autonomous Orchestration & DNA Repair)                                    │
-│                                                                                             │
-│                         ┌─────────────────────────────┐                                     │
-│                         │ Kafka / Redpanda Event Bus  │                                     │
-│                         └──────────────┬──────────────┘                                     │
-│                                        │                                                    │
-│                         ┌──────────────▼──────────────┐                                     │
-│                         │ Antigen Profiler & Sentry   │                                     │
-│                         └───────┬─────────────┬───────┘                                     │
-│               ┌─────────────────┘             └─────────────────┐                           │
-│               ▼                                                 ▼                           │
-│ ┌───────────────────────────┐                 ┌───────────────────────────────────┐         │
-│ │ Hot-Patch Rule Compiler   │                 │ AST Genome Engine (ts-morph/grep) │         │
-│ └─────────┬───────────────┬─┘                 └─────────────────┬─────────────────┘         │
-│           │               │                                     │                           │
-│           │ Push Rule     │                               ┌─────▼─────────────────┐         │
-│           │ Update        │                               │ Ephemeral Sandbox     │         │
-│           │               │                               └─────┬─────────────────┘         │
-│           │               │                                     ▼                           │
-│           │               │                           ┌───────────────────────────┐         │
-│           │               │                           │ PR Synthesizer & Git App  │         │
-│           │               │                           └───────────────────────────┘         │
-└───────────┼───────────────┼─────────────────────────────────────────────────────────────────┘
-            │               │
-            │               ▼
-┌───────────┼─────────────────────────────────────────────────────────────────────────────────┐
-│ 3. GLOBAL HERD MESH (The Immune Consensus Ledger)                                           │
-│           │                                                                                 │
-│           │ ┌───────────────────────────────────┐     ┌───────────────────────────────────┐ │
-│           └►│ Zero-Knowledge PII Sanitizer      ├────►│ Ed25519 Cryptographic Signer      │ │
-│             └───────────────────────────────────┘     └─────────────────┬─────────────────┘ │
-│                                                                         │                   │
-│             ┌───────────────────────────────────┐     ┌─────────────────▼─────────────────┐ │
-│             │ Global Clusters (Tokyo, FFM, SF)  │◄────┤ P2P GossipSub Mesh Network        │ │
-│             └───────────────────────────────────┘     └───────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────────────────────┘
-            │
-            │ Push Rule Update
-            ▼
-┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 1. DATA PLANE (Edge Wire Defense - Sub-Millisecond)                                         │
-│                                                                                             │
-│                         ┌───────────────────────────────────┐                               │
-│                         │ Downstream Consumer Microservices │                               │
-│                         └─────────────────┬─────────────────┘                               │
-│                                           │ Outbound API Request                            │
-│                         ┌─────────────────▼─────────────────┐                               │
-│                         │ Envoy / Edge Ingress Gateway      │                               │
-│                         └─────────────────┬─────────────────┘                               │
-│                                           │ Hook                                            │
-│                         ┌─────────────────▼─────────────────┐                               │
-│                         │ IMMUNIX WASM Kernel Filter        │                               │
-│                         └───────┬───────────────────┬───────┘                               │
-│             ┌───────────────────┘                   └───────────────────┐                   │
-│             │ 1. Fast Match Hot-Patch                                   │ 2. In-Flight      │
-│             ▼                                                           ▼    Payload Rewrite│
-│ ┌───────────────────────────────────┐                 ┌───────────────────────────────────┐ │
-│ │ In-Memory Lock-Free Antibody Trie │                 │ Upstream SaaS / Internal API      │ │
-│ └───────────────────────────────────┘                 └───────────────────────────────────┘ │
-│         ▲                                                                                   │
-│         └─────────────── Telemetry & Anomaly Stream (to Control Plane) ────────────────────┘│
-└─────────────────────────────────────────────────────────────────────────────────────────────┘
-```
+**Immunix changes this paradigm**: It detects drift early, isolates the upstream breaking change, generates a deterministic AST code fix, validates the fix in an isolated test sandbox, and opens a clean GitHub Pull Request for human review.
 
 ---
 
-## 🗄️ 5-Tier Polyglot Database Topology & DDL
+## 📖 Vocabulary
 
-```
-+──────────────────────────────────────────────────────────────────────────────────────────────────────────────+
-|                                    IMMUNIX 5-TIER DATA TOPOLOGY                                             |
-+──────────────────────────────────────────────────────────────────────────────────────────────────────────────+
-  [ TIER 1: SUB-MILLISECOND L1 CACHE ]     ── WASM Radix Trie / Redis (<0.1ms wire antibody lookup)
-  [ TIER 2: HIGH-THROUGHPUT TELEMETRY ]    ── ClickHouse + Redpanda (Billions of wire events, 10:1 compression)
-  [ TIER 3: PRIMARY TRANSACTIONAL DB ]     ── PostgreSQL 16 (Tenants, contracts, PR tracking, ACID guarantee)
-  [ TIER 4: SEMANTIC VECTOR MEMORY ]       ── pgvector / Qdrant (Fuzzy schema drift embeddings)
-  [ TIER 5: DECENTRALIZED HERD LEDGER ]    ── Merkle-DAG + Ed25519 (Global peer-to-peer consensus)
-+──────────────────────────────────────────────────────────────────────────────────────────────────────────────+
-```
+Immunix uses biological immunology metaphors to describe API change management:
 
-### PostgreSQL Production Schema (`src/lib/schema.sql`)
-The transactional tier enforces multi-tenant boundaries, zero-knowledge keys, antibody rules, and audited GitHub PR records:
-* `tenants`: Multi-tenant isolation with SLA warranty statuses.
-* `api_keys`: Argon2id salted secret hashes with strictly scoped permission arrays.
-* `monitored_providers`: Upstream vendor hosts (Stripe, Twilio, OpenAI, Salesforce) and specs.
-* `active_antibodies`: Sub-millisecond wire transformation rules (payload rewrite, url reroute).
-* `dna_repairs`: Deterministic ts-morph code patches and sandbox verification proofs.
-* `herd_vaccines`: Ed25519-signed vaccine bytecodes with Byzantine peer consensus.
-* `schema_vector_index`: 1536-dimensional OpenAI embeddings for fuzzy schema drift recognition.
+| Term | Definition |
+| :--- | :--- |
+| **Pathogen** | A detected upstream API change (schema drift event, field rename, endpoint sunset, or type mutation). |
+| **Antibody** | A verified code fix rule (e.g. deterministic AST refactoring renaming `source` to `payment_method`). |
+| **Vaccine** | A signed, reviewed antibody package (designed for ecosystem sharing in later phases). |
+| **Immune Log** | The tamper-evident, append-only audit trail recording every detection, probe, synthesis, and action. |
 
 ---
 
-## 🎨 Ultra-Luxury Design Tokens
+## 🛡️ Core Principles
 
-| Token Name | Hex Code / Value | Visual Character & UI Role |
-| :--- | :--- | :--- |
-| **Pure Alabaster** | `#FFFFFF` | Primary immaculate light background |
-| **Pearl White** | `#FBFBF9` | Secondary warm surface fills, card backdrops |
-| **Imperial Gold** | `#D4AF37` | Sovereign metallic gold accent, active glows, 3D DNA nodes |
-| **Champagne Shimmer** | `#F3E5AB` | Gradient stops, subtle hover highlights, glow halos |
-| **Bronze Gold** | `#997D25` | High-contrast luxury typography on light surfaces |
-| **Gold Tint (8%)** | `rgba(212, 175, 55, 0.08)` | Glassmorphism wash, table row highlights |
-| **Obsidian Deep** | `#0B0B0C` | Pure jet black typography, terminal backgrounds |
-| **Charcoal Carbon** | `#1C1C1F` | Matte dark slate inspection console containers |
-| **Muted Silver** | `#6E6E73` | Apple-grade secondary micro-copy, inactive tabs |
-| **Immune Green** | `#10B981` | Emerald verification pips, "0.38ms Inception", "Inoculated" |
+1. **Safety First**: Never modify live payment or customer traffic automatically in flight.
+2. **Human Approval Required**: No code merges automatically; an engineer must review and approve every Pull Request.
+3. **100% Auditable & Reversible**: Every automated detection and generated patch is logged in the Immune Log.
+4. **Pragmatic & Deterministic**: Built on deterministic Abstract Syntax Tree surgery (`ts-morph`) and Zod schema contracts. Zero hallucinations, zero wire hot-patching in the MVP.
+5. **Zero-Leak Redaction**: Secrets, API keys (`sk_live_...`), card numbers, and PII are redacted before log persistence or PR generation.
 
 ---
 
-## 🚀 Key Modules & Interactive Features
+## 🏛️ System Architecture
 
-1. **Interactive 3D DNA Double-Helix Canvas (`components/ImmuneHelix3D.tsx`)**:
-   - Three.js particle mesh with 260+ golden nodes, translucent base-pair bonds, and rotation resonance toggles (`1.0x` / `2.8x`).
-2. **Canonical 3-Tier Topology Map (`components/ArchitectureSystemMap.tsx`)**:
-   - Visual interactive map with live telemetry trace buttons that fire anomaly packets through all nodes in real time.
-3. **BreakMyAPI Live Sabotage Arena (`components/BreakMyApiArena.tsx`)**:
-   - 4 Sabotage Attack simulations with real backend execution against `/api/sabotage/trigger`.
-4. **Global Herd Immunity Simulator (`components/GlobalHerdImmunity.tsx`)**:
-   - World topology map with interactive **Tokyo ➔ Worldwide Inoculation Wave** (3.8ms).
-5. **Upstream Vendor Health Radar (`components/VendorHealthRadar.tsx`)**:
-   - Real-time egress monitoring for Stripe, OpenAI, Twilio, Salesforce, Plaid, and GitHub.
-6. **Definitive Architectural Benchmark (`components/BenchmarkComparison.tsx`)**:
-   - Corrigio vs. Mendr vs. APISynQ vs. IMMUNIX across 7 dimensions.
-7. **Model Context Protocol (MCP) Agent Arena (`components/McpProtocolSection.tsx`)**:
-   - Real JSON-RPC 2.0 client simulator querying `whats_changed`, `inoculate_cluster`, and `probe_sandbox`.
-8. **Downtime Financial Loss & ROI Estimator (`components/FinancialLossCalculator.tsx`)**:
-   - Interactive sliders for monthly API transaction velocity, calculating revenue protected and ROI multipliers.
-9. **Cluster Deployment Wizard (`components/ClusterDeployWizard.tsx`)**:
-   - One-click manifests for Kubernetes DaemonSet, Helm v3, Terraform, and systemd.
-10. **4-Tab Sovereign Key & Multi-Technology Vault (`components/ApiKeyModal.tsx`)**:
-   - Complete HSM management across 4 tabs: `Sovereign Mesh Keys`, `Upstream Providers`, `Infrastructure Engines`, and `Compliance & HSM`.
-   - Real-time diagnostic ping with DNS, TLS, and wire eBPF filter latency breakdown.
-   - Zero-downtime key rotation with 24-hour dual-key grace bridge.
-   - 1-click download of Ed25519-signed HSM vault manifest (`.json`).
-11. **Dedicated Fullscreen Developer Workbench (`/arena`)**:
-   - Real-time chaos playground with interactive curl generator, eBPF wire telemetry status, custom endpoint tester, and live JSON-RPC execution.
-12. **Enterprise Mission Control Dashboard (`/dashboard`)**:
-   - 6-Tab Sovereign Command Center:
-     - Tab 1: Active Antibodies with live toggle retirement/reactivation.
-     - Tab 2: High-velocity Live Wire Telemetry console.
-     - Tab 3: DNA Repairs with automated GitHub PRs and unmocked sandbox proofs.
-     - Tab 4: Global Herd Consensus ledger with Byzantine fault-tolerant voting.
-     - Tab 5: Sovereign Key Vault & Monitored Upstream Technologies.
-     - Tab 6: Python 3.12 LibCST & Scikit-learn AI Anomaly Engine.
-13. **Python 3.12 LibCST & Scikit-Learn Hybrid Microservice (`backend/`)**:
-   - FastAPI microservice running on port `8001` with LibCST deterministic AST surgery and Scikit-learn DBSCAN clustering.
-14. **Stripe Enterprise Checkout Gateway (`/api/checkout`)**:
-   - Real-time subscription payments, auto-provisioned tenants, and encrypted access passes.
-15. **Mathematical Architecture Dossier (`components/ArchitectureDossierModal.tsx`)**:
-   - Formal mathematical proofs for $O(1)$ socket hash ring latency and deterministic compiler AST equivalence.
+```mermaid
+flowchart TD
+    subgraph Upstream ["Upstream SaaS APIs"]
+        Stripe["Stripe Payments"]
+        OpenAI["OpenAI Platform"]
+        Twilio["Twilio Cloud"]
+    end
 
----
+    subgraph SensorLayer ["1. Sensor (Capture Layer)"]
+        Proxy["Async Sensor Proxy (fetch wrapper)"]
+        Redactor["Zero-Leak Redactor (secrets & PII stripped)"]
+    end
 
-## 🌐 Backend API Reference
+    subgraph Adapters ["2. Vendor Adapters"]
+        StripeAdapter["Stripe Adapter (Zod Schemas & Canary)"]
+        OpenAIAdapter["OpenAI Adapter (Zod Schemas & Canary)"]
+        TwilioAdapter["Twilio Adapter (Zod Schemas & Canary)"]
+    end
 
-### 1. `POST /api/pipeline/simulate`
-Simulates full end-to-end execution of the 3-plane architecture:
-```bash
-curl -X POST http://localhost:3000/api/pipeline/simulate \
-  -H "Content-Type: application/json" \
-  -d '{"service":"Stripe Payments","endpoint":"stripe/v1/charges","mutationType":"FIELD_RENAMED"}'
-```
+    subgraph Detector ["3. Pathogen Detector"]
+        DriftCheck["Schema Drift & Sunset Header Monitor"]
+        CanaryEngine["Scheduled Canary Probe Engine"]
+    end
 
-### 2. `POST /api/sabotage/trigger`
-Simulates an upstream breaking change and executes the WASM bridge in 0.38ms:
-```bash
-curl -X POST http://localhost:3000/api/sabotage/trigger \
-  -H "Content-Type: application/json" \
-  -d '{"scenario_id":"PROPERTY_RENAMED"}'
-```
+    subgraph Repair ["4. Antibody Generator & Verifier"]
+        AstGen["ts-morph AST Code Surgeon"]
+        Sandbox["Ephemeral Sandbox Verifier"]
+        CertSigner["Ed25519 Verification Certifier"]
+    end
 
-### 3. `GET & POST /api/keys/providers`
-Multi-technology provider key vault, live diagnostic ping, zero-downtime key rotation, and Ed25519 HSM manifest export:
-```bash
-# Get all monitored technologies
-curl -s http://localhost:3000/api/keys/providers
+    subgraph Delivery ["5. PR Bot & Dashboard"]
+        PrBot["Immunix PR Bot (Human Review Required)"]
+        Dashboard["Immunix Dashboard & Immune Log"]
+    end
 
-# Test diagnostic ping with microsecond breakdown
-curl -X POST http://localhost:3000/api/keys/providers \
-  -H "Content-Type: application/json" \
-  -d '{"action":"test_ping","provider_id":"stripe"}'
-
-# Rotate key with 24-hour dual-key grace bridge
-curl -X POST http://localhost:3000/api/keys/providers \
-  -H "Content-Type: application/json" \
-  -d '{"action":"rotate_key","provider_id":"stripe"}'
-
-# Export Ed25519-signed HSM vault manifest
-curl -X POST http://localhost:3000/api/keys/providers \
-  -H "Content-Type: application/json" \
-  -d '{"action":"export_vault"}'
-```
-
-### 4. `POST /api/checkout`
-Processes Stripe enterprise subscription checkout and auto-provisions tenant credentials:
-```bash
-curl -X POST http://localhost:3000/api/checkout \
-  -H "Content-Type: application/json" \
-  -d '{"tier":"enterprise-grid","company":"Goldman Sachs","email":"ciso@gs.test","simulateCard":{"last4":"4242"}}'
-```
-
-### 5. `POST /api/mcp`
-Model Context Protocol JSON-RPC 2.0 endpoint:
-```bash
-curl -X POST http://localhost:3000/api/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
-```
-
-### 6. `GET /api/clusters`
-Returns synchronized nodes and global shielded request counts:
-```bash
-curl -s http://localhost:3000/api/clusters
-```
-
-### 7. `GET /api/health`
-Liveness, readiness, and 5-tier topology diagnostic probe:
-```bash
-curl -s http://localhost:3000/api/health
-```
-
-### 8. `http://localhost:8001/api/health` (Python AI Engine)
-Python 3.12 LibCST & Scikit-learn microservice health check:
-```bash
-curl -s http://localhost:8001/api/health
+    Upstream --> Proxy
+    Proxy --> Redactor
+    Redactor --> Adapters
+    Adapters --> Detector
+    Detector -- "Pathogen Event" --> AstGen
+    AstGen -- "Proposed Antibody" --> Sandbox
+    Sandbox -- "Pass (HTTP 200)" --> CertSigner
+    CertSigner --> PrBot
+    PrBot --> Dashboard
 ```
 
 ---
 
-## 💻 Local Development & Verification
+## 🧩 Components Built
+
+### 1. Sensor (Capture Layer)
+- SDK client / proxy wrapping outgoing vendor HTTP calls (`src/immunix/sensor/proxy.ts`).
+- Records request shapes, response status codes, latencies, and headers asynchronously without delaying in-flight requests.
+- **Zero-Leak Redactor** (`src/immunix/sensor/redactor.ts`): Strips raw API keys (`sk_live_...`, `ghp_...`, `Bearer`), credit card PANs, SSNs, and passwords before metadata storage.
+
+### 2. Adapters
+- One adapter per vendor so changes are a one-file fix (`src/immunix/adapters/`).
+- Ships with production adapters for **Stripe**, **OpenAI**, and **Twilio**.
+- Encapsulates expected Zod contract schemas, RFC 8594 `Sunset` and `Deprecation` header parsers, and canary probe payloads.
+
+### 3. Pathogen Detector
+- Detects `FIELD_RENAMED`, `SUNSET_HEADER`, `TYPE_MUTATION`, `FIELD_REMOVED`, and 4xx spike anomalies (`src/immunix/detector/`).
+- Runs scheduled canary probes against vendor sandboxes to detect drift before users encounter errors.
+
+### 4. Antibody Generator
+- Deterministic Abstract Syntax Tree (AST) surgery powered by `ts-morph` (`src/immunix/antibody/`).
+- Traverses codebase ASTs, pinpoints affected call sites, renames fields or reroutes URLs, and formats clean unified Git diffs.
+
+### 5. Sandbox Verifier
+- Executes the customer application's test suite against the vendor's test mode in an isolated environment (`src/immunix/sandbox/`).
+- Issues an Ed25519 cryptographic attestation certificate upon verification (`ed25519_cert_..._verified`).
+
+### 6. PR Bot
+- Synthesizes formatted GitHub Pull Requests containing upstream evidence, unified AST diffs, test logs, and plain-English explanations (`src/immunix/pr-bot/`).
+- Strict directive: **Human approval is required before merging.**
+
+### 7. Immunix Dashboard
+- Live web console (`src/app/dashboard/page.tsx`) with 5 dedicated views:
+  1. **Vendor Health**: Real-time status (Green/Yellow/Red) with on-demand "Run Canary Probe" triggers.
+  2. **Active Pathogens**: Detected drift events with mutation vectors and evidence payloads.
+  3. **Proposed Antibodies**: Interactive unified diff viewer with compiler verification stamps.
+  4. **Pull Requests**: Open PR review cards with simulated human merge actions.
+  5. **Immune Log**: Tamper-evident audit trail streaming every system action.
+
+---
+
+## 🚀 Quickstart: Running the End-to-End Demo
+
+Immunix includes a single-command demonstration executing the complete 8-step lifecycle:
 
 ```bash
-# Clone and navigate to repo
-git clone https://github.com/immunix/immunix.network.git
-cd immunix
+npm run demo
+```
 
-# Install Node.js dependencies
-npm install
+### The 8-Step Lifecycle Verified:
+1. **Mock Vendor Server Starts**: Mock Stripe server activates on port 4000.
+2. **Customer App Baseline**: Sample billing service (`demo-app/src/billing.ts`) charges \$20.00 via standard test token $\rightarrow$ 3/3 tests pass.
+3. **Upstream Sneeze Injected**: At 03:00 AM, Stripe deploys a breaking change (parameter `source` deprecated; `payment_method` required + Sunset header).
+4. **Canary Probe Isolates Pathogen**: The canary probe catches the drift in 1 cycle without affecting customer traffic.
+5. **ts-morph Synthesizes Antibody**: AST engine refactors `source: token` to `payment_method: token` in `demo-app/src/billing.ts`.
+6. **Sandbox Verifier Executes**: Isolated test runner verifies the patch against the mock vendor sandbox in < 5ms.
+7. **PR Bot Opens Pull Request**: PR #414 is dispatched with diff, reproduction steps, and human approval notice.
+8. **Immune Log Audit**: Verifies that 100% of actions are logged and zero secrets leaked.
 
-# (Optional) Setup Python 3.12 virtual environment for AI Engine
-uv venv backend/.venv
-uv pip install -p backend/.venv -r backend/requirements.txt
-# Start Python AI engine (runs on port 8001)
-backend/.venv/Scripts/python.exe backend/main.py
+---
 
-# Configure environment (copy template)
-cp .env.example .env.local
+## 🧪 Testing & Verification
 
-# Option A: Start local development server with Turbopack (SQLite Embedded Engine)
-npm run dev
+Run the entire test suite and production build:
 
-# Option B: Run full sovereign multi-container stack (PostgreSQL + Redis + Redpanda + ClickHouse)
-docker-compose up -d
-
-# Execute automated sovereign resilience test suite across all 13 architecture suites
+```bash
+# Run unit and integration verification suite
 npm test
 
-# Run ESLint validation
+# Run ESLint compliance check (0 errors, 0 warnings)
 npm run lint
 
-# Compile production build
-npm run build
+# Run single-command end-to-end demo
+npm run demo
 
-# Start production server
-npm run start -p 3000
+# Compile production Next.js build
+npm run build
 ```
 
 ---
 
-## 📜 Compliance & Sovereign Assurance
+## 📁 Repository Structure
 
-- **SOC 2 Type II:** Annually audited for zero-payload persistence.
-- **ISO/IEC 27001:** Certified software immunology infrastructure.
-- **Kernel Verifier Safety:** Verified by Linux in-kernel eBPF register tracking.
-- **Financial SLA Warranty:** Up to $5,000,000 underwritten protection for Sovereign Mesh customers.
+```
+immunix/
+├── demo-app/                      # Sample customer application
+│   └── src/
+│       ├── billing.ts             # Customer billing service using Sensor SDK
+│       └── billing.test.ts        # Customer unit tests
+├── scripts/
+│   ├── run-demo.mjs               # Single-command end-to-end demo runner
+│   └── test-sovereign-pipeline.mjs# Test verification suite
+├── src/
+│   ├── app/
+│   │   ├── api/immunix/           # REST API exposing vendors, pathogens, logs
+│   │   ├── arena/                 # Fullscreen chaos playground workbench
+│   │   ├── dashboard/             # Immunix 5-tab web dashboard
+│   │   └── page.tsx               # Immunix landing page
+│   └── immunix/                   # Core Immunix Monorepo Package
+│       ├── adapters/              # Vendor adapters (Stripe, OpenAI, Twilio)
+│       ├── antibody/              # ts-morph AST antibody generator
+│       ├── detector/              # Pathogen drift detector & canary runner
+│       ├── immune-log/            # Tamper-evident audit log manager
+│       ├── mock-vendor/           # In-process mock SaaS vendor server
+│       ├── pr-bot/                # Pull request synthesizer
+│       ├── sandbox/               # Ephemeral sandbox verifier
+│       └── sensor/                # Async capture proxy & zero-leak redactor
+├── package.json
+└── README.md
+```
 
 ---
 
-© 2026 IMMUNIX Sovereign Defense Labs, Inc. All rights reserved.
+## 📜 License & Compliance
+
+Built for sovereign-grade enterprise infrastructure. Licensed under the MIT License.

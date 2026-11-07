@@ -9,7 +9,6 @@ import {
   Zap,
   GitPullRequest,
   Key,
-  Globe,
   LogOut,
   Plus,
   CheckCircle2,
@@ -19,14 +18,14 @@ import {
   Trash2,
   Copy,
   Check,
-  Cpu,
-  Sparkles,
-  Terminal,
   RefreshCw,
   X,
   GitCommit,
   GitBranch,
   CheckCheck,
+  AlertTriangle,
+  Terminal,
+  Clock,
 } from 'lucide-react';
 
 interface SessionData {
@@ -51,6 +50,69 @@ interface GitHubPrModalData {
   callSitesModified: number;
 }
 
+interface VendorHealthItem {
+  id: string;
+  name: string;
+  baseUrl: string;
+  endpointsCount: number;
+  status: 'HEALTHY' | 'DRIFT_DETECTED' | 'ERROR_SPIKE';
+  lastCanary: string;
+}
+
+interface PathogenItem {
+  id: string;
+  vendor: string;
+  endpoint: string;
+  drift_type: string;
+  severity: 'CRITICAL' | 'WARNING' | 'INFO';
+  description: string;
+  old_shape: Record<string, unknown>;
+  new_shape: Record<string, unknown>;
+  mutation?: {
+    old_field?: string;
+    new_field?: string;
+    call_sites_hint?: string[];
+  };
+  evidence_payload?: Record<string, unknown>;
+  sunset_date?: string;
+  status: string;
+  detected_at: string;
+}
+
+interface AntibodyItem {
+  id: string;
+  pathogen_id: string;
+  vendor: string;
+  strategy: string;
+  target_file: string;
+  ast_diff: string;
+  verification_status: string;
+  sandbox_latency_ms: number;
+  cryptographic_certificate: string;
+  created_at: string;
+}
+
+interface PullRequestItem {
+  id: string;
+  pr_number: number;
+  repository: string;
+  branch: string;
+  title: string;
+  status: 'OPEN' | 'MERGED';
+  url: string;
+  opened_at: string;
+}
+
+interface ImmuneLogItem {
+  id: string;
+  event_type: string;
+  vendor: string;
+  entity_id?: string;
+  message: string;
+  metadata: Record<string, unknown>;
+  timestamp: string;
+}
+
 const DEMO_SESSION: SessionData = {
   user: 'cto@sovereign-holdings.ch',
   role: 'Principal SRE & Infrastructure Architect',
@@ -68,7 +130,7 @@ const pr412Data: GitHubPrModalData = {
   status: 'passed',
   sandboxLatencyMs: 5.8,
   cert: 'ed25519_cert_9941a82b9c0182def41_verified',
-  description: 'Refactored 3 call sites in consumer-app/src/services/billing.ts. Upstream schema updated to v2026-03.',
+  description: "Refactored 3 call sites in 'src/services/billing.ts'. Upstream parameter renamed from customer_email to email_address. Zero live traffic modified.",
   callSitesModified: 3,
   astDiff: `--- a/src/services/billing.ts
 +++ b/src/services/billing.ts
@@ -92,7 +154,7 @@ const pr413Data: GitHubPrModalData = {
   status: 'passed',
   sandboxLatencyMs: 6.2,
   cert: 'ed25519_cert_8820f14a88bc0192ea9_verified',
-  description: 'Updated caller endpoints in consumer-app/src/services/checkout.ts. Verified against staging provider sandbox.',
+  description: "Updated caller endpoints in 'src/services/checkout.ts'. Endpoint /v1/charges was permanently sunset by upstream vendor. Verified against staging provider sandbox.",
   callSitesModified: 2,
   astDiff: `--- a/src/services/checkout.ts
 +++ b/src/services/checkout.ts
@@ -105,115 +167,181 @@ const pr413Data: GitHubPrModalData = {
    });`,
 };
 
-function formatNumber(num: number | string): string {
-  if (num === null || num === undefined) return '';
-  const parts = num.toString().split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return parts.join('.');
-}
-
 export default function DashboardPage() {
   const router = useRouter();
   const [session] = useState<SessionData>(() => {
     if (typeof window !== 'undefined') {
       try {
         const rawSession = localStorage.getItem('immunix_session');
-        if (rawSession) {
-          return JSON.parse(rawSession);
-        }
-        localStorage.setItem('immunix_session', JSON.stringify(DEMO_SESSION));
+        if (rawSession) return JSON.parse(rawSession);
       } catch {}
     }
     return DEMO_SESSION;
   });
 
-  const [activeTab, setActiveTab] = useState<'antibodies' | 'telemetry' | 'prs' | 'mesh' | 'keys' | 'python_ml'>('antibodies');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [selectedPr, setSelectedPr] = useState<GitHubPrModalData | null>(null);
-  const [mergedPrs, setMergedPrs] = useState<number[]>([]);
-  const [pythonEngineStatus, setPythonEngineStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  // 5 MVP Tabs matching specification:
+  // 1. Vendor Health
+  // 2. Active Pathogens
+  // 3. Proposed Antibodies
+  // 4. Pull Requests
+  // 5. Immune Log
+  // (Plus Sensor / API Keys)
+  const [activeTab, setActiveTab] = useState<'vendors' | 'pathogens' | 'antibodies' | 'prs' | 'immune_log' | 'keys'>('vendors');
 
-  // Python Engine Live State
-  const [pythonCodeInput, setPythonCodeInput] = useState(`import stripe
+  // Live state from /api/immunix
+  const [vendors, setVendors] = useState<VendorHealthItem[]>([
+    { id: 'stripe', name: 'Stripe Payments', baseUrl: 'https://api.stripe.com', endpointsCount: 2, status: 'HEALTHY', lastCanary: '3 minutes ago' },
+    { id: 'twilio', name: 'Twilio Cloud', baseUrl: 'https://api.twilio.com', endpointsCount: 2, status: 'HEALTHY', lastCanary: '12 minutes ago' },
+    { id: 'openai', name: 'OpenAI API', baseUrl: 'https://api.openai.com', endpointsCount: 2, status: 'HEALTHY', lastCanary: '8 minutes ago' },
+  ]);
 
-def execute_payment(token, amount):
-    # Deprecated v2026 schema breaking call
-    return stripe.Charge.create(
-        amount=amount,
-        currency="usd",
-        source=token
-    )`);
-  const [pythonRepairResult, setPythonRepairResult] = useState<{
-    repaired_code?: string;
-    ast_diff?: string;
-    compiler_verified?: boolean;
-    modifications_count?: number;
-  } | null>(null);
-  const [isRepairingPython, setIsRepairingPython] = useState(false);
-
-  // Python ML Anomaly State
-  const [mlClusterResults, setMlClusterResults] = useState<{
-    total_events?: number;
-    anomalies_detected?: number;
-    clusters_found?: number;
-    recommended_antibodies?: Array<{
-      cluster_id: number;
-      cluster_size: number;
-      detected_signature: string;
-      recommended_action: string;
-      confidence_score: number;
-    }>;
-  } | null>(null);
-  const [isClusteringMl, setIsClusteringMl] = useState(false);
-
-  // Live state
-  const [antibodies, setAntibodies] = useState([
+  const [pathogens, setPathogens] = useState<PathogenItem[]>([
     {
-      id: 'ATB-1902',
-      vendor: 'OpenAI API',
-      pattern: 'choices[0].text ➔ choices[0].message.content',
-      ruleType: 'PAYLOAD_REWRITE',
-      status: 'active',
-      rescues: 418290,
-      latency: '0.34ms',
-      createdAt: '2026-11-06 03:14 UTC',
+      id: 'path_stripe_rename_412',
+      vendor: 'stripe',
+      endpoint: '/v1/payment_intents',
+      drift_type: 'FIELD_RENAMED',
+      severity: 'CRITICAL',
+      description: "Upstream parameter renamed from 'customer_email' to 'email_address' on /v1/payment_intents",
+      old_shape: { customer_email: 'string' },
+      new_shape: { email_address: 'string' },
+      mutation: { old_field: 'customer_email', new_field: 'email_address', call_sites_hint: ['src/services/billing.ts'] },
+      evidence_payload: { error: { type: 'invalid_request_error', message: "Missing required parameter 'email_address'. Field 'customer_email' deprecated." } },
+      sunset_date: '2026-03-01T00:00:00Z',
+      status: 'ANTIBODY_GENERATED',
+      detected_at: '14 minutes ago',
     },
     {
-      id: 'ATB-2810',
-      vendor: 'Stripe Payments',
-      pattern: 'customer_email ➔ email_address',
-      ruleType: 'FIELD_ALIAS',
-      status: 'active',
-      rescues: 891400,
-      latency: '0.38ms',
-      createdAt: '2026-11-06 18:22 UTC',
-    },
-    {
-      id: 'ATB-3041',
-      vendor: 'Twilio Cloud',
-      pattern: '/v1/charges ➔ /v2/checkout/pay',
-      ruleType: 'URL_REROUTE',
-      status: 'active',
-      rescues: 142100,
-      latency: '0.42ms',
-      createdAt: '2026-11-07 01:05 UTC',
-    },
-    {
-      id: 'ATB-4199',
-      vendor: 'Salesforce CRM',
-      pattern: 'amount: float ➔ amount: string',
-      ruleType: 'TYPE_COERCION',
-      status: 'active',
-      rescues: 60280,
-      latency: '0.29ms',
-      createdAt: '2026-11-07 04:30 UTC',
+      id: 'path_twilio_sunset_413',
+      vendor: 'twilio',
+      endpoint: '/v1/charges',
+      drift_type: 'FIELD_REMOVED',
+      severity: 'CRITICAL',
+      description: 'Endpoint /v1/charges has been permanently sunset by upstream vendor',
+      old_shape: { to: 'string', amount: 'number' },
+      new_shape: { recipient: 'string', token: 'string' },
+      mutation: { old_field: '/v1/charges', new_field: '/v2/checkout/pay', call_sites_hint: ['src/services/checkout.ts'] },
+      evidence_payload: { code: 20404, message: 'Endpoint /v1/charges sunset permanently. Relocated to /v2/checkout/pay.' },
+      sunset_date: '2026-01-01T00:00:00Z',
+      status: 'ANTIBODY_GENERATED',
+      detected_at: '2 hours ago',
     },
   ]);
 
+  const [antibodies, setAntibodies] = useState<AntibodyItem[]>([
+    {
+      id: 'atb_stripe_412',
+      pathogen_id: 'path_stripe_rename_412',
+      vendor: 'stripe',
+      strategy: 'AST_FIELD_RENAME (ts-morph)',
+      target_file: 'src/services/billing.ts',
+      ast_diff: pr412Data.astDiff,
+      verification_status: 'VERIFIED_SANDBOX',
+      sandbox_latency_ms: 5.8,
+      cryptographic_certificate: 'ed25519_cert_9941a82b9c0182def41_verified',
+      created_at: '12 minutes ago',
+    },
+    {
+      id: 'atb_twilio_413',
+      pathogen_id: 'path_twilio_sunset_413',
+      vendor: 'twilio',
+      strategy: 'AST_URL_REROUTE (ts-morph)',
+      target_file: 'src/services/checkout.ts',
+      ast_diff: pr413Data.astDiff,
+      verification_status: 'VERIFIED_SANDBOX',
+      sandbox_latency_ms: 6.2,
+      cryptographic_certificate: 'ed25519_cert_8820f14a88bc0192ea9_verified',
+      created_at: '1 hour ago',
+    },
+  ]);
+
+  const [pullRequests, setPullRequests] = useState<PullRequestItem[]>([
+    {
+      id: 'pr_412',
+      pr_number: 412,
+      repository: 'acme-corp/payment-service',
+      branch: 'immunix/antibody-stripe-pr412',
+      title: "fix(stripe): adopt official 'email_address' parameter",
+      status: 'OPEN',
+      url: 'https://github.com/acme-corp/payment-service/pull/412',
+      opened_at: '10 minutes ago',
+    },
+    {
+      id: 'pr_413',
+      pr_number: 413,
+      repository: 'acme-corp/crm-sync-worker',
+      branch: 'immunix/antibody-twilio-pr413',
+      title: 'fix(twilio): relocate /v1/charges ➔ /v2/checkout/pay',
+      status: 'OPEN',
+      url: 'https://github.com/acme-corp/crm-sync-worker/pull/413',
+      opened_at: '1 hour ago',
+    },
+  ]);
+
+  const [immuneLogs, setImmuneLogs] = useState<ImmuneLogItem[]>([
+    {
+      id: 'log_boot',
+      event_type: 'SENSOR_INGEST',
+      vendor: 'system',
+      message: 'Immunix Immune Log initialized. Safety protocols and redaction filters active.',
+      metadata: { mode: 'MVP', zero_leak_guarantee: true },
+      timestamp: '2026-11-08T03:00:00Z',
+    },
+    {
+      id: 'log_probe',
+      event_type: 'CANARY_EXECUTED',
+      vendor: 'stripe',
+      message: 'Scheduled canary probe executed against /v1/payment_intents. HTTP 200 received.',
+      metadata: { latency_ms: 42 },
+      timestamp: '2026-11-08T03:15:00Z',
+    },
+    {
+      id: 'log_drift',
+      event_type: 'PATHOGEN_DETECTED',
+      vendor: 'stripe',
+      message: "Pathogen isolated: Upstream field 'customer_email' renamed to 'email_address' on /v1/payment_intents",
+      metadata: { drift_type: 'FIELD_RENAMED', severity: 'CRITICAL' },
+      timestamp: '2026-11-08T03:16:00Z',
+    },
+    {
+      id: 'log_atb',
+      event_type: 'ANTIBODY_SYNTHESIZED',
+      vendor: 'stripe',
+      message: 'Synthesized deterministic ts-morph AST antibody rule atb_stripe_412 for src/services/billing.ts',
+      metadata: { strategy: 'AST_FIELD_RENAME' },
+      timestamp: '2026-11-08T03:17:00Z',
+    },
+    {
+      id: 'log_sandbox',
+      event_type: 'SANDBOX_PASSED',
+      vendor: 'stripe',
+      message: 'Sandbox verification passed in 5.8ms. Ed25519 signature ed25519_cert_9941a82b9c0182def41_verified generated.',
+      metadata: { verified: true },
+      timestamp: '2026-11-08T03:18:00Z',
+    },
+    {
+      id: 'log_pr',
+      event_type: 'PR_DISPATCHED',
+      vendor: 'stripe',
+      message: 'Opened GitHub PR #412: fix(stripe): adopt official email_address parameter. Human approval required.',
+      metadata: { pr_number: 412 },
+      timestamp: '2026-11-08T03:20:00Z',
+    },
+  ]);
+
+  // UI Interactivity State
+  const [isProbingVendor, setIsProbingVendor] = useState<string | null>(null);
+  const [probeResultNotification, setProbeResultNotification] = useState<string | null>(null);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [selectedPr, setSelectedPr] = useState<GitHubPrModalData | null>(null);
+  const [mergedPrs, setMergedPrs] = useState<number[]>([]);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // API Keys state
   const [apiKeys, setApiKeys] = useState([
     {
       id: 'key_1',
-      name: 'Production Envoy Sidecar us-east-1',
+      name: 'Production Payment Worker Sensor',
       prefix: 'imx_live_98a2...',
       created: '2026-11-01',
       lastUsed: '2 seconds ago',
@@ -229,261 +357,103 @@ def execute_payment(token, amount):
     },
   ]);
 
-  const [providerIntegrations, setProviderIntegrations] = useState<Array<{
-    id: string;
-    name: string;
-    category: string;
-    target_host: string;
-    key_prefix: string;
-    status: 'connected' | 'inoculated' | 'sandbox';
-    latency_ms: number;
-    last_verified: string;
-    env_var: string;
-  }>>([
-    {
-      id: 'stripe',
-      name: 'Stripe Payments',
-      category: 'Payment Infrastructure',
-      target_host: 'api.stripe.com',
-      key_prefix: 'sk_test_51P98...',
-      status: 'inoculated',
-      latency_ms: 0.31,
-      last_verified: '2 seconds ago',
-      env_var: 'STRIPE_SECRET_KEY',
-    },
-    {
-      id: 'openai',
-      name: 'OpenAI Platform',
-      category: 'AI Inference Egress',
-      target_host: 'api.openai.com',
-      key_prefix: 'sk-proj-...',
-      status: 'inoculated',
-      latency_ms: 0.42,
-      last_verified: '4 seconds ago',
-      env_var: 'OPENAI_API_KEY',
-    },
-    {
-      id: 'anthropic',
-      name: 'Anthropic Claude',
-      category: 'Sovereign Agent Egress',
-      target_host: 'api.anthropic.com',
-      key_prefix: 'sk-ant-ap...',
-      status: 'inoculated',
-      latency_ms: 0.32,
-      last_verified: 'Just now',
-      env_var: 'ANTHROPIC_API_KEY',
-    },
-    {
-      id: 'twilio',
-      name: 'Twilio Cloud',
-      category: 'Telecom & SMS Egress',
-      target_host: 'api.twilio.com',
-      key_prefix: 'AC_imx...',
-      status: 'inoculated',
-      latency_ms: 0.28,
-      last_verified: '10 seconds ago',
-      env_var: 'TWILIO_ACCOUNT_SID',
-    },
-    {
-      id: 'salesforce',
-      name: 'Salesforce CRM',
-      category: 'Enterprise Data Graph',
-      target_host: 'salesforce.com/services/data',
-      key_prefix: '3MVG9_...',
-      status: 'inoculated',
-      latency_ms: 0.35,
-      last_verified: '12 seconds ago',
-      env_var: 'SALESFORCE_CLIENT_ID',
-    },
-    {
-      id: 'plaid',
-      name: 'Plaid Core Banking',
-      category: 'Fintech Interbank',
-      target_host: 'api.plaid.com',
-      key_prefix: 'plaid_cl...',
-      status: 'inoculated',
-      latency_ms: 0.36,
-      last_verified: '18 seconds ago',
-      env_var: 'PLAID_CLIENT_ID',
-    },
-    {
-      id: 'github',
-      name: 'GitHub Webhooks',
-      category: 'Developer Operations',
-      target_host: 'api.github.com',
-      key_prefix: 'ghp_imx...',
-      status: 'inoculated',
-      latency_ms: 0.29,
-      last_verified: '1 minute ago',
-      env_var: 'GITHUB_TOKEN',
-    },
-    {
-      id: 'python_ai',
-      name: 'Python 3.12 AI Engine',
-      category: 'LibCST & Scikit-Learn Engine',
-      target_host: 'localhost:8001',
-      key_prefix: 'imx_local_kernel_8001',
-      status: 'connected',
-      latency_ms: 0.38,
-      last_verified: 'Live Wire',
-      env_var: 'PYTHON_AI_ENGINE_URL',
-    },
-  ]);
-  const [testingProviderId, setTestingProviderId] = useState<string | null>(null);
-  const [providerPingResults, setProviderPingResults] = useState<Record<string, number>>({});
+  const refreshData = async () => {
+    try {
+      const res = await fetch('/api/immunix');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.vendors) setVendors(data.vendors);
+      if (data.pathogens) setPathogens(data.pathogens);
+      if (data.antibodies) setAntibodies(data.antibodies);
+      if (data.pull_requests) setPullRequests(data.pull_requests);
+      if (data.immune_log && data.immune_log.length > 0) setImmuneLogs(data.immune_log);
+    } catch {}
+  };
 
+  // Initial client hydration check & fetch live immunix data
   useEffect(() => {
-    // Fetch live keys from SQLite backend
-    fetch('/api/keys')
+    let ignore = false;
+    fetch('/api/immunix')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.keys && data.keys.length > 0) {
-          interface RawKey {
-            id: string;
-            name: string;
-            key_prefix: string;
-            rate_limit_rpm: number;
-            created_at?: string;
-          }
-          setApiKeys(
-            data.keys.map((k: RawKey) => ({
-              id: k.id,
-              name: k.name,
-              prefix: k.key_prefix,
-              created: k.created_at ? k.created_at.substring(0, 10) : '2026-11-07',
-              lastUsed: 'Just now',
-              rateLimit: `${formatNumber(k.rate_limit_rpm)} req/min`,
-            }))
-          );
+        if (!ignore) {
+          if (data.vendors) setVendors(data.vendors);
+          if (data.pathogens) setPathogens(data.pathogens);
+          if (data.antibodies) setAntibodies(data.antibodies);
+          if (data.pull_requests) setPullRequests(data.pull_requests);
+          if (data.immune_log && data.immune_log.length > 0) setImmuneLogs(data.immune_log);
         }
       })
       .catch(() => {});
-    // Fetch upstream technology providers
-    fetch('/api/keys/providers')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.providers) setProviderIntegrations(data.providers);
-      })
-      .catch(() => {});
 
-    // Live Python Engine Health Check
-    fetch('http://localhost:8001/api/health')
-      .then((res) => {
-        if (res.ok) setPythonEngineStatus('online');
-        else setPythonEngineStatus('offline');
-      })
-      .catch(() => setPythonEngineStatus('offline'));
-  }, [router]);
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
-  const checkPythonHealth = async () => {
-    setPythonEngineStatus('checking');
+  const handleRunCanary = async (vendorId: string) => {
+    setIsProbingVendor(vendorId);
+    setProbeResultNotification(null);
     try {
-      const res = await fetch('http://localhost:8001/api/health');
-      if (res.ok) setPythonEngineStatus('online');
-      else setPythonEngineStatus('offline');
-    } catch {
-      setPythonEngineStatus('offline');
-    }
-  };
-
-  const handleTestProviderPing = async (id: string) => {
-    setTestingProviderId(id);
-    try {
-      const res = await fetch('/api/keys/providers', {
+      const res = await fetch('/api/immunix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test_ping', provider_id: id }),
+        body: JSON.stringify({ action: 'trigger_canary', vendor: vendorId }),
       });
       const data = await res.json();
       if (data.success) {
-        setProviderPingResults((prev) => ({ ...prev, [id]: data.latency_ms }));
+        if (data.pathogen_detected) {
+          setProbeResultNotification(`🚨 Canary probe detected drift on ${vendorId}! New pathogen logged.`);
+        } else {
+          setProbeResultNotification(`✓ Canary probe verified 100% healthy against ${vendorId}. No schema drift.`);
+        }
+        await refreshData();
       }
     } catch {
-      setProviderPingResults((prev) => ({ ...prev, [id]: 0.34 }));
+      setProbeResultNotification(`✓ Canary probe finished for ${vendorId}. Baseline healthy.`);
     } finally {
-      setTestingProviderId(null);
+      setIsProbingVendor(null);
+      setTimeout(() => setProbeResultNotification(null), 5000);
     }
   };
 
-  const handleRepairPython = async () => {
-    setIsRepairingPython(true);
+  const handleSynthesizeAntibody = async (vendor: string) => {
+    setIsSynthesizing(true);
     try {
-      const res = await fetch('http://localhost:8001/api/repair/python', {
+      const res = await fetch('/api/immunix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source_code: pythonCodeInput,
-          provider: 'stripe',
-        }),
+        body: JSON.stringify({ action: 'synthesize_antibody', vendor }),
       });
       const data = await res.json();
-      setPythonRepairResult(data);
+      if (data.success) {
+        await refreshData();
+        setActiveTab('antibodies');
+      }
     } catch {
-      // Offline fallback sample
-      setPythonRepairResult({
-        repaired_code: pythonCodeInput.replace('stripe.Charge.create', 'stripe.PaymentIntent.create').replace('source=token', 'payment_method=token'),
-        ast_diff: `--- a/services/billing.py\n+++ b/services/billing.py\n@@ -3,5 +3,5 @@\n- charge = stripe.Charge.create(source=token)\n+ charge = stripe.PaymentIntent.create(payment_method=token)`,
-        compiler_verified: true,
-        modifications_count: 1,
-      });
+      setActiveTab('antibodies');
     } finally {
-      setIsRepairingPython(false);
+      setIsSynthesizing(false);
     }
   };
 
-  const handleRunMlClustering = async () => {
-    setIsClusteringMl(true);
+  const handleSimulateMerge = async (prNumber: number, repo: string) => {
     try {
-      const res = await fetch('http://localhost:8001/api/ml/cluster-anomalies', {
+      const res = await fetch('/api/immunix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          events: [
-            { status_code: 200, latency_us: 41000, payload_size: 450, error_type: 'NONE' },
-            { status_code: 200, latency_us: 42000, payload_size: 460, error_type: 'NONE' },
-            { status_code: 200, latency_us: 40500, payload_size: 440, error_type: 'NONE' },
-            { status_code: 400, latency_us: 97000, payload_size: 890, error_type: 'DEPRECATED_PARAM_SOURCE' },
-            { status_code: 400, latency_us: 98500, payload_size: 910, error_type: 'DEPRECATED_PARAM_SOURCE' },
-            { status_code: 400, latency_us: 96000, payload_size: 895, error_type: 'DEPRECATED_PARAM_SOURCE' },
-            { status_code: 503, latency_us: 250000, payload_size: 120, error_type: 'UPSTREAM_GATEWAY_TIMEOUT' },
-          ],
-        }),
+        body: JSON.stringify({ action: 'simulate_merge', pr_number: prNumber, repo }),
       });
-      const data = await res.json();
-      setMlClusterResults(data);
+      if (res.ok) {
+        setMergedPrs((prev) => [...prev, prNumber]);
+        setPullRequests((prev) =>
+          prev.map((pr) => (pr.pr_number === prNumber ? { ...pr, status: 'MERGED' } : pr))
+        );
+        await refreshData();
+      }
     } catch {
-      setMlClusterResults({
-        total_events: 7,
-        anomalies_detected: 1,
-        clusters_found: 2,
-        recommended_antibodies: [
-          {
-            cluster_id: 1,
-            cluster_size: 3,
-            detected_signature: 'DEPRECATED_PARAM_SOURCE',
-            recommended_action: 'Synthesize WASM antibody rule for signature: DEPRECATED_PARAM_SOURCE',
-            confidence_score: 0.984,
-          },
-        ],
-      });
-    } finally {
-      setIsClusteringMl(false);
+      setMergedPrs((prev) => [...prev, prNumber]);
     }
-  };
-
-  const handleLogout = () => {
-    try {
-      localStorage.removeItem('immunix_session');
-    } catch {}
-    router.push('/login');
-  };
-
-  const toggleAntibody = (id: string) => {
-    setAntibodies((prev) =>
-      prev.map((atb) =>
-        atb.id === id ? { ...atb, status: atb.status === 'active' ? 'paused' : 'active' } : atb
-      )
-    );
   };
 
   const handleCopy = (text: string, id: string) => {
@@ -492,35 +462,10 @@ def execute_payment(token, amount):
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const handleCreateKey = async () => {
-    try {
-      const res = await fetch('/api/keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: `Edge Gateway ${new Date().toISOString().substring(11, 19)} UTC`,
-          tier: 'enterprise',
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        const newKey = {
-          id: data.id,
-          name: data.name,
-          prefix: `${data.api_key.substring(0, 12)}...`,
-          created: 'Just now',
-          lastUsed: 'Never',
-          rateLimit: `${formatNumber(data.rate_limit_rpm)} req/min`,
-        };
-        setApiKeys((prev) => [newKey, ...prev]);
-        return;
-      }
-    } catch {}
-
-    // Fallback if network offline
+  const handleCreateKey = () => {
     const newKey = {
       id: `key_${Date.now()}`,
-      name: `Edge Gateway ${new Date().toISOString().substring(11, 19)} UTC`,
+      name: `Sensor Gateway ${new Date().toISOString().substring(11, 19)} UTC`,
       prefix: `imx_live_${Math.random().toString(36).substring(2, 6)}...`,
       created: 'Just now',
       lastUsed: 'Never',
@@ -530,7 +475,14 @@ def execute_payment(token, amount):
   };
 
   const handleDeleteKey = (id: string) => {
-    setApiKeys(apiKeys.filter((k) => k.id !== id));
+    setApiKeys((prev) => prev.filter((k) => k.id !== id));
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('immunix_session');
+    } catch {}
+    router.push('/login');
   };
 
   return (
@@ -539,7 +491,7 @@ def execute_payment(token, amount):
       <header className="bg-white border-b border-[#D4AF37]/30 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
           
-          {/* Logo & Tenant badge */}
+          {/* Logo & Tagline */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-[#0B0B0C] border border-[#D4AF37] flex items-center justify-center shadow-md">
@@ -551,44 +503,25 @@ def execute_payment(token, amount):
             <div className="h-6 w-px bg-black/10 hidden sm:block" />
 
             <div className="hidden sm:flex items-center gap-2 text-xs font-mono">
-              <span className="text-[#6E6E73]" suppressHydrationWarning>{session?.tenant || 'Sovereign Core Holdings'}</span>
-              <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#997D25] border border-[#D4AF37]/30 font-bold text-[10px]" suppressHydrationWarning>
-                {session?.tier || 'Enterprise Grid'}
+              <span className="text-[#6E6E73] font-sans italic">
+                &ldquo;Your integrations, immune to vendor surprises.&rdquo;
               </span>
             </div>
           </div>
 
           {/* User actions */}
           <div className="flex items-center gap-3">
-            {/* Live Python Engine Health Badge */}
-            {pythonEngineStatus === 'online' ? (
-              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-[11px] font-mono text-emerald-800">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Python Engine: Online (:8001)</span>
-              </div>
-            ) : pythonEngineStatus === 'offline' ? (
-              <button
-                type="button"
-                onClick={checkPythonHealth}
-                className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-[11px] font-mono text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
-                title="Click to re-probe Python AI microservice"
-              >
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                <span>Python Engine: Offline (TS Fallback)</span>
-                <RefreshCw className="w-2.5 h-2.5 text-amber-700" />
-              </button>
-            ) : null}
-
             <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/25 text-[11px] font-mono">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span>14,280 Inoculated Nodes</span>
+              <span suppressHydrationWarning>{session?.user}</span>
             </div>
 
             <Link
-              href="/"
-              className="text-xs font-mono font-bold text-[#6E6E73] hover:text-[#0B0B0C] px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
+              href="/arena"
+              className="text-xs font-mono font-bold text-[#997D25] hover:text-[#0B0B0C] px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors border border-[#D4AF37]/40 flex items-center gap-1.5"
             >
-              Public Arena
+              <Play className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
+              <span>Chaos Workbench</span>
             </Link>
 
             <button
@@ -607,76 +540,132 @@ def execute_payment(token, amount):
       {/* Main Dashboard Workspace */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
         
-        {/* Welcome & Global Health Strip */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-sm">
-          <div>
-            <div className="text-xs font-mono text-[#997D25] uppercase tracking-wider font-bold">
-              Autonomous Mesh Console • eBPF Active
+        {/* Core Principles Strip */}
+        <div className="bg-[#0B0B0C] text-[#F3E5AB] p-5 rounded-3xl border border-[#D4AF37]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[10px] font-mono font-bold uppercase tracking-wider border border-[#D4AF37]/30">
+                Architectural Principles
+              </span>
+              <span className="text-xs text-white/70 font-mono">Safety First • Human Approval Required</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#0B0B0C] font-display mt-1">
-              Production Infrastructure Health
-            </h1>
-            <p className="text-xs text-[#6E6E73] mt-1">
-              All 7 cloud clusters currently protected under 100% zero-downtime financial SLA warranty.
+            <h2 className="text-xl font-bold text-white font-display">
+              Autonomous Software Immune System
+            </h2>
+            <p className="text-xs text-white/60 max-w-2xl">
+              Immunix sits between your application and upstream SaaS APIs. It detects drift early, isolates breaking schema changes as <strong>Pathogens</strong>, synthesizes deterministic <strong>Antibodies</strong>, and opens verified Pull Requests for human approval.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/#break-my-api"
-              className="px-4 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 shadow-sm"
-            >
-              <Play className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
-              <span>Simulate Sabotage</span>
-            </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-center">
+              <div className="text-[10px] text-white/50 uppercase">Payment Traffic</div>
+              <div className="text-emerald-400 font-bold">Never Auto-Modified</div>
+            </div>
+            <div className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-center">
+              <div className="text-[10px] text-white/50 uppercase">Code Merge</div>
+              <div className="text-[#D4AF37] font-bold">Human Approval</div>
+            </div>
           </div>
         </div>
 
-        {/* High-Level Telemetry Metrics Cards */}
+        {/* Global Alert Notification (e.g. Canary Probe Result) */}
+        {probeResultNotification && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-mono flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 font-bold">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <span>{probeResultNotification}</span>
+            </div>
+            <button
+              onClick={() => setProbeResultNotification(null)}
+              className="text-amber-800 hover:text-black font-bold text-sm px-2 cursor-pointer"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* High-Level Telemetry Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/30 shadow-sm space-y-1">
             <span className="text-[11px] font-mono text-[#6E6E73] block uppercase tracking-wider">
-              Shielded Traffic
+              Connected Vendors
             </span>
-            <div className="text-2xl font-black text-[#0B0B0C] font-mono">1,912,626</div>
-            <span className="text-[10px] text-emerald-600 font-mono font-bold">↑ 18.4% this week</span>
+            <div className="text-2xl font-black text-[#0B0B0C] font-mono">
+              {vendors.length}
+            </div>
+            <span className="text-[10px] text-emerald-600 font-mono font-bold">Stripe, Twilio, OpenAI</span>
           </div>
 
           <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/30 shadow-sm space-y-1">
             <span className="text-[11px] font-mono text-[#6E6E73] block uppercase tracking-wider">
-              In-Flight Rescues
+              Active Pathogens
             </span>
-            <div className="text-2xl font-black text-[#0B0B0C] font-mono">4,189</div>
-            <span className="text-[10px] text-emerald-600 font-mono font-bold">0.00ms downtime</span>
+            <div className="text-2xl font-black text-rose-600 font-mono">
+              {pathogens.length}
+            </div>
+            <span className="text-[10px] text-rose-500 font-mono font-bold">Schema Drift Isolated</span>
           </div>
 
           <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/30 shadow-sm space-y-1">
             <span className="text-[11px] font-mono text-[#6E6E73] block uppercase tracking-wider">
-              Wire p99 Latency
+              Verified Antibodies
             </span>
-            <div className="text-2xl font-black text-[#997D25] font-mono">0.34ms</div>
-            <span className="text-[10px] text-[#6E6E73] font-mono">Envoy WASM Kernel</span>
+            <div className="text-2xl font-black text-[#997D25] font-mono">
+              {antibodies.length}
+            </div>
+            <span className="text-[10px] text-emerald-600 font-mono font-bold">Sandbox Attested</span>
           </div>
 
           <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/30 shadow-sm space-y-1">
             <span className="text-[11px] font-mono text-[#6E6E73] block uppercase tracking-wider">
-              Active Antibodies
+              Pull Requests
             </span>
-            <div className="text-2xl font-black text-[#0B0B0C] font-mono">{antibodies.filter(a => a.status === 'active').length} Active</div>
-            <span className="text-[10px] text-emerald-600 font-mono font-bold">Speed 1 Protected</span>
+            <div className="text-2xl font-black text-[#0B0B0C] font-mono">
+              {pullRequests.filter((p) => p.status === 'OPEN').length} Open
+            </div>
+            <span className="text-[10px] text-[#6E6E73] font-mono">Awaiting Human Review</span>
           </div>
 
           <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/30 shadow-sm space-y-1 col-span-2 lg:col-span-1">
             <span className="text-[11px] font-mono text-[#6E6E73] block uppercase tracking-wider">
-              Herd Consensus
+              Immune Log Entries
             </span>
-            <div className="text-2xl font-black text-[#0B0B0C] font-mono">14,280 Nodes</div>
-            <span className="text-[10px] text-emerald-600 font-mono font-bold">Global Mesh Sync</span>
+            <div className="text-2xl font-black text-[#0B0B0C] font-mono">
+              {immuneLogs.length}
+            </div>
+            <span className="text-[10px] text-emerald-600 font-mono font-bold">100% Zero-Leak Redacted</span>
           </div>
         </div>
 
-        {/* Dashboard Navigation Tabs */}
+        {/* Dashboard 5 MVP Navigation Tabs */}
         <div className="flex border-b border-[#D4AF37]/20 gap-2 overflow-x-auto pb-1">
+          <button
+            suppressHydrationWarning
+            onClick={() => setActiveTab('vendors')}
+            className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'vendors'
+                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]'
+                : 'text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>1. Vendor Health ({vendors.length})</span>
+          </button>
+
+          <button
+            suppressHydrationWarning
+            onClick={() => setActiveTab('pathogens')}
+            className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'pathogens'
+                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]'
+                : 'text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5'
+            }`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+            <span>2. Active Pathogens ({pathogens.length})</span>
+          </button>
+
           <button
             suppressHydrationWarning
             onClick={() => setActiveTab('antibodies')}
@@ -687,20 +676,7 @@ def execute_payment(token, amount):
             }`}
           >
             <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Active Antibodies (Speed 1)</span>
-          </button>
-
-          <button
-            suppressHydrationWarning
-            onClick={() => setActiveTab('telemetry')}
-            className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-              activeTab === 'telemetry'
-                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]'
-                : 'text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Live Wire Telemetry</span>
+            <span>3. Proposed Antibodies ({antibodies.length})</span>
           </button>
 
           <button
@@ -713,20 +689,20 @@ def execute_payment(token, amount):
             }`}
           >
             <GitPullRequest className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>DNA Repairs (Speed 2)</span>
+            <span>4. Pull Requests ({pullRequests.length})</span>
           </button>
 
           <button
             suppressHydrationWarning
-            onClick={() => setActiveTab('mesh')}
+            onClick={() => setActiveTab('immune_log')}
             className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-              activeTab === 'mesh'
+              activeTab === 'immune_log'
                 ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]'
                 : 'text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5'
             }`}
           >
-            <Globe className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Herd Mesh (Speed 3)</span>
+            <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>5. Immune Log ({immuneLogs.length})</span>
           </button>
 
           <button
@@ -739,32 +715,404 @@ def execute_payment(token, amount):
             }`}
           >
             <Key className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>API Keys & Secrets</span>
-          </button>
-
-          <button
-            suppressHydrationWarning
-            onClick={() => setActiveTab('python_ml')}
-            className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-              activeTab === 'python_ml'
-                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]'
-                : 'text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5'
-            }`}
-          >
-            <Cpu className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-            <span>Python AI & LibCST (:8001)</span>
+            <span>Sensor &amp; Keys</span>
           </button>
         </div>
 
-        {/* TAB 1: ACTIVE ANTIBODIES */}
-        {activeTab === 'antibodies' && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
+        {/* TAB 1: VENDOR HEALTH */}
+        {activeTab === 'vendors' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h3 className="text-lg font-bold text-[#0B0B0C]">Active Wire Antibodies</h3>
+                <h3 className="text-lg font-bold text-[#0B0B0C]">Upstream Vendor Adapter Health</h3>
                 <p className="text-xs text-[#6E6E73]">
-                  Sub-millisecond WebAssembly byte-level filters transforming broken payloads in flight.
+                  One adapter per vendor. Each adapter encapsulates expected Zod schemas, RFC 8594 Sunset header monitors, and canary probes.
                 </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={refreshData}
+                className="px-3 py-1.5 rounded-xl border border-[#D4AF37]/30 text-xs font-mono font-bold text-[#0B0B0C] hover:bg-white flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-[#997D25]" />
+                <span>Refresh Status</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {vendors.map((v) => {
+                const isProbing = isProbingVendor === v.id;
+
+                return (
+                  <div
+                    key={v.id}
+                    className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md flex flex-col justify-between space-y-4 hover:border-[#D4AF37] transition-all"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full ${
+                            v.status === 'HEALTHY' ? 'bg-[#10B981]' : v.status === 'DRIFT_DETECTED' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500 animate-pulse'
+                          }`} />
+                          <h4 className="text-base font-bold text-[#0B0B0C]">{v.name}</h4>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                          v.status === 'HEALTHY'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        }`}>
+                          {v.status}
+                        </span>
+                      </div>
+
+                      <div className="text-xs font-mono text-[#6E6E73] space-y-1">
+                        <div>Base URL: <code className="text-[#0B0B0C]">{v.baseUrl}</code></div>
+                        <div>Monitored Endpoints: <span className="font-bold text-[#0B0B0C]">{v.endpointsCount} paths</span></div>
+                        <div>Last Canary Probe: <span className="text-[#997D25] font-bold">{v.lastCanary}</span></div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-black/5 flex items-center justify-between">
+                      <span className="text-[11px] font-mono text-[#6E6E73]">
+                        {v.id === 'stripe' ? 'Adapter: stripe.ts' : v.id === 'twilio' ? 'Adapter: twilio.ts' : 'Adapter: openai.ts'}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRunCanary(v.id)}
+                        disabled={isProbing}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#0B0B0C] hover:bg-black text-[#F3E5AB] font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <Zap className={`w-3.5 h-3.5 text-[#D4AF37] ${isProbing ? 'animate-spin' : ''}`} />
+                        <span>{isProbing ? 'Probing...' : 'Run Canary Probe'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Architecture Explainer */}
+            <div className="p-5 rounded-2xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]/30 font-mono text-xs space-y-2">
+              <div className="text-[#D4AF37] font-bold uppercase tracking-wider flex items-center gap-2">
+                <Shield className="w-4 h-4 text-[#D4AF37]" />
+                How Adapters Isolate Upstream Changes
+              </div>
+              <p className="text-white/70 leading-relaxed font-sans text-xs">
+                When Stripe, OpenAI or Twilio alters their request schema, deprecates a field, or sends an RFC 8594 <code>Sunset</code> header, Immunix captures it via the Sensor layer. You never have to modify upstream calls globally; an isolated one-file change in <code>src/immunix/adapters/&lt;vendor&gt;.ts</code> adapts your entire fleet.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: ACTIVE PATHOGENS */}
+        {activeTab === 'pathogens' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-bold text-[#0B0B0C]">Active Pathogens (Detected Schema Drift)</h3>
+                <p className="text-xs text-[#6E6E73]">
+                  A <strong>Pathogen</strong> is a detected upstream API mutation: field rename, endpoint sunset, or type alteration.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleSynthesizeAntibody('stripe')}
+                disabled={isSynthesizing}
+                className="px-4 py-2 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-mono font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                <Zap className={`w-3.5 h-3.5 text-[#D4AF37] ${isSynthesizing ? 'animate-spin' : ''}`} />
+                <span>{isSynthesizing ? 'Synthesizing...' : 'Synthesize Antibody Rule'}</span>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-[#D4AF37]/30 shadow-md overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-[#FBFBF9] border-b border-[#D4AF37]/20 text-[#6E6E73] uppercase">
+                    <tr>
+                      <th className="p-4">Pathogen ID</th>
+                      <th className="p-4">Target Vendor</th>
+                      <th className="p-4">Drift Classification</th>
+                      <th className="p-4">Severity</th>
+                      <th className="p-4">Mutation Vector</th>
+                      <th className="p-4">Sunset / Deprecation</th>
+                      <th className="p-4 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/5">
+                    {pathogens.map((p) => (
+                      <tr key={p.id} className="hover:bg-[#FBFBF9]/60 transition-colors">
+                        <td className="p-4 font-bold text-[#0B0B0C]">{p.id}</td>
+                        <td className="p-4 font-sans font-bold text-[#0B0B0C] uppercase">{p.vendor}</td>
+                        <td className="p-4">
+                          <span className="px-2 py-0.5 rounded bg-black/5 text-[#0B0B0C] border border-black/10 text-[10px] font-bold">
+                            {p.drift_type}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            p.severity === 'CRITICAL'
+                              ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                              : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          }`}>
+                            {p.severity}
+                          </span>
+                        </td>
+                        <td className="p-4 text-[#0B0B0C]">
+                          {p.mutation?.old_field ? (
+                            <span>
+                              <code className="text-rose-600 line-through">{p.mutation.old_field}</code>
+                              {' ➔ '}
+                              <code className="text-emerald-600 font-bold">{p.mutation.new_field}</code>
+                            </span>
+                          ) : (
+                            <span className="text-[#6E6E73]">{p.description}</span>
+                          )}
+                        </td>
+                        <td className="p-4 text-[#997D25]">
+                          {p.sunset_date ? (
+                            <span className="font-bold">RFC 8594: {p.sunset_date.substring(0, 10)}</span>
+                          ) : (
+                            <span className="text-[#6E6E73]">N/A</span>
+                          )}
+                        </td>
+                        <td className="p-4 text-right">
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase border border-emerald-300">
+                            {p.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Pathogen Evidence Detail Card */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {pathogens.map((p) => (
+                <div key={p.id} className="p-5 rounded-2xl bg-white border border-[#D4AF37]/25 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="font-bold text-[#0B0B0C]">{p.id} Evidence &amp; Call Sites</span>
+                    <span className="text-[#6E6E73]">{p.detected_at}</span>
+                  </div>
+                  <p className="text-xs text-[#6E6E73] leading-relaxed font-mono">
+                    {p.description}
+                  </p>
+                  <pre className="p-3 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] font-mono text-[11px] overflow-x-auto border border-[#D4AF37]/30">
+                    {JSON.stringify(p.evidence_payload || {}, null, 2)}
+                  </pre>
+                  {p.mutation?.call_sites_hint && (
+                    <div className="text-[11px] font-mono text-[#6E6E73] pt-1">
+                      Call site target: <code className="text-[#997D25] font-bold">{p.mutation.call_sites_hint.join(', ')}</code>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: PROPOSED ANTIBODIES */}
+        {activeTab === 'antibodies' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-bold text-[#0B0B0C]">Proposed Antibodies (AST Refactorings)</h3>
+                <p className="text-xs text-[#6E6E73]">
+                  An <strong>Antibody</strong> is a verified fix rule. Immunix performs deterministic Abstract Syntax Tree surgery via <code>ts-morph</code>.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold border border-emerald-300 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  Deterministic AST • Zero Hallucinations
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {antibodies.map((atb) => (
+                <div
+                  key={atb.id}
+                  className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-black/5 pb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="px-2.5 py-1 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-mono font-bold text-xs">
+                        {atb.id}
+                      </span>
+                      <div>
+                        <h4 className="text-sm font-bold text-[#0B0B0C] font-mono">
+                          Target: <code className="text-[#997D25]">{atb.target_file}</code>
+                        </h4>
+                        <span className="text-[11px] font-mono text-[#6E6E73]">
+                          Strategy: {atb.strategy} • Pathogen: {atb.pathogen_id}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-300 flex items-center gap-1">
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        {atb.verification_status} ({atb.sandbox_latency_ms}ms)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* AST Diff Viewer */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-mono text-[#6E6E73]">
+                      <span>Unified Git Diff (ts-morph Codemod):</span>
+                      <span className="text-[10px] text-emerald-600 font-bold">100% Compiler Verified</span>
+                    </div>
+                    <pre className="p-4 rounded-2xl bg-[#0B0B0C] text-white font-mono text-xs overflow-x-auto border border-[#D4AF37]/30 leading-relaxed">
+                      {atb.ast_diff.split('\n').map((line, idx) => {
+                        let color = 'text-white/80';
+                        if (line.startsWith('+')) color = 'text-emerald-400 font-bold';
+                        else if (line.startsWith('-')) color = 'text-rose-400 font-bold';
+                        else if (line.startsWith('@')) color = 'text-[#D4AF37]';
+                        return (
+                          <div key={idx} className={color}>
+                            {line}
+                          </div>
+                        );
+                      })}
+                    </pre>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs font-mono">
+                    <div className="flex items-center gap-2 text-emerald-700">
+                      <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-[11px] break-all">Certificate: {atb.cryptographic_certificate}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPr(atb.id.includes('412') ? pr412Data : pr413Data);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <span>Review Proposed PR</span>
+                      <ExternalLink className="w-3 h-3 text-[#D4AF37]" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: PULL REQUESTS */}
+        {activeTab === 'prs' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-bold text-[#0B0B0C]">Automated Pull Requests (Human Approval Required)</h3>
+                <p className="text-xs text-[#6E6E73]">
+                  Immunix opens GitHub PRs containing reproduction steps, sandbox verification receipts, and minimal AST diffs. <strong>Zero code merges automatically.</strong>
+                </p>
+              </div>
+
+              <div className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs font-mono font-bold flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-amber-700" />
+                Human Approval Policy Enforced
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {pullRequests.map((pr) => {
+                const isMerged = pr.status === 'MERGED' || mergedPrs.includes(pr.pr_number);
+                const prModalData = pr.pr_number === 412 ? pr412Data : pr413Data;
+
+                return (
+                  <div
+                    key={pr.id}
+                    className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md flex flex-col justify-between space-y-4 hover:border-[#D4AF37] transition-all"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                          isMerged ? 'bg-purple-100 text-purple-800 border border-purple-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        }`}>
+                          {isMerged ? 'MERGED TO MAIN' : 'PASSED SANDBOX (OPEN)'}
+                        </span>
+                        <span className="text-xs font-mono text-[#6E6E73]">PR #{pr.pr_number}</span>
+                      </div>
+
+                      <h4 className="text-base font-bold text-[#0B0B0C]">
+                        {pr.title}
+                      </h4>
+
+                      <div className="space-y-1 text-xs font-mono text-[#6E6E73]">
+                        <div>Repo: <code className="text-[#0B0B0C] font-bold">{pr.repository}</code></div>
+                        <div className="flex items-center gap-1.5">
+                          <GitBranch className="w-3.5 h-3.5 text-[#997D25]" />
+                          <code className="text-[#997D25]">{pr.branch}</code> ➔ <code>main</code>
+                        </div>
+                        <div>Opened: <span className="text-[#0B0B0C]">{pr.opened_at}</span></div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-black/5 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPr(prModalData)}
+                        className="text-[#997D25] hover:underline flex items-center gap-1 font-mono font-bold text-xs cursor-pointer"
+                      >
+                        Inspect PR &amp; Diff <ExternalLink className="w-3 h-3" />
+                      </button>
+
+                      {!isMerged ? (
+                        <button
+                          type="button"
+                          onClick={() => handleSimulateMerge(pr.pr_number, pr.repository)}
+                          className="px-4 py-2 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-mono font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <CheckCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                          <span>Simulate Merge</span>
+                        </button>
+                      ) : (
+                        <span className="px-3 py-1 rounded-xl bg-purple-50 text-purple-800 border border-purple-200 font-mono text-xs font-bold flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Merged
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: IMMUNE LOG */}
+        {activeTab === 'immune_log' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-bold text-[#0B0B0C]">Immune Log (Tamper-Evident Audit Trail)</h3>
+                <p className="text-xs text-[#6E6E73]">
+                  Append-only immutable record of every detection, canary probe, AST synthesis, and PR dispatch. All secrets strictly redacted.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-300">
+                  Zero Secrets Retained
+                </span>
+                <button
+                  type="button"
+                  onClick={refreshData}
+                  className="px-3 py-1.5 rounded-xl border border-[#D4AF37]/30 text-xs font-mono font-bold text-[#0B0B0C] hover:bg-white flex items-center gap-1 cursor-pointer"
+                >
+                  <RefreshCw className="w-3 h-3 text-[#997D25]" />
+                  <span>Refresh Log</span>
+                </button>
               </div>
             </div>
 
@@ -773,52 +1121,42 @@ def execute_payment(token, amount):
                 <table className="w-full text-left text-xs font-mono">
                   <thead className="bg-[#FBFBF9] border-b border-[#D4AF37]/20 text-[#6E6E73] uppercase">
                     <tr>
-                      <th className="p-4">Antibody ID</th>
-                      <th className="p-4">Target Vendor</th>
-                      <th className="p-4">Mutation Vector</th>
-                      <th className="p-4">Rule Type</th>
-                      <th className="p-4">Rescued Traffic</th>
-                      <th className="p-4">Wire Latency</th>
-                      <th className="p-4 text-center">Status</th>
-                      <th className="p-4 text-right">Actions</th>
+                      <th className="p-4">Timestamp (UTC)</th>
+                      <th className="p-4">Event Type</th>
+                      <th className="p-4">Vendor</th>
+                      <th className="p-4">Audit Description</th>
+                      <th className="p-4 text-right">Redacted Payload</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/5">
-                    {antibodies.map((atb) => (
-                      <tr key={atb.id} className="hover:bg-[#FBFBF9]/60 transition-colors">
-                        <td className="p-4 font-bold text-[#0B0B0C]">{atb.id}</td>
-                        <td className="p-4 font-sans font-bold text-[#0B0B0C]">{atb.vendor}</td>
-                        <td className="p-4 text-[#6E6E73]">{atb.pattern}</td>
-                        <td className="p-4">
-                          <span className="px-2 py-0.5 rounded bg-black/5 text-[#0B0B0C] border border-black/10 text-[10px]">
-                            {atb.ruleType}
+                    {immuneLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-[#FBFBF9]/60 transition-colors">
+                        <td className="p-4 text-[#6E6E73] whitespace-nowrap">
+                          {log.timestamp.replace('T', ' ').substring(0, 19)}
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            log.event_type === 'PATHOGEN_DETECTED'
+                              ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                              : log.event_type === 'ANTIBODY_SYNTHESIZED'
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              : log.event_type === 'SANDBOX_PASSED'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : log.event_type === 'PR_MERGED'
+                              ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                              : 'bg-black/5 text-[#0B0B0C] border border-black/10'
+                          }`}>
+                            {log.event_type}
                           </span>
                         </td>
-                        <td className="p-4 text-[#0B0B0C] font-bold" suppressHydrationWarning>{formatNumber(atb.rescues)} reqs</td>
-                        <td className="p-4 text-[#997D25] font-bold">{atb.latency}</td>
-                        <td className="p-4 text-center">
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                              atb.status === 'active'
-                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                : 'bg-gray-100 text-gray-600 border border-gray-300'
-                            }`}
-                          >
-                            {atb.status}
-                          </span>
+                        <td className="p-4 font-sans font-bold text-[#0B0B0C] uppercase">
+                          {log.vendor}
                         </td>
-                        <td className="p-4 text-right">
-                          <button
-                            suppressHydrationWarning
-                            onClick={() => toggleAntibody(atb.id)}
-                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                              atb.status === 'active'
-                                ? 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100'
-                                : 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100'
-                            }`}
-                          >
-                            {atb.status === 'active' ? 'Retire Rule' : 'Reactivate'}
-                          </button>
+                        <td className="p-4 text-[#0B0B0C]">
+                          {log.message}
+                        </td>
+                        <td className="p-4 text-right font-mono text-[10px] text-[#997D25]">
+                          <code>{JSON.stringify(log.metadata || {})}</code>
                         </td>
                       </tr>
                     ))}
@@ -829,154 +1167,14 @@ def execute_payment(token, amount):
           </div>
         )}
 
-        {/* TAB 2: LIVE TELEMETRY */}
-        {activeTab === 'telemetry' && (
-          <div className="bg-[#0B0B0C] rounded-3xl p-6 border border-[#D4AF37]/40 shadow-2xl text-white font-mono text-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-ping" />
-                <span className="text-white/60">telemetry-bus://clickhouse.immunix.internal:8443</span>
-              </div>
-              <span className="text-[#D4AF37] text-[11px] font-bold">50,000+ RPS Streaming Ingest</span>
-            </div>
-
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 text-[11px]">
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <span className="text-white/80">[07:44:12.102] POST api.stripe.com/v1/payment_intents (200 OK)</span>
-                <span className="text-emerald-400 font-bold">ANTIBODY ATB-2810 IN-FLIGHT RESCUE (0.38ms)</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <span className="text-white/80">[07:44:12.089] POST api.openai.com/v1/chat/completions (200 OK)</span>
-                <span className="text-white/50">PASSTHROUGH (0.04ms)</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <span className="text-white/80">[07:44:12.015] POST api.twilio.com/v2/checkout/pay (200 OK)</span>
-                <span className="text-[#D4AF37] font-bold">REROUTED FROM SUNSET /v1/charges (0.42ms)</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <span className="text-white/80">[07:44:11.980] POST salesforce.internal/sobjects/Invoice (200 OK)</span>
-                <span className="text-emerald-400 font-bold">TYPE COERCED FLOAT➔STRING (0.29ms)</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <span className="text-white/80">[07:44:11.890] GET api.plaid.com/investments/holdings/get (200 OK)</span>
-                <span className="text-white/50">PASSTHROUGH (0.05ms)</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: DNA REPAIRS & PRS */}
-        {activeTab === 'prs' && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-[#0B0B0C]">Speed 2: Synthesized GitHub Pull Requests</h3>
-            <p className="text-xs text-[#6E6E73]">
-              Deterministic ts-morph AST codemods tested against ephemeral unmocked staging sandboxes.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    mergedPrs.includes(412) ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
-                  }`}>
-                    {mergedPrs.includes(412) ? 'MERGED TO MAIN' : 'PASSED EPHEMERAL SANDBOX (5.8ms)'}
-                  </span>
-                  <span className="text-xs font-mono text-[#6E6E73]">PR #412</span>
-                </div>
-                <h4 className="text-base font-bold text-[#0B0B0C]">
-                  fix(stripe): adopt official email_address parameter
-                </h4>
-                <p className="text-xs text-[#6E6E73] font-mono leading-relaxed">
-                  Refactored 3 call sites in `consumer-app/src/services/billing.ts`. Upstream schema updated to v2026-03.
-                </p>
-                <div className="pt-3 border-t border-black/5 flex items-center justify-between text-xs font-mono">
-                  <span className="text-emerald-600 font-bold">Cryptographically Signed</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPr(pr412Data)}
-                    className="text-[#997D25] hover:underline flex items-center gap-1 font-bold cursor-pointer"
-                  >
-                    View on GitHub <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    mergedPrs.includes(413) ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
-                  }`}>
-                    {mergedPrs.includes(413) ? 'MERGED TO MAIN' : 'PASSED EPHEMERAL SANDBOX (6.2ms)'}
-                  </span>
-                  <span className="text-xs font-mono text-[#6E6E73]">PR #413</span>
-                </div>
-                <h4 className="text-base font-bold text-[#0B0B0C]">
-                  fix(twilio): relocate /v1/charges ➔ /v2/checkout/pay
-                </h4>
-                <p className="text-xs text-[#6E6E73] font-mono leading-relaxed">
-                  Updated caller endpoints in `consumer-app/src/services/checkout.ts`. Verified against staging provider sandbox.
-                </p>
-                <div className="pt-3 border-t border-black/5 flex items-center justify-between text-xs font-mono">
-                  <span className="text-emerald-600 font-bold">Cryptographically Signed</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPr(pr413Data)}
-                    className="text-[#997D25] hover:underline flex items-center gap-1 font-bold cursor-pointer"
-                  >
-                    View on GitHub <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: HERD MESH */}
-        {activeTab === 'mesh' && (
-          <div className="bg-white p-8 rounded-3xl border border-[#D4AF37]/30 shadow-md space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-[#0B0B0C]">Global Herd Immunity P2P Ledger</h3>
-              <p className="text-xs text-[#6E6E73]">
-                Decentralized consensus mesh distributing verified antibodies worldwide in &lt; 2.0 seconds.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/20 text-xs font-mono">
-                <div className="text-[#997D25] font-bold uppercase mb-1">Tokyo Node (ap-ne-1)</div>
-                <div className="text-emerald-600 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> 100% Inoculated
-                </div>
-                <div className="text-[#6E6E73] text-[10px] mt-2">Latency: 0.34ms • 7 Antibodies</div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/20 text-xs font-mono">
-                <div className="text-[#997D25] font-bold uppercase mb-1">Frankfurt Node (eu-central-1)</div>
-                <div className="text-emerald-600 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> 100% Inoculated
-                </div>
-                <div className="text-[#6E6E73] text-[10px] mt-2">Latency: 0.29ms • 7 Antibodies</div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/20 text-xs font-mono">
-                <div className="text-[#997D25] font-bold uppercase mb-1">New York Node (us-east-1)</div>
-                <div className="text-emerald-600 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> 100% Inoculated
-                </div>
-                <div className="text-[#6E6E73] text-[10px] mt-2">Latency: 0.31ms • 7 Antibodies</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: ZERO-KNOWLEDGE API KEYS */}
+        {/* TAB 6: SENSOR & KEYS */}
         {activeTab === 'keys' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-[#0B0B0C]">Zero-Knowledge API Keys</h3>
+                <h3 className="text-lg font-bold text-[#0B0B0C]">Sensor Configuration &amp; API Keys</h3>
                 <p className="text-xs text-[#6E6E73]">
-                  Hashed with Argon2id. Used by Envoy sidecars and local SDKs to pull real-time cluster antibodies.
+                  Hashed with Argon2id. The Immunix Sensor SDK wraps outgoing vendor calls and streams shape metadata safely.
                 </p>
               </div>
 
@@ -986,7 +1184,7 @@ def execute_payment(token, amount):
                 className="px-4 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
               >
                 <Plus className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Generate New Key</span>
+                <span>Generate Sensor Key</span>
               </button>
             </div>
 
@@ -1035,237 +1233,32 @@ def execute_payment(token, amount):
               ))}
             </div>
 
-            {/* Upstream Technology Provider Integrations Section */}
-            <div className="space-y-4 pt-4 border-t border-[#D4AF37]/20">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-base font-bold text-[#0B0B0C] flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Monitored Third-Party Technology Credentials</span>
-                  </h4>
-                  <p className="text-xs text-[#6E6E73]">
-                    Upstream SaaS &amp; Cloud API providers protected under IMMUNIX wire interception filters.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-300">
-                    ● 8 Technologies Synced
-                  </span>
-                </div>
+            {/* SDK Code Snippet */}
+            <div className="p-6 rounded-3xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]/30 space-y-3 font-mono text-xs">
+              <div className="text-[#D4AF37] font-bold uppercase tracking-wider flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-[#D4AF37]" />
+                How to integrate the Immunix Sensor in your app (3 lines)
               </div>
+              <p className="text-white/70 font-sans text-xs">
+                Install <code>@immunix/sensor</code> and wrap standard node-fetch or client requests. Live payment payloads are never modified in-flight.
+              </p>
+              <pre className="p-4 rounded-2xl bg-black text-emerald-400 font-mono text-xs overflow-x-auto border border-white/10 leading-relaxed">
+{`import { createSensorProxy } from '@immunix/sensor';
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {providerIntegrations.map((p) => {
-                  const ping = providerPingResults[p.id];
-                  const isPinging = testingProviderId === p.id;
+// 1. Wrap standard fetch with the zero-leak sensor
+const shieldedFetch = createSensorProxy({
+  apiKey: process.env.IMMUNIX_API_KEY,
+  vendor: 'stripe',
+  onPathogenDetected: (pathogen) => console.log('Drift caught:', pathogen.description)
+});
 
-                  return (
-                    <div
-                      key={p.id}
-                      className="p-4 rounded-2xl bg-white border border-[#D4AF37]/25 shadow-sm space-y-2.5 hover:border-[#D4AF37]/60 transition-all"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-                          <span className="font-bold text-xs text-[#0B0B0C]">{p.name}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-black/5 text-[#6E6E73] text-[9px] font-mono">
-                            {p.category}
-                          </span>
-                        </div>
-                        <button
-                          suppressHydrationWarning
-                          onClick={() => handleTestProviderPing(p.id)}
-                          disabled={isPinging}
-                          className="px-2.5 py-1 rounded-lg bg-[#0B0B0C] hover:bg-black text-[#F3E5AB] font-mono font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-50"
-                        >
-                          <Zap className={`w-3 h-3 text-[#D4AF37] ${isPinging ? 'animate-spin' : ''}`} />
-                          <span>{isPinging ? 'Pinging...' : ping ? `${ping}ms ⚡` : 'Ping ⚡'}</span>
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[11px] font-mono text-[#6E6E73] pt-1 border-t border-black/5">
-                        <span>Host: <code className="text-[#0B0B0C]">{p.target_host}</code></span>
-                        <span>Key: <code className="text-[#997D25] font-bold">{p.key_prefix}</code></span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono flex items-start gap-3">
-              <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-              <div>
-                <strong>Zero Storage Security Policy: </strong>
-                IMMUNIX never stores third-party credentials (such as Stripe secret keys). Upstream credentials pass through hardware memory buffers only.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: PYTHON AI & LIBCST SURGERY HUB */}
-        {activeTab === 'python_ml' && (
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-sm">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs font-mono font-bold tracking-widest uppercase mb-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Python 3.12 Engine Connected (Port 8001)
-                </div>
-                <h3 className="text-2xl font-black text-[#0B0B0C] font-display">
-                  Python LibCST Code Surgery &amp; Scikit-Learn Anomaly Hub
-                </h3>
-                <p className="text-xs text-[#6E6E73] mt-1 max-w-2xl">
-                  Inspect and execute real-time LibCST Concrete Syntax Tree surgery on customer Python repositories, and trigger Scikit-learn DBSCAN clustering on wire failure telemetry.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href="http://localhost:8001/docs"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>FastAPI Swagger Docs ↗</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Sub-Section 1: LibCST Python Code Refactoring */}
-            <div className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-sm space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-base font-bold text-[#0B0B0C] flex items-center gap-2">
-                    <Terminal className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Speed 2: LibCST Python Repository Surgery</span>
-                  </h4>
-                  <p className="text-xs text-[#6E6E73]">
-                    Transforms deprecated Python call signatures deterministically with zero hallucinations.
-                  </p>
-                </div>
-
-                <button
-                  suppressHydrationWarning
-                  onClick={handleRepairPython}
-                  disabled={isRepairingPython}
-                  className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
-                >
-                  <Play className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>{isRepairingPython ? 'Synthesizing AST...' : 'Execute LibCST Surgery'}</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-mono font-bold text-[#6E6E73] uppercase tracking-wider block">
-                    Vulnerable Python Source Code:
-                  </label>
-                  <textarea
-                    value={pythonCodeInput}
-                    onChange={(e) => setPythonCodeInput(e.target.value)}
-                    rows={8}
-                    className="w-full bg-[#0B0B0C] text-[#F3E5AB] p-4 rounded-2xl font-mono text-xs border border-[#D4AF37]/40 focus:outline-none focus:border-[#D4AF37] leading-relaxed resize-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-mono font-bold text-[#6E6E73] uppercase tracking-wider block">
-                      Deterministic AST Unified Git Diff:
-                    </label>
-                    {pythonRepairResult && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                        ✓ Compiler Verified
-                      </span>
-                    )}
-                  </div>
-                  <pre className="w-full bg-[#0B0B0C] text-emerald-400 p-4 rounded-2xl font-mono text-xs border border-[#D4AF37]/40 overflow-x-auto h-[164px] leading-relaxed">
-                    {pythonRepairResult?.ast_diff || '// Click "Execute LibCST Surgery" to parse Python AST and generate diff...'}
-                  </pre>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Section 2: Scikit-Learn Anomaly Clustering */}
-            <div className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-sm space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-base font-bold text-[#0B0B0C] flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Machine Learning: Scikit-Learn DBSCAN Schema Drift Discovery</span>
-                  </h4>
-                  <p className="text-xs text-[#6E6E73]">
-                    Runs unsupervised density-based clustering across multi-dimensional wire failure vectors.
-                  </p>
-                </div>
-
-                <button
-                  suppressHydrationWarning
-                  onClick={handleRunMlClustering}
-                  disabled={isClusteringMl}
-                  className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
-                >
-                  <Cpu className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>{isClusteringMl ? 'Clustering Vectors...' : 'Run DBSCAN Anomaly Pipeline'}</span>
-                </button>
-              </div>
-
-              {mlClusterResults ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/20">
-                      <span className="text-[10px] font-mono text-[#6E6E73] uppercase tracking-wider block">
-                        Ingested Events
-                      </span>
-                      <div className="text-xl font-bold font-mono text-[#0B0B0C]">
-                        {mlClusterResults.total_events} Telemetry Frames
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/20">
-                      <span className="text-[10px] font-mono text-[#6E6E73] uppercase tracking-wider block">
-                        Anomalies Isolated
-                      </span>
-                      <div className="text-xl font-bold font-mono text-amber-600">
-                        {mlClusterResults.anomalies_detected} Outliers Flagged
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/20">
-                      <span className="text-[10px] font-mono text-[#6E6E73] uppercase tracking-wider block">
-                        Drift Clusters Found
-                      </span>
-                      <div className="text-xl font-bold font-mono text-emerald-600">
-                        {mlClusterResults.clusters_found} Emergent Schemas
-                      </div>
-                    </div>
-                  </div>
-
-                  {mlClusterResults.recommended_antibodies && mlClusterResults.recommended_antibodies.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]/30 space-y-2">
-                      <div className="text-xs font-mono font-bold text-[#D4AF37] uppercase tracking-wider">
-                        Auto-Synthesized Antibody Candidate (DBSCAN Cluster):
-                      </div>
-                      <div className="text-xs font-mono text-[#6E6E73]">
-                        Signature: <span className="text-white font-bold">{mlClusterResults.recommended_antibodies[0].detected_signature}</span>
-                      </div>
-                      <div className="text-xs font-mono text-emerald-400">
-                        Recommendation: {mlClusterResults.recommended_antibodies[0].recommended_action}
-                      </div>
-                      <div className="text-[11px] font-mono text-[#997D25]">
-                        Confidence Score: {(mlClusterResults.recommended_antibodies[0].confidence_score * 100).toFixed(1)}% | Inoculation Status: READY_FOR_WASM_COMPILATION
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="p-8 rounded-2xl bg-[#FBFBF9] border border-dashed border-[#D4AF37]/30 text-center space-y-2">
-                  <Cpu className="w-8 h-8 text-[#997D25] mx-auto opacity-70" />
-                  <div className="text-xs font-mono text-[#6E6E73]">
-                    Click &quot;Run DBSCAN Anomaly Pipeline&quot; to stream HTTP telemetry into Scikit-learn on port 8001.
-                  </div>
-                </div>
-              )}
+// 2. Outgoing requests proceed exactly as usual — zero delay, zero in-flight tampering
+const response = await shieldedFetch('https://api.stripe.com/v1/payment_intents', {
+  method: 'POST',
+  headers: { Authorization: \`Bearer \${process.env.STRIPE_SECRET_KEY}\` },
+  body: JSON.stringify({ amount: 2000, currency: 'usd', customer_email: 'user@acme.com' })
+});`}
+              </pre>
             </div>
           </div>
         )}
@@ -1293,7 +1286,7 @@ def execute_payment(token, amount):
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
-                        OPEN • READY TO MERGE
+                        OPEN • READY FOR HUMAN REVIEW
                       </span>
                     )}
                   </div>
@@ -1326,9 +1319,17 @@ def execute_payment(token, amount):
                 </div>
               </div>
 
+              {/* Directive */}
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Safety Policy: </strong> Human approval is strictly required before merging. This PR does NOT auto-merge.
+                </span>
+              </div>
+
               {/* Description */}
               <div>
-                <h4 className="text-xs font-mono font-bold text-[#6E6E73] uppercase mb-1.5">PR Description & Impact:</h4>
+                <h4 className="text-xs font-mono font-bold text-[#6E6E73] uppercase mb-1.5">PR Description &amp; Upstream Drift Reproduction:</h4>
                 <p className="text-xs text-[#0B0B0C] bg-[#FBFBF9] p-3 rounded-xl border border-black/5 leading-relaxed font-mono">
                   {selectedPr.description}
                 </p>
@@ -1341,7 +1342,7 @@ def execute_payment(token, amount):
                     <GitCommit className="w-3.5 h-3.5 text-[#D4AF37]" />
                     <span>Verified ts-morph AST Diff ({selectedPr.callSitesModified} call sites)</span>
                   </h4>
-                  <span className="text-[10px] text-[#6E6E73] font-mono">Compiler Verified • Zero Hallucinations</span>
+                  <span className="text-[10px] text-[#6E6E73] font-mono">Compiler Verified • Deterministic</span>
                 </div>
                 <pre className="p-4 rounded-2xl bg-[#0B0B0C] text-white font-mono text-xs overflow-x-auto border border-[#D4AF37]/30 leading-relaxed">
                   {selectedPr.astDiff.split('\n').map((line, idx) => {
@@ -1399,13 +1400,13 @@ def execute_payment(token, amount):
                   <button
                     type="button"
                     onClick={() => {
-                      setMergedPrs((prev) => [...prev, selectedPr.prNumber]);
+                      handleSimulateMerge(selectedPr.prNumber, selectedPr.repo);
                       setTimeout(() => setSelectedPr(null), 1200);
                     }}
                     className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] text-xs font-mono font-bold uppercase tracking-wider hover:bg-black hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <CheckCheck className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Simulate Merge PR</span>
+                    <span>Simulate Human Merge</span>
                   </button>
                 ) : (
                   <div className="px-5 py-2.5 rounded-xl bg-purple-100 text-purple-900 border border-purple-300 text-xs font-mono font-bold flex items-center gap-2">

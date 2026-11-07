@@ -320,6 +320,13 @@ export default function ArenaPage() {
       const data = await response.json();
       const current = presets[selectedScenario];
 
+      // Stream detection into the unified SQLite immune log
+      fetch('/api/immunix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'trigger_canary', vendor: selectedScenario }),
+      }).catch(() => {});
+
       setTimeout(() => {
         setExecutionResult({
           latencyMs: data.latency_ms || 0.38,
@@ -411,7 +418,7 @@ export default function ArenaPage() {
 
             <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/25 text-[11px] font-mono">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-              <span>eBPF Wire Kernel Active (0.34ms)</span>
+              <span>Pathogen Sensor Active (0.34ms)</span>
             </div>
 
             <Link

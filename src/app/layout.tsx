@@ -59,6 +59,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
       className={`${montserrat.variable} ${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
       <head>

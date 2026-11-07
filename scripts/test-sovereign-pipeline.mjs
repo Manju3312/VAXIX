@@ -206,10 +206,25 @@ async function runHttpTests() {
         });
         const pyMl = await pyMlRes.json();
         console.log(`✓ [PYTHON SCIKIT-LEARN DBSCAN] /api/ml/cluster-anomalies: Discovered ${pyMl.clusters_found} drift clusters, recommended ${pyMl.recommended_antibodies.length} antibodies`);
+
+        // Test Python Unified Database Endpoints
+        const pyPathogensRes = await fetch('http://localhost:8001/api/pathogens');
+        const pyPathogensData = await pyPathogensRes.json();
+        console.log(`✓ [PYTHON DATABASE] http://localhost:8001/api/pathogens: Synced ${pyPathogensData.pathogens.length} pathogens from SQLite WAL`);
       }
     } catch {
       console.log('ℹ [PYTHON AI ENGINE] Python microservice offline or starting up on port 8001');
     }
+
+    // 2.12 Test Unified Immunix Core API
+    const immunixRes = await fetch(`${baseUrl}/api/immunix`);
+    const immunixData = await immunixRes.json();
+    console.log(`✓ [IMMUNIX CORE API] /api/immunix: "${immunixData.tagline}"`);
+    console.log(`   - Connected Vendors: ${immunixData.vendors.length}`);
+    console.log(`   - Active Pathogens: ${immunixData.pathogens.length}`);
+    console.log(`   - Proposed Antibodies: ${immunixData.antibodies.length}`);
+    console.log(`   - Pull Requests: ${immunixData.pull_requests.length}`);
+    console.log(`   - Tamper-Evident Immune Logs: ${immunixData.immune_log.length}`);
 
     console.log('\n🏛️ ALL SOVEREIGN ARCHITECTURE & HYBRID PYTHON ENDPOINTS PASSED WITH 100% SUCCESS.\n');
   } catch (err) {

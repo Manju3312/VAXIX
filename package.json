@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node scripts/test-sovereign-pipeline.mjs"
+    "test": "node scripts/test-sovereign-pipeline.mjs",
+    "demo": "tsx scripts/run-demo.mjs"
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",
@@ -19,7 +20,8 @@
     "react-dom": "19.3.0",
     "stripe": "^23.1.0",
     "three": "^0.187.0",
-    "ts-morph": "^28.0.0"
+    "ts-morph": "^28.0.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -29,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
