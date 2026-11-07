@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
+@theme {
+  --color-alabaster: #FFFFFF;
+  --color-pearl: #FBFBF9;
+  --color-gold: #D4AF37;
+  --color-gold-imperial: #D4AF37;
+  --color-gold-champagne: #F3E5AB;
+  --color-gold-bronze: #997D25;
+  --color-obsidian: #0B0B0C;
+  --color-charcoal: #1C1C1F;
+  --color-muted-silver: #6E6E73;
+  --color-immune-green: #10B981;
+  
+  --font-heading: var(--font-montserrat), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #FFFFFF;
+  --foreground: #0B0B0C;
+  --gold-primary: #D4AF37;
+  --gold-glow: rgba(212, 175, 55, 0.25);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #FFFFFF;
+  color: #0B0B0C;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #D4AF37;
+  color: #0B0B0C;
+}
+
+/* Luxury Custom Utilities */
+.gold-border {
+  border: 1px solid rgba(212, 175, 55, 0.28);
+}
+
+.gold-border-subtle {
+  border: 1px solid rgba(212, 175, 55, 0.14);
+}
+
+.gold-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+}
+
+.gold-glass-dark {
+  background: rgba(11, 11, 12, 0.90);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.gold-glow {
+  box-shadow: 0 10px 40px rgba(212, 175, 55, 0.16);
+}
+
+.gold-glow-lg {
+  box-shadow: 0 20px 60px rgba(212, 175, 55, 0.22);
+}
+
+.gold-glow-text {
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.45);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #0B0B0C 30%, #997D25 70%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-shimmer-text {
+  background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #997D25 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle luxury grid */
+.luxury-grid-bg {
+  background-image: radial-gradient(rgba(212, 175, 55, 0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.luxury-grid-dark {
+  background-image: radial-gradient(rgba(212, 175, 55, 0.18) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FBFBF9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #997D25;
 }
