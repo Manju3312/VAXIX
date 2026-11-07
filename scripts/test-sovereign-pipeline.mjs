@@ -39,6 +39,10 @@ async function runHttpTests() {
     const rootRes = await fetch(baseUrl);
     console.log(`✓ [HTTP 200] Root Web Application: Status ${rootRes.status} (Content-Length: ${rootRes.headers.get('content-length')} bytes)`);
 
+    // 2.1b Test Fullscreen Arena Studio (/arena)
+    const arenaRes = await fetch(`${baseUrl}/arena`);
+    console.log(`✓ [HTTP 200] Fullscreen Developer Workbench: /arena Status ${arenaRes.status}`);
+
     // 2.2 Test Clusters API
     const clustersRes = await fetch(`${baseUrl}/api/clusters`);
     const clustersData = await clustersRes.json();

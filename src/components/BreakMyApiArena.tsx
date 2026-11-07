@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Skull, RefreshCw, Play, CheckCircle2, Activity, FileCode, GitPullRequest, Terminal } from 'lucide-react';
+import Link from 'next/link';
+import { Skull, RefreshCw, Play, CheckCircle2, Activity, FileCode, GitPullRequest, Terminal, ExternalLink } from 'lucide-react';
 
 export default function BreakMyApiArena() {
   const [selectedSabotage, setSelectedSabotage] = useState<'rename' | 'delete' | 'timestamp'>('rename');
@@ -215,6 +216,15 @@ X-Immunix-Latency: 0.29ms
           <p className="mt-4 text-[#6E6E73] text-lg">
             Experience the world’s first autonomous dual-speed immune reaction. Simulate an upstream vendor mutation that would normally crash production and trigger PagerDuty.
           </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              href="/arena"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-[#D4AF37] text-xs font-mono font-bold text-[#0B0B0C] hover:bg-[#0B0B0C] hover:text-[#F3E5AB] transition-all shadow-sm"
+            >
+              <span>Launch Fullscreen Interactive Studio</span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#D4AF37]" />
+            </Link>
+          </div>
         </div>
 
         {/* Console Box */}

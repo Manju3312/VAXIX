@@ -63,13 +63,13 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
 
         {/* The 4-Link Standard */}
         <nav className="hidden md:flex items-center gap-8">
-          <a
-            href="#break-my-api"
+          <Link
+            href="/arena"
             className="text-sm font-semibold text-[#0B0B0C] hover:text-[#D4AF37] transition-colors flex items-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
             BreakMyAPI Arena
-          </a>
+          </Link>
           <a
             href="#herd-immunity"
             className="text-sm font-semibold text-[#6E6E73] hover:text-[#0B0B0C] transition-colors"
@@ -106,13 +106,13 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             <LayoutDashboard className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Dashboard</span>
           </Link>
-          <a
-            href="#break-my-api"
+          <Link
+            href="/arena"
             className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-semibold text-xs tracking-wider uppercase hover:bg-black hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] transition-all flex items-center gap-2"
           >
             <span>Try Arena</span>
             <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -137,14 +137,14 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             <LayoutDashboard className="w-4 h-4 text-[#D4AF37]" />
             Enterprise Dashboard
           </Link>
-          <a
-            href="#break-my-api"
+          <Link
+            href="/arena"
             onClick={() => setMobileMenuOpen(false)}
             className="text-sm font-semibold text-[#0B0B0C] flex items-center gap-2"
           >
             <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
             BreakMyAPI Arena
-          </a>
+          </Link>
           <a
             href="#herd-immunity"
             onClick={() => setMobileMenuOpen(false)}
@@ -170,14 +170,14 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
             <span className="font-bold text-[#10B981]">14,280</span> INOCULATED
           </div>
-          <a
-            href="#break-my-api"
+          <Link
+            href="/arena"
             onClick={() => setMobileMenuOpen(false)}
             className="w-full text-center py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase shadow-md flex items-center justify-center gap-2"
           >
             <span>Try Arena Now</span>
             <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
-          </a>
+          </Link>
         </div>
       )}
     </header>

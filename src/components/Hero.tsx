@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ArrowRight, Activity } from 'lucide-react';
 import ImmuneHelix3D from './ImmuneHelix3D';
 
@@ -42,13 +43,13 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
 
             {/* CTAs */}
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <a
-                href="#break-my-api"
+              <Link
+                href="/arena"
                 className="px-8 py-4 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border-2 border-[#D4AF37] font-bold text-sm tracking-wider uppercase hover:bg-black hover:shadow-[0_10px_35px_rgba(212,175,55,0.4)] transition-all flex items-center gap-3 group"
               >
                 <span>Launch Sabotage Arena</span>
                 <ArrowRight className="w-4 h-4 text-[#D4AF37] group-hover:translate-x-1 transition-transform" />
-              </a>
+              </Link>
 
               <a
                 href="#benchmark"
