@@ -10,6 +10,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
+import { spawn } from 'node:child_process';
 
 console.log('🧬 STARTING IMMUNIX SOVEREIGN RESILIENCE TEST SUITE...\n');
 
@@ -30,11 +31,87 @@ console.log(`   - Clusters Inoculated: ${clusters.count}`);
 console.log(`   - Verified Antibodies: ${antibodies.count}`);
 console.log(`   - Active Sovereign Keys: ${keys.count}\n`);
 
+async function probeUrl(url) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 600);
+    const res = await fetch(`${url}/api/health`, { signal: controller.signal });
+    clearTimeout(timer);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveBaseUrl() {
+  const candidates = [
+    process.env.BASE_URL,
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3002',
+    'http://localhost:3002',
+    'http://127.0.0.1:3001',
+    'http://localhost:3001',
+  ].filter(Boolean);
+
+  for (const url of candidates) {
+    if (await probeUrl(url)) {
+      console.log(`ℹ [RUNNER] Connected to live active IMMUNIX server at ${url}\n`);
+      return { baseUrl: url, serverProc: null };
+    }
+  }
+
+  // If no server is running, automatically spawn an ephemeral Next.js server on port 3099
+  const testPort = 3099;
+  const testUrl = `http://127.0.0.1:${testPort}`;
+  console.log(`ℹ [RUNNER] No running server detected on standard ports.`);
+  console.log(`ℹ [RUNNER] Launching ephemeral test instance on ${testUrl}...`);
+
+  const nextBin = path.join(process.cwd(), 'node_modules', 'next', 'dist', 'bin', 'next');
+  const hasBuild = fs.existsSync(path.join(process.cwd(), '.next'));
+  const nextCommand = hasBuild ? 'start' : 'dev';
+
+  const serverProc = spawn(process.execPath, [nextBin, nextCommand, '-p', String(testPort)], {
+    stdio: 'ignore',
+  });
+
+  let isReady = false;
+  for (let i = 0; i < 25; i++) {
+    await new Promise((r) => setTimeout(r, 400));
+    if (await probeUrl(testUrl)) {
+      isReady = true;
+      break;
+    }
+  }
+
+  if (!isReady) {
+    try {
+      serverProc.kill();
+    } catch {}
+    throw new Error(`Failed to initialize ephemeral server on ${testUrl} within 10s.`);
+  }
+
+  console.log(`✓ [RUNNER] Ephemeral test instance active on ${testUrl}\n`);
+  return { baseUrl: testUrl, serverProc };
+}
+
 // 2. Test Live HTTP Server Endpoints
 async function runHttpTests() {
-  const baseUrl = 'http://localhost:3000';
+  let spawnedServer = null;
 
   try {
+    const { baseUrl, serverProc } = await resolveBaseUrl();
+    spawnedServer = serverProc;
+
+    const cleanup = () => {
+      if (spawnedServer) {
+        try {
+          spawnedServer.kill();
+        } catch {}
+      }
+    };
+    process.on('SIGINT', cleanup);
+    process.on('SIGTERM', cleanup);
     // 2.1 Test Root Status
     const rootRes = await fetch(baseUrl);
     console.log(`✓ [HTTP 200] Root Web Application: Status ${rootRes.status} (Content-Length: ${rootRes.headers.get('content-length')} bytes)`);
@@ -175,15 +252,23 @@ async function runHttpTests() {
 
     // 2.11 Test Python 3.12 AI Engine (:8001)
     try {
-      const pyHealthRes = await fetch('http://localhost:8001/api/health');
-      if (pyHealthRes.ok) {
+      let pyUrl = 'http://127.0.0.1:8001';
+      let pyHealthRes = null;
+      try {
+        pyHealthRes = await fetch(`${pyUrl}/api/health`);
+      } catch {
+        pyUrl = 'http://localhost:8001';
+        pyHealthRes = await fetch(`${pyUrl}/api/health`);
+      }
+
+      if (pyHealthRes && pyHealthRes.ok) {
         const pyHealth = await pyHealthRes.json();
-        console.log(`✓ [PYTHON AI ENGINE] http://localhost:8001/api/health: Status ${pyHealth.status}`);
+        console.log(`✓ [PYTHON AI ENGINE] ${pyUrl}/api/health: Status ${pyHealth.status}`);
         console.log(`   - Engine: ${pyHealth.engine}`);
         console.log(`   - LibCST: v${pyHealth.libcst_version} • Scikit-Learn: v${pyHealth.scikit_learn_version}`);
         console.log(`   - Database: ${pyHealth.database} (${pyHealth.clusters_online} clusters online)`);
 
-        const pySabotageRes = await fetch('http://localhost:8001/api/sabotage/trigger', {
+        const pySabotageRes = await fetch(`${pyUrl}/api/sabotage/trigger`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ scenario_id: 'stripe-field-rename', provider: 'stripe' }),
@@ -191,7 +276,7 @@ async function runHttpTests() {
         const pySabotage = await pySabotageRes.json();
         console.log(`✓ [PYTHON LIBCST SURGERY] /api/sabotage/trigger: Wire rescued in ${pySabotage.protected.latency_ms}ms, AST patched with ${pySabotage.modifications_count} modifications`);
 
-        const pyMlRes = await fetch('http://localhost:8001/api/ml/cluster-anomalies', {
+        const pyMlRes = await fetch(`${pyUrl}/api/ml/cluster-anomalies`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -208,12 +293,12 @@ async function runHttpTests() {
         console.log(`✓ [PYTHON SCIKIT-LEARN DBSCAN] /api/ml/cluster-anomalies: Discovered ${pyMl.clusters_found} drift clusters, recommended ${pyMl.recommended_antibodies.length} antibodies`);
 
         // Test Python Unified Database Endpoints
-        const pyPathogensRes = await fetch('http://localhost:8001/api/pathogens');
+        const pyPathogensRes = await fetch(`${pyUrl}/api/pathogens`);
         const pyPathogensData = await pyPathogensRes.json();
-        console.log(`✓ [PYTHON DATABASE] http://localhost:8001/api/pathogens: Synced ${pyPathogensData.pathogens.length} pathogens from SQLite WAL`);
+        console.log(`✓ [PYTHON DATABASE] ${pyUrl}/api/pathogens: Synced ${pyPathogensData.pathogens.length} pathogens from SQLite WAL`);
       }
     } catch {
-      console.log('ℹ [PYTHON AI ENGINE] Python microservice offline or starting up on port 8001');
+      console.log('ℹ [PYTHON AI ENGINE] Python microservice in standby (:8001)');
     }
 
     // 2.12 Test Unified Immunix Core API
@@ -230,6 +315,12 @@ async function runHttpTests() {
   } catch (err) {
     console.error('❌ HTTP Test Error:', err);
     process.exit(1);
+  } finally {
+    if (spawnedServer) {
+      try {
+        spawnedServer.kill();
+      } catch {}
+    }
   }
 }
 
