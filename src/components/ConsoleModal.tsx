@@ -38,6 +38,26 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
   );
   const [injectionResult, setInjectionResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [savedKey] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('immunix_master_key');
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+  const [savedSlug] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('immunix_tenant_slug');
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
 
   // Live log simulation in the modal
   const [consoleLogs, setConsoleLogs] = useState<
@@ -160,8 +180,18 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
             </div>
           </div>
 
-          {/* Quick cluster selector */}
+          {/* Quick cluster selector & authenticated tenant badge */}
           <div className="flex items-center gap-3">
+            {savedSlug && (
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30 text-xs font-mono text-[#10B981]">
+                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                <span className="font-bold">TENANT: {savedSlug}</span>
+                {savedKey && (
+                  <span className="text-zinc-400 text-[10px]">({savedKey.substring(0, 10)}...)</span>
+                )}
+              </div>
+            )}
+
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs font-mono">
               <Server className="w-3.5 h-3.5 text-[#D4AF37]" />
               <select

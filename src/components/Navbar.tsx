@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Zap, ArrowRight, Menu, X } from 'lucide-react';
+import Link from 'next/link';
+import { Shield, Zap, ArrowRight, Menu, X, LayoutDashboard } from 'lucide-react';
 
 interface NavbarProps {
   onOpenConsole?: () => void;
@@ -98,6 +99,13 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             </span>
             <span className="font-bold text-[#10B981]">14,280</span> INOCULATED
           </div>
+          <Link
+            href="/dashboard"
+            className="text-xs font-mono font-bold text-[#0B0B0C] hover:text-[#997D25] px-3.5 py-2.5 rounded-xl border border-black/10 hover:border-[#D4AF37] hover:bg-[#FBFBF9] transition-all flex items-center gap-1.5"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Dashboard</span>
+          </Link>
           <a
             href="#break-my-api"
             className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-semibold text-xs tracking-wider uppercase hover:bg-black hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] transition-all flex items-center gap-2"
@@ -121,6 +129,14 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-[#D4AF37]/30 px-6 py-4 flex flex-col gap-4 shadow-xl">
+          <Link
+            href="/dashboard"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm font-bold text-[#0B0B0C] flex items-center gap-2 py-1"
+          >
+            <LayoutDashboard className="w-4 h-4 text-[#D4AF37]" />
+            Enterprise Dashboard
+          </Link>
           <a
             href="#break-my-api"
             onClick={() => setMobileMenuOpen(false)}

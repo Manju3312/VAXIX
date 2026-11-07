@@ -173,6 +173,23 @@ CREATE TABLE IF NOT EXISTS audit_requests (
 );
 
 -- ------------------------------------------------------------------------------
+-- 12. Stripe Payment Transactions & Sovereign Subscriptions
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS subscription_payments (
+    id VARCHAR(64) PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    stripe_payment_id VARCHAR(128) NOT NULL,
+    amount_cents INT NOT NULL,
+    currency VARCHAR(10) DEFAULT 'usd',
+    status VARCHAR(50) DEFAULT 'succeeded',
+    tier VARCHAR(50) NOT NULL,
+    card_brand VARCHAR(50) DEFAULT 'visa',
+    card_last4 VARCHAR(4) DEFAULT '4242',
+    access_pass_id VARCHAR(64) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ------------------------------------------------------------------------------
 -- PERFORMANCE INDICES
 -- ------------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_pg_api_keys_hash ON api_keys(key_hash);
@@ -185,3 +202,5 @@ CREATE INDEX IF NOT EXISTS idx_pg_herd_vaccines_hash ON herd_vaccines(vaccine_ha
 CREATE INDEX IF NOT EXISTS idx_pg_clusters_region ON clusters(region);
 CREATE INDEX IF NOT EXISTS idx_pg_sabotage_created ON sabotage_events(created_at);
 CREATE INDEX IF NOT EXISTS idx_pg_audit_requests_created ON audit_requests(created_at);
+CREATE INDEX IF NOT EXISTS idx_pg_payments_tenant ON subscription_payments(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_pg_payments_stripe_id ON subscription_payments(stripe_payment_id);
