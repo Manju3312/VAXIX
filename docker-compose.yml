@@ -1,0 +1,113 @@
+# ==============================================================================
+# IMMUNIX 5-TIER POLYGLOT DATA TOPOLOGY DOCKER STACK
+# Sovereign-Grade Enterprise Resilience Infrastructure
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # TIER 3 & 4: PostgreSQL 16 with pgvector (Transactional DB & Vector Memory)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: immunix-postgres-tier3
+    environment:
+      POSTGRES_DB: immunix_sovereign
+      POSTGRES_USER: immunix_admin
+      POSTGRES_PASSWORD: imx_dev_secret_vault_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./src/lib/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U immunix_admin -d immunix_sovereign"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - immunix-mesh
+
+  # ----------------------------------------------------------------------------
+  # TIER 1: Redis In-Memory Radix Trie (Sub-0.1ms Wire Antibody Hot-Cache)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: immunix-radix-trie-tier1
+    command: redis-server --appendonly yes --requirepass imx_redis_wire_hotcache_2026
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - immunix-mesh
+
+  # ----------------------------------------------------------------------------
+  # TIER 2: Redpanda Event Broker (Kafka-Compatible Low-Latency Telemetry)
+  # ----------------------------------------------------------------------------
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.2
+    container_name: immunix-eventbus-tier2
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --node-id 0
+      - --check=false
+    ports:
+      - "9092:9092"
+      - "9644:9644"
+    networks:
+      - immunix-mesh
+
+  # ----------------------------------------------------------------------------
+  # TIER 2: ClickHouse (High-Throughput Columnar Anomaly Store, 10:1 Compression)
+  # ----------------------------------------------------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: immunix-telemetry-tier2
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: immunix_telemetry
+      CLICKHOUSE_USER: immunix
+      CLICKHOUSE_PASSWORD: imx_clickhouse_secret_2026
+    volumes:
+      - chdata:/var/lib/clickhouse
+    networks:
+      - immunix-mesh
+
+  # ----------------------------------------------------------------------------
+  # IMMUNIX Sovereign Application: Next.js 16 (App Router + Turbopack + MCP)
+  # ----------------------------------------------------------------------------
+  immunix-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: immunix-sovereign-controlplane
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://immunix_admin:imx_dev_secret_vault_password_2026@postgres:5432/immunix_sovereign
+      REDIS_URL: redis://:imx_redis_wire_hotcache_2026@redis:6379
+      KAFKA_BROKERS: redpanda:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - immunix-mesh
+
+volumes:
+  pgdata:
+  redisdata:
+  chdata:
+
+networks:
+  immunix-mesh:
+    driver: bridge
