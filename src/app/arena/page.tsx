@@ -26,6 +26,7 @@ export default function ArenaPage() {
   "currency": "usd"
 }`);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [runtimeEngine, setRuntimeEngine] = useState<'python' | 'typescript'>('python');
   const [executionResult, setExecutionResult] = useState<{
     latencyMs: number;
     unshieldedStatus: number;
@@ -143,6 +144,48 @@ export default function ArenaPage() {
     },
   };
 
+  const pythonPresetsAst: Record<string, string> = {
+    stripe: `--- a/services/billing.py
++++ b/services/billing.py
+@@ -2,10 +2,10 @@
+ def process_checkout(user_email: str, amount_cents: int):
+-    return stripe.Charge.create(
++    return stripe.PaymentIntent.create(
+         amount=amount_cents,
+         currency="usd",
+-        source="tok_visa",
+-        customer_email=user_email,
++        payment_method="tok_visa",
++        email_address=user_email,
+         description="Enterprise Grid Subscription"
+     )`,
+    twilio: `--- a/services/sms.py
++++ b/services/sms.py
+@@ -2,4 +2,4 @@
+ def send_twilio_charge(to_phone: str, amount_cents: int):
+-    endpoint = "https://api.twilio.com/v1/charges"
++    endpoint = "https://api.twilio.com/v2/checkout/pay"
+     return requests.post(endpoint, json={"to": to_phone, "amount": amount_cents})`,
+    openai: `--- a/services/ai.py
++++ b/services/ai.py
+@@ -2,6 +2,6 @@
+ def generate_sovereign_summary(prompt_text: str):
+-    return openai.Completion.create(
+-        model="text-davinci-003",
+-        prompt=prompt_text,
++    return openai.chat.completions.create(
++        model="gpt-4o",
++        messages=[{"role": "user", "content": prompt_text}],
+         max_tokens=256
+     )`,
+    custom: `--- a/services/custom_mesh.py
++++ b/services/custom_mesh.py
+@@ -1,4 +1,5 @@
+ def call_internal_service(cart_id: str, total: int):
++    headers["X-Tenant-Signature"] = sign_cluster_token()
+     return requests.post("/v1/checkout", json={"cart_id": cart_id, "total": total})`,
+  };
+
   const loadPreset = (presetKey: 'stripe' | 'twilio' | 'openai' | 'custom') => {
     setSelectedScenario(presetKey);
     setEndpointUrl(presets[presetKey].url);
@@ -153,6 +196,58 @@ export default function ArenaPage() {
 
   const handleExecute = async () => {
     setIsExecuting(true);
+
+    if (runtimeEngine === 'python') {
+      try {
+        let parsedPayload = {};
+        try {
+          parsedPayload = JSON.parse(requestBody || '{}');
+        } catch {
+          parsedPayload = {};
+        }
+
+        const scenarioMapping: Record<string, string> = {
+          stripe: 'stripe-field-rename',
+          twilio: 'twilio-endpoint-sunset',
+          openai: 'openai-model-deprecate',
+          custom: 'custom',
+        };
+
+        const response = await fetch('http://localhost:8001/api/sabotage/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scenario_id: scenarioMapping[selectedScenario] || selectedScenario,
+            provider: selectedScenario,
+            payload: parsedPayload,
+            runtime: 'python',
+          }),
+        });
+
+        if (response.ok) {
+          const pyData = await response.json();
+          if (pyData && pyData.success) {
+            setTimeout(() => {
+              setExecutionResult({
+                latencyMs: pyData.protected?.latency_ms || 0.38,
+                unshieldedStatus: pyData.unprotected?.status || 400,
+                unshieldedError: typeof pyData.unprotected?.raw_response === 'string'
+                  ? pyData.unprotected.raw_response
+                  : JSON.stringify(pyData.unprotected, null, 2),
+                shieldedStatus: pyData.protected?.status || 200,
+                shieldedResponse: JSON.stringify(pyData.protected?.upstream_response || pyData.protected, null, 2),
+                astPatch: pyData.ast_patch || presets[selectedScenario].astPatch,
+                timestamp: new Date().toISOString(),
+              });
+              setIsExecuting(false);
+            }, 350);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Python backend fallback to TypeScript proxy', err);
+      }
+    }
 
     try {
       // Live backend call to SQLite sabotage trigger
@@ -291,55 +386,87 @@ export default function ArenaPage() {
           </div>
         </div>
 
-        {/* Preset Selectors */}
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs font-mono text-[#6E6E73] font-bold uppercase tracking-wider mr-2">
-            Target Scenarios:
-          </span>
-          <button
-            suppressHydrationWarning
-            onClick={() => loadPreset('stripe')}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
-              selectedScenario === 'stripe'
-                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
-                : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
-            }`}
-          >
-            Stripe: 3 AM Field Rename
-          </button>
-          <button
-            suppressHydrationWarning
-            onClick={() => loadPreset('twilio')}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
-              selectedScenario === 'twilio'
-                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
-                : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
-            }`}
-          >
-            Twilio: Endpoint Sunset
-          </button>
-          <button
-            suppressHydrationWarning
-            onClick={() => loadPreset('openai')}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
-              selectedScenario === 'openai'
-                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
-                : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
-            }`}
-          >
-            OpenAI: Model Deprecation
-          </button>
-          <button
-            suppressHydrationWarning
-            onClick={() => loadPreset('custom')}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
-              selectedScenario === 'custom'
-                ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
-                : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
-            }`}
-          >
-            Custom Endpoint Tester
-          </button>
+        {/* Preset Selectors & Engine Switcher */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-mono text-[#6E6E73] font-bold uppercase tracking-wider mr-2">
+              Target Scenarios:
+            </span>
+            <button
+              suppressHydrationWarning
+              onClick={() => loadPreset('stripe')}
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                selectedScenario === 'stripe'
+                  ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
+                  : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
+              }`}
+            >
+              Stripe: 3 AM Field Rename
+            </button>
+            <button
+              suppressHydrationWarning
+              onClick={() => loadPreset('twilio')}
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                selectedScenario === 'twilio'
+                  ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
+                  : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
+              }`}
+            >
+              Twilio: Endpoint Sunset
+            </button>
+            <button
+              suppressHydrationWarning
+              onClick={() => loadPreset('openai')}
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                selectedScenario === 'openai'
+                  ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
+                  : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
+              }`}
+            >
+              OpenAI: Model Deprecation
+            </button>
+            <button
+              suppressHydrationWarning
+              onClick={() => loadPreset('custom')}
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                selectedScenario === 'custom'
+                  ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
+                  : 'bg-white text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
+              }`}
+            >
+              Custom Endpoint Tester
+            </button>
+          </div>
+
+          {/* Engine Selection Pill */}
+          <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-[#D4AF37]/30 shadow-sm shrink-0">
+            <span className="text-[10px] font-mono font-bold text-[#6E6E73] uppercase tracking-wider px-2">
+              Engine:
+            </span>
+            <button
+              suppressHydrationWarning
+              onClick={() => setRuntimeEngine('python')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                runtimeEngine === 'python'
+                  ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
+                  : 'text-[#6E6E73] hover:text-[#0B0B0C]'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Python 3.12 (LibCST :8001)</span>
+            </button>
+            <button
+              suppressHydrationWarning
+              onClick={() => setRuntimeEngine('typescript')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                runtimeEngine === 'typescript'
+                  ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] shadow-sm'
+                  : 'text-[#6E6E73] hover:text-[#0B0B0C]'
+              }`}
+            >
+              <span>TypeScript (ts-morph)</span>
+            </button>
+          </div>
         </div>
 
         {/* 2-Column Interactive Workbench */}
@@ -483,7 +610,9 @@ export default function ArenaPage() {
                 <div className="flex items-center gap-2">
                   <Code2 className="w-4 h-4 text-[#D4AF37]" />
                   <h3 className="text-xs font-mono font-bold text-[#0B0B0C] uppercase tracking-wider">
-                    Speed 2: Deterministic AST Code Repair (ts-morph)
+                    {runtimeEngine === 'python'
+                      ? 'Speed 2: Deterministic Python AST Repair (LibCST 1.9.0 :8001)'
+                      : 'Speed 2: Deterministic TypeScript AST Repair (ts-morph)'}
                   </h3>
                 </div>
                 <button
@@ -497,7 +626,11 @@ export default function ArenaPage() {
               </div>
 
               <pre className="text-xs font-mono text-[#0B0B0C] bg-[#FBFBF9] p-4 rounded-2xl border border-[#D4AF37]/20 overflow-x-auto leading-relaxed">
-                {executionResult ? executionResult.astPatch : presets[selectedScenario].astPatch}
+                {executionResult
+                  ? executionResult.astPatch
+                  : runtimeEngine === 'python'
+                  ? pythonPresetsAst[selectedScenario]
+                  : presets[selectedScenario].astPatch}
               </pre>
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono pt-2">

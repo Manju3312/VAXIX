@@ -66,14 +66,14 @@ export default function Home() {
           onOpenDossier={() => setDossierModalOpen(true)}
         />
 
-        {/* 2. Canonical 3-Tier Architecture System Map (Exact User Specification) */}
-        <ArchitectureSystemMap />
+        {/* 2. Core Paradigm: Dual-Speed Biological Immune Engine */}
+        <DualSpeedEngine />
 
         {/* 3. BreakMyAPI Live Arena: 3:00 AM Sabotage Challenge */}
         <BreakMyApiArena />
 
-        {/* 4. Core Architecture: Dual-Speed Biological Immune Engine */}
-        <DualSpeedEngine />
+        {/* 4. Deep Technical Architecture: 3-Plane System Map & 5-Tier Data Topology */}
+        <ArchitectureSystemMap />
 
         {/* 5. Global Herd Immunity: Real-Time World Mesh & Inoculation Broadcast */}
         <GlobalHerdImmunity />

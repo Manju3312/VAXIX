@@ -48,3 +48,10 @@ data/*.sqlite-shm
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+*.py[cod]
+backend/.venv/
+.venv/
+venv/
