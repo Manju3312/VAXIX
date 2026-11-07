@@ -86,6 +86,32 @@ IMMUNIX operates as a biological immune network:
 
 ---
 
+## 🗄️ 5-Tier Polyglot Database Topology & DDL
+
+```
++──────────────────────────────────────────────────────────────────────────────────────────────────────────────+
+|                                    IMMUNIX 5-TIER DATA TOPOLOGY                                             |
++──────────────────────────────────────────────────────────────────────────────────────────────────────────────+
+  [ TIER 1: SUB-MILLISECOND L1 CACHE ]     ── WASM Radix Trie / Redis (<0.1ms wire antibody lookup)
+  [ TIER 2: HIGH-THROUGHPUT TELEMETRY ]    ── ClickHouse + Redpanda (Billions of wire events, 10:1 compression)
+  [ TIER 3: PRIMARY TRANSACTIONAL DB ]     ── PostgreSQL 16 (Tenants, contracts, PR tracking, ACID guarantee)
+  [ TIER 4: SEMANTIC VECTOR MEMORY ]       ── pgvector / Qdrant (Fuzzy schema drift embeddings)
+  [ TIER 5: DECENTRALIZED HERD LEDGER ]    ── Merkle-DAG + Ed25519 (Global peer-to-peer consensus)
++──────────────────────────────────────────────────────────────────────────────────────────────────────────────+
+```
+
+### PostgreSQL Production Schema (`src/lib/schema.sql`)
+The transactional tier enforces multi-tenant boundaries, zero-knowledge keys, antibody rules, and audited GitHub PR records:
+* `tenants`: Multi-tenant isolation with SLA warranty statuses.
+* `api_keys`: Argon2id salted secret hashes with strictly scoped permission arrays.
+* `monitored_providers`: Upstream vendor hosts (Stripe, Twilio, OpenAI, Salesforce) and specs.
+* `active_antibodies`: Sub-millisecond wire transformation rules (payload rewrite, url reroute).
+* `dna_repairs`: Deterministic ts-morph code patches and sandbox verification proofs.
+* `herd_vaccines`: Ed25519-signed vaccine bytecodes with Byzantine peer consensus.
+* `schema_vector_index`: 1536-dimensional OpenAI embeddings for fuzzy schema drift recognition.
+
+---
+
 ## 🎨 Ultra-Luxury Design Tokens
 
 | Token Name | Hex Code / Value | Visual Character & UI Role |
