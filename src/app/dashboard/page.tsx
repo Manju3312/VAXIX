@@ -35,7 +35,9 @@ export default function DashboardPage() {
     if (typeof window !== 'undefined') {
       try {
         const rawSession = localStorage.getItem('immunix_session');
-        if (rawSession) return JSON.parse(rawSession);
+        if (rawSession) {
+          return JSON.parse(rawSession);
+        }
         const demoSession: SessionData = {
           user: 'cto@sovereign-holdings.ch',
           role: 'Principal SRE & Infrastructure Architect',
@@ -119,9 +121,9 @@ export default function DashboardPage() {
   ]);
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
+    try {
       localStorage.removeItem('immunix_session');
-    }
+    } catch {}
     router.push('/login');
   };
 
@@ -196,6 +198,7 @@ export default function DashboardPage() {
 
             <button
               onClick={handleLogout}
+              suppressHydrationWarning
               className="p-2 rounded-xl text-[#6E6E73] hover:text-red-600 hover:bg-red-50 transition-colors"
               title="Sign Out"
             >
@@ -280,6 +283,7 @@ export default function DashboardPage() {
         {/* Dashboard Navigation Tabs */}
         <div className="flex border-b border-[#D4AF37]/20 gap-2 overflow-x-auto pb-1">
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('antibodies')}
             className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'antibodies'
@@ -292,6 +296,7 @@ export default function DashboardPage() {
           </button>
 
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('telemetry')}
             className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'telemetry'
@@ -304,6 +309,7 @@ export default function DashboardPage() {
           </button>
 
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('prs')}
             className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'prs'
@@ -316,6 +322,7 @@ export default function DashboardPage() {
           </button>
 
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('mesh')}
             className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'mesh'
@@ -328,6 +335,7 @@ export default function DashboardPage() {
           </button>
 
           <button
+            suppressHydrationWarning
             onClick={() => setActiveTab('keys')}
             className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'keys'
@@ -393,6 +401,7 @@ export default function DashboardPage() {
                         </td>
                         <td className="p-4 text-right">
                           <button
+                            suppressHydrationWarning
                             onClick={() => toggleAntibody(atb.id)}
                             className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
                               atb.status === 'active'
@@ -552,6 +561,7 @@ export default function DashboardPage() {
               </div>
 
               <button
+                suppressHydrationWarning
                 onClick={handleCreateKey}
                 className="px-4 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
               >
@@ -575,6 +585,7 @@ export default function DashboardPage() {
 
                   <div className="flex items-center gap-3">
                     <button
+                      suppressHydrationWarning
                       onClick={() => handleCopy(k.prefix, k.id)}
                       className="px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-xs font-mono text-[#0B0B0C] hover:border-[#D4AF37] flex items-center gap-1.5 transition-all cursor-pointer"
                     >
@@ -592,6 +603,7 @@ export default function DashboardPage() {
                     </button>
 
                     <button
+                      suppressHydrationWarning
                       onClick={() => handleDeleteKey(k.id)}
                       className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
                       title="Revoke Key"
