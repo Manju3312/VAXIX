@@ -5,9 +5,11 @@ import {
   Zap,
   Dna,
   Cpu,
-  GitBranch,
   CheckCircle2,
-  Radio,
+  UserCheck,
+  Shield,
+  GitPullRequest,
+  Box,
 } from 'lucide-react';
 
 export default function DualSpeedEngine() {
@@ -22,11 +24,11 @@ export default function DualSpeedEngine() {
             <Cpu className="w-3.5 h-3.5 text-[#D4AF37]" /> Core Sovereign Architecture
           </div>
           <h2 className="text-4xl sm:text-5xl font-heading font-black text-[#0B0B0C] tracking-tight">
-            The Dual-Speed Immune Engine
+            The Autonomous Immune Architecture
           </h2>
           <p className="mt-4 text-[#6E6E73] text-base sm:text-lg leading-relaxed">
-            Why traditional API monitoring and schema linters fail: alerts only tell you that production has crashed. 
-            IMMUNIX pairs sub-millisecond wire-level interception with deterministic codebase refactoring.
+            Why traditional API monitoring fails: alerts only tell you that production has crashed. 
+            IMMUNIX pairs zero-leak sensor telemetry with deterministic compiler AST refactoring and mandatory human review.
           </p>
         </div>
 
@@ -43,7 +45,7 @@ export default function DualSpeedEngine() {
               }`}
             >
               <Zap className="w-4 h-4 text-[#D4AF37]" />
-              <span>Speed 1: In-Flight Wire Inception (&lt; 0.4ms)</span>
+              <span>Layer 1: Sensor Proxy &amp; Redaction (&lt; 1ms)</span>
             </button>
 
             <button
@@ -56,7 +58,7 @@ export default function DualSpeedEngine() {
               }`}
             >
               <Dna className="w-4 h-4 text-[#D4AF37]" />
-              <span>Speed 2: Deterministic AST Repair</span>
+              <span>Layer 2: Deterministic AST Repair</span>
             </button>
 
             <button
@@ -68,8 +70,8 @@ export default function DualSpeedEngine() {
                   : 'text-[#6E6E73] hover:text-[#0B0B0C]'
               }`}
             >
-              <Radio className="w-4 h-4 text-[#D4AF37]" />
-              <span>Layer 3: Global Herd Immunity</span>
+              <UserCheck className="w-4 h-4 text-[#D4AF37]" />
+              <span>Layer 3: Mandatory Human Review Gate</span>
             </button>
           </div>
         </div>
@@ -81,81 +83,69 @@ export default function DualSpeedEngine() {
               <div className="lg:col-span-6 space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#10B981]/15 text-[#10B981] font-mono text-xs font-bold">
                   <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-                  0.38ms In-Flight Socket Latency
+                  &lt; 1.0ms Local Inspection Overhead
                 </div>
                 <h3 className="text-3xl font-heading font-black text-[#0B0B0C]">
-                  Wire-Time Socket Interception (eBPF + WASM)
+                  Zero-Leak Sensor Proxy &amp; Telemetry
                 </h3>
                 <p className="text-[#6E6E73] text-sm leading-relaxed">
-                  Attached directly to the Linux kernel socket buffer via safe eBPF kprobes, IMMUNIX inspects outbound HTTP/TLS responses in real time. 
-                  When an upstream vendor mutates an endpoint or renames a key, our WebAssembly byte-stream engine synthesizes a backwards-compatible bridge on the wire.
+                  Attached within the microservice process or local sidecar, the IMMUNIX Sensor wraps outbound HTTP/TLS calls. 
+                  It inspects unencrypted structural shapes before transmission and upon response receipt, detecting RFC 8594 Sunset/Deprecation headers while redacting all secrets and PII.
                 </p>
 
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Zero Customer Outage Window:</strong>
-                      <p className="text-xs text-[#6E6E73]">Your users never see an error modal; payments and checkout orders clear smoothly.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Safety-First Principle:</strong>
+                      <p className="text-xs text-[#6E6E73]">Live payment traffic is never modified in-flight. Requests proceed unmodified to upstream SaaS APIs.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Kernel-Safe Memory Sandboxing:</strong>
-                      <p className="text-xs text-[#6E6E73]">Verified by the standard Linux eBPF in-kernel verifier. Zero risk of kernel panic or memory corruption.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Zero-Leak Secret Redaction:</strong>
+                      <p className="text-xs text-[#6E6E73]">Stripe keys, JWT tokens, credit card PANs, and customer PII are scrubbed prior to log persistence.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Zero Data Storage / Pure Ephemeral:</strong>
-                      <p className="text-xs text-[#6E6E73]">Raw payload streams pass through without ever writing to disks or external relays.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">RFC 8594 Header Sentry:</strong>
+                      <p className="text-xs text-[#6E6E73]">Extracts Deprecation and Sunset headers to catch pending migrations months before vendor endpoints shut down.</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Graphic Flow Visual */}
+              {/* Wire Interception Visual Card */}
               <div className="lg:col-span-6 bg-[#0B0B0C] rounded-2xl p-6 border border-[#D4AF37]/40 text-white font-mono text-xs shadow-2xl space-y-4">
-                <div className="text-[#D4AF37] font-bold pb-2 border-b border-white/10 flex justify-between">
-                  <span>SOCKET EXECUTION LIFECYCLE</span>
-                  <span>TOTAL: 0.38ms</span>
+                <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[#D4AF37]">
+                  <span className="font-bold flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-[#10B981]" /> SENSOR INTERCEPTION TELEMETRY
+                  </span>
+                  <span className="text-[10px] text-white/50">NODE.JS / PYTHON PROXY</span>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                    <div>
-                      <div className="text-red-400 font-bold">1. Upstream Egress Received</div>
-                      <div className="text-[11px] text-white/50">Stripe sends 200 OK with mutated payload</div>
-                    </div>
-                    <span className="text-[#D4AF37]">0.00ms</span>
+                <div className="space-y-2 text-[11px]">
+                  <div className="text-white/40">{`// Outbound Client Request`}</div>
+                  <div className="text-white p-3 rounded-xl bg-white/5 border border-white/10">
+                    <span className="text-emerald-400 font-bold">POST</span> https://api.stripe.com/v1/payment_intents<br />
+                    <span className="text-white/60">Headers: Authorization: Bearer [REDACTED_STRIPE_KEY]</span><br />
+                    <span className="text-white/60">Body: {`{ "amount": 2500, "customer_email": "user@acme.com" }`}</span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-between">
-                    <div>
-                      <div className="text-[#D4AF37] font-bold">2. eBPF Hook Intercept</div>
-                      <div className="text-[11px] text-white/70">Signature mismatch captured by WASM ring</div>
-                    </div>
-                    <span className="text-[#10B981] font-bold">+0.12ms</span>
+                  <div className="text-white/40 pt-2">{`// Vendor Upstream Sentry (RFC 8594 Deprecation Header Detected)`}</div>
+                  <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200">
+                    <span className="text-amber-400 font-bold">HTTP 400 Bad Request</span><br />
+                    <span>Sunset: Wed, 01 Jan 2026 00:00:00 GMT</span><br />
+                    <span className="text-amber-300">Message: &quot;Field &apos;customer_email&apos; deprecated. Use &apos;email_address&apos;.&quot;</span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-between">
-                    <div>
-                      <div className="text-emerald-400 font-bold">3. In-Flight Bridge Synthesized</div>
-                      <div className="text-[11px] text-white/70">Legacy properties mapped, schema intact</div>
-                    </div>
-                    <span className="text-[#10B981] font-bold">+0.26ms</span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                    <div>
-                      <div className="text-white font-bold">4. Application User Space Delivery</div>
-                      <div className="text-[11px] text-white/50">Node.js / Go / Java receives expected schema</div>
-                    </div>
-                    <span className="text-white/60">Delivered</span>
+                  <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-[10px]">
+                    ✓ Pathogen Event Emitted ➔ Handed off to Deterministic AST Repair Engine
                   </div>
                 </div>
               </div>
@@ -166,14 +156,15 @@ export default function DualSpeedEngine() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-6 space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 text-blue-600 font-mono text-xs font-bold">
-                  <GitBranch className="w-3.5 h-3.5" />
-                  Deterministic AST Refactoring
+                  <Dna className="w-3.5 h-3.5 text-blue-500" />
+                  Deterministic Codebase Repair
                 </div>
                 <h3 className="text-3xl font-heading font-black text-[#0B0B0C]">
-                  Permanent Genetic Codebase Repair
+                  Compiler AST Code Surgeon
                 </h3>
                 <p className="text-[#6E6E73] text-sm leading-relaxed">
-                  Wire-time interception is an emergency shield, not a permanent architecture. Within seconds of an upstream mutation, IMMUNIX’s deterministic AST engine crawls your Git repositories, identifies every single call site, and generates a zero-hallucination Pull Request.
+                  Instead of unreliable LLM prompt generation, IMMUNIX performs deterministic compiler surgery. 
+                  Using <code>ts-morph</code> (TypeScript) and <code>LibCST</code> (Python), our engine visits syntax tree nodes directly, refactoring deprecated fields across all caller files with 0.0% hallucinations.
                 </p>
 
                 <div className="space-y-3 pt-2">
@@ -181,23 +172,23 @@ export default function DualSpeedEngine() {
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
                       <strong className="text-xs font-mono text-[#0B0B0C]">Zero LLM Hallucinations:</strong>
-                      <p className="text-xs text-[#6E6E73]">Built upon the TypeScript and Babel Compiler APIs. Every transform is mathematically provable.</p>
+                      <p className="text-xs text-[#6E6E73]">AST transformations are mathematically deterministic and validated by the compiler before being staged.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Unmocked Sandbox Probe:</strong>
-                      <p className="text-xs text-[#6E6E73]">Before any PR is created, the patch runs inside an isolated microVM against the live upstream staging target.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Isolated Docker Container Verification:</strong>
+                      <p className="text-xs text-[#6E6E73]">The patch is compiled and tested inside an isolated container runner against vendor sandboxes. Zero bare-metal KVM dependency.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">One-Click Merge & Clean Retirement:</strong>
-                      <p className="text-xs text-[#6E6E73]">Once the PR merges and deploys to production, the wire-level antibody automatically stands down.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Cryptographic Attestation:</strong>
+                      <p className="text-xs text-[#6E6E73]">Sandbox test passes are stamped with an Ed25519 cryptographic certificate accompanying the Pull Request.</p>
                     </div>
                   </div>
                 </div>
@@ -206,33 +197,36 @@ export default function DualSpeedEngine() {
               {/* Graphic Flow Visual */}
               <div className="lg:col-span-6 bg-[#0B0B0C] rounded-2xl p-6 border border-[#D4AF37]/40 text-white font-mono text-xs shadow-2xl space-y-4">
                 <div className="text-[#D4AF37] font-bold pb-2 border-b border-white/10 flex justify-between">
-                  <span>AST PIPELINE VERIFICATION</span>
-                  <span className="text-[#10B981]">PASSED 100%</span>
+                  <span>DETERMINISTIC AST SURGERY</span>
+                  <span className="text-[#10B981]">COMPILER VERIFIED</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                  <div className="text-[#D4AF37] font-bold">1. AST Crawler identifies 3 call sites:</div>
+                  <div className="text-[#D4AF37] font-bold">1. ts-morph / LibCST traverses repository:</div>
                   <div className="text-white/60 text-[11px] pl-3">
-                    • <code>src/services/billing.ts (Line 42)</code><br />
-                    • <code>src/workers/receiptWorker.ts (Line 18)</code><br />
-                    • <code>src/types/stripeEvents.d.ts (Line 89)</code>
+                    • <code>demo-app/src/billing.ts (Call site refactored)</code><br />
+                    • <code>source: token ➔ payment_method: token</code>
                   </div>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                  <div className="text-blue-400 font-bold">2. MicroVM Sandbox Probe:</div>
+                  <div className="text-blue-400 font-bold flex items-center gap-1.5">
+                    <Box className="w-3.5 h-3.5" /> 2. Isolated Container Sandbox:
+                  </div>
                   <div className="text-white/60 text-[11px] pl-3">
-                    • Spin ephemeral Firecracker VM in 18ms<br />
-                    • Run full unit & integration suite (48 tests)<br />
-                    • Staging endpoint test: HTTP 200 OK verified
+                    • Runs customer test suite in container runner (2.29ms)<br />
+                    • Vendor sandbox probe: 3/3 Tests Passed (HTTP 200 OK)<br />
+                    • Ed25519 attestation certificate generated
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 space-y-2">
-                  <div className="text-emerald-400 font-bold">3. GitHub PR Auto-Opened:</div>
+                <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 space-y-2">
+                  <div className="text-amber-400 font-bold flex items-center gap-1.5">
+                    <GitPullRequest className="w-3.5 h-3.5" /> 3. GitHub PR Opened (Human Review Required):
+                  </div>
                   <div className="text-white/70 text-[11px] pl-3">
-                    • Branch: <code>immunix/heal-stripe-v2026-03</code><br />
-                    • Reviewers auto-assigned with cryptographic audit trail
+                    • PR #414: <code>fix(stripe): adopt required schema</code><br />
+                    • Status: <strong>OPEN • Zero Auto-Merge Enforced</strong>
                   </div>
                 </div>
               </div>
@@ -242,74 +236,71 @@ export default function DualSpeedEngine() {
           {activeSpeed === 'herd' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-6 space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 text-[#997D25] font-mono text-xs font-bold">
-                  <Radio className="w-3.5 h-3.5" />
-                  Collective Defense Mesh
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 text-amber-600 font-mono text-xs font-bold">
+                  <UserCheck className="w-3.5 h-3.5" />
+                  Supply-Chain Security Firewall
                 </div>
                 <h3 className="text-3xl font-heading font-black text-[#0B0B0C]">
-                  Global Herd Immunity Network
+                  Mandatory Human Review Gate
                 </h3>
                 <p className="text-[#6E6E73] text-sm leading-relaxed">
-                  When a breaking change hits an enterprise in Tokyo at 3:00 AM, the first cluster synthesizes and proves the antibody. Within milliseconds, the cryptographically signed vaccine rule is synchronized to 14,280 clusters worldwide.
+                  Automated self-healing without human oversight creates a severe poisoned-fix supply-chain risk. 
+                  In IMMUNIX, every synthesized antibody MUST be reviewed and approved by an authorized engineer before it can merge into production.
                 </p>
 
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Pre-Emptive Inoculation:</strong>
-                      <p className="text-xs text-[#6E6E73]">Your clusters are protected before the upstream vendor’s phased rollout even reaches your region.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Zero Auto-Merge Policy:</strong>
+                      <p className="text-xs text-[#6E6E73]">Pull requests remain in OPEN status until a human reviewer inspects the AST diff and signs off.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Cryptographic Signature Verification:</strong>
-                      <p className="text-xs text-[#6E6E73]">Antibodies are signed with Ed25519 sovereign root keys to prevent rogue or poisoned rules.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Plain-English Explanations:</strong>
+                      <p className="text-xs text-[#6E6E73]">PRs include upstream vendor error reproduction, unified diff, and sandbox verification output.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-xs font-mono text-[#0B0B0C]">Zero Knowledge Sharing:</strong>
-                      <p className="text-xs text-[#6E6E73]">Only the abstract schema diff and WASM translation bytecode are propagated. No customer data or IP ever leaves the origin cluster.</p>
+                      <strong className="text-xs font-mono text-[#0B0B0C]">Tamper-Evident Immune Log:</strong>
+                      <p className="text-xs text-[#6E6E73]">Once merged, every action is logged into PostgreSQL / SQLite WAL with cryptographic hash chains.</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Graphic Flow Visual */}
-              <div className="lg:col-span-6 bg-[#0B0B0C] rounded-2xl p-6 border border-[#D4AF37]/40 text-white font-mono text-xs shadow-2xl space-y-4">
-                <div className="text-[#D4AF37] font-bold pb-2 border-b border-white/10 flex justify-between">
-                  <span>PEER-TO-PEER IMMUNE GOSSIP</span>
-                  <span className="text-[#10B981]">14,280 CLUSTERS</span>
+              {/* Human Approval Visual Card */}
+              <div className="lg:col-span-6 bg-[#0B0B0C] rounded-2xl p-6 border border-amber-500/50 text-white font-mono text-xs shadow-2xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10 text-amber-400">
+                  <span className="font-bold flex items-center gap-2">
+                    <UserCheck className="w-4 h-4 text-amber-400" /> HUMAN GOVERNANCE FIREWALL
+                  </span>
+                  <span className="text-[10px] text-amber-300">STRICT HUMAN REVIEW</span>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex justify-between text-[#D4AF37]">
-                      <span>Node: Tokyo-01 (Discovery)</span>
-                      <span>T+0.00ms</span>
-                    </div>
-                    <div className="text-white/60 text-[11px] mt-1">Discovered breaking Salesforce v59 mutation. Synthesized antibody #ATB-4819.</div>
-                  </div>
+                <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/40 text-amber-200 text-xs space-y-2">
+                  <div className="font-bold text-amber-400">🛡️ Anti-Poisoning Supply Chain Rule:</div>
+                  <p className="text-[11px] leading-relaxed text-amber-100/80">
+                    Fix rules cannot become active in production code without human authorization. The PR bot provides full visibility, and your CI/CD enforces branch protection.
+                  </p>
+                </div>
 
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex justify-between text-blue-400">
-                      <span>Broadcast: Frankfurt-04 (Inoculated)</span>
-                      <span>T+2.40ms</span>
-                    </div>
-                    <div className="text-white/60 text-[11px] mt-1">Vaccine rule received & verified via Ed25519 consensus.</div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="text-white font-bold flex items-center justify-between">
+                    <span>Audit Trail Record:</span>
+                    <span className="text-[#10B981] text-[10px]">VERIFIED_AND_SIGNED</span>
                   </div>
-
-                  <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40">
-                    <div className="flex justify-between text-emerald-400 font-bold">
-                      <span>Node: NewYork-Primary (Inoculated)</span>
-                      <span>T+3.80ms</span>
-                    </div>
-                    <div className="text-white/70 text-[11px] mt-1">Inoculated 6 hours before provider’s US-East rollout hit. 0 downtime.</div>
+                  <div className="text-white/60 text-[11px] space-y-1">
+                    <div>• Reviewer: <code>cto@sovereign-holdings.ch</code></div>
+                    <div>• Action: <code>MERGED_TO_MAIN (Squash &amp; Merge)</code></div>
+                    <div>• Certificate: <code>ed25519_cert_93fb6d_verified</code></div>
+                    <div>• Primary Storage: <code>PostgreSQL / SQLite WAL</code></div>
                   </div>
                 </div>
               </div>
@@ -320,4 +311,3 @@ export default function DualSpeedEngine() {
     </section>
   );
 }
-

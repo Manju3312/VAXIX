@@ -21,7 +21,7 @@ const vendors: VendorStatus[] = [
     id: 'stripe',
     name: 'Stripe Payments',
     category: 'Payment Infrastructure',
-    currentVersion: 'v2026-03-01',
+    currentVersion: '2025-03-31.basil',
     inoculationStatus: '100% Inoculated',
     meanLatency: '0.34ms',
     activeAntibodiesCount: 3,

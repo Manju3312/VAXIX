@@ -37,8 +37,8 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-[#6E6E73] max-w-2xl leading-relaxed font-sans">
-              IMMUNIX transforms fragile microservices into self-healing biological organisms. 
-              Sub-millisecond wire antibody interception prevents outages in-flight, while AST codemods patch production code with zero hallucinations.
+              IMMUNIX intercepts upstream SaaS schema drift and breaking contract mutations before they cause outages. 
+              Zero-leak sensor telemetry, deterministic AST code refactoring, and human-verified pull requests keep your integrations robust.
             </p>
 
             {/* CTAs */}
@@ -52,10 +52,10 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
               </Link>
 
               <a
-                href="#benchmark"
+                href="#system-architecture-map"
                 className="px-8 py-4 rounded-xl bg-white text-[#0B0B0C] border border-[#D4AF37]/40 font-bold text-sm tracking-wider uppercase hover:border-[#D4AF37] hover:bg-[#FBFBF9] transition-all"
               >
-                Inspect Benchmark
+                Inspect Architecture
               </a>
 
               {onOpenDossier && (
@@ -72,16 +72,16 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
             {/* Trust Strip */}
             <div className="mt-14 pt-8 border-t border-[#D4AF37]/20 w-full grid grid-cols-3 gap-6">
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-[#0B0B0C] font-mono">&lt; 0.8ms</div>
-                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">Wire In-Flight Rescue</div>
+                <div className="text-2xl sm:text-3xl font-black text-[#0B0B0C] font-mono">&lt; 1.0ms</div>
+                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">Local Sensor Overhead</div>
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-black text-[#997D25] font-mono">0.0%</div>
                 <div className="text-xs text-[#6E6E73] font-medium mt-0.5">LLM Hallucinations (AST)</div>
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-[#0B0B0C] font-mono">100%</div>
-                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">Zero-Downtime Guarantee</div>
+                <div className="text-2xl sm:text-3xl font-black text-[#10B981] font-mono">100%</div>
+                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">Human Approval Required</div>
               </div>
             </div>
           </div>

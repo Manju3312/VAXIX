@@ -693,8 +693,8 @@ export default function ArenaPage() {
                   <Code2 className="w-4 h-4 text-[#D4AF37]" />
                   <h3 className="text-xs font-mono font-bold text-[#0B0B0C] uppercase tracking-wider">
                     {runtimeEngine === 'python'
-                      ? 'Speed 2: Deterministic Python AST Repair (LibCST 1.9.0 :8001)'
-                      : 'Speed 2: Deterministic TypeScript AST Repair (ts-morph)'}
+                      ? 'Deterministic Python AST Repair (LibCST :8001)'
+                      : 'Deterministic TypeScript AST Repair (ts-morph)'}
                   </h3>
                 </div>
                 <button

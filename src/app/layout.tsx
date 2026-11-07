@@ -26,14 +26,13 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "IMMUNIX | The Autonomous Software Immune Network",
   description:
-    "Sovereign-grade resilience for the global API economy. Immunix intercepts upstream schema drift and breaking contract mutations in 0.4ms wire-time, repairing codebases deterministically with zero downtime.",
+    "Autonomous immune system for third-party API integrations. Immunix detects upstream SaaS schema drift, contains damage early, and automatically generates verified AST pull requests with mandatory human review.",
   keywords: [
     "API Resilience",
     "Autonomous Immune System",
-    "Zero Downtime",
-    "eBPF Proxy",
+    "Schema Drift Detection",
     "AST Codemod",
-    "Model Context Protocol",
+    "Human in the Loop PR",
     "Enterprise Software",
   ],
   authors: [{ name: "IMMUNIX Sovereign Defense Labs" }],
@@ -43,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "IMMUNIX | The Autonomous Software Immune Network",
     description:
-      "World's first autonomous immune system for cloud software. 0.4ms in-flight wire inception, automated AST repair, global herd immunity.",
+      "Your integrations, immune to vendor surprises. Detects upstream SaaS drift early, contains damage, and generates tested pull requests for humans to approve.",
     url: "https://immunix.network",
     siteName: "IMMUNIX Network",
     locale: "en_US",

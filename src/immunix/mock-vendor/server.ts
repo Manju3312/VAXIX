@@ -81,7 +81,7 @@ export class MockVendorServer {
                   'Content-Type': 'application/json',
                   'Deprecation': '@1735689600',
                   'Sunset': 'Wed, 01 Jan 2026 00:00:00 GMT',
-                  'Stripe-Version': '2026-03-01',
+                  'Stripe-Version': '2025-03-31.basil',
                 });
                 res.end(
                   JSON.stringify({

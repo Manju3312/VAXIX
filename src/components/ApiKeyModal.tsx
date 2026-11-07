@@ -663,7 +663,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                     </span>
                   </div>
                   <div className="text-[11px] text-[#6E6E73]">
-                    FastAPI AST Surgery • LibCST 1.9.0 • Scikit-learn DBSCAN Anomaly Clustering
+                    FastAPI AST Surgery • LibCST Engine • Scikit-learn DBSCAN Anomaly Clustering
                   </div>
                   <div className="text-[10px] text-[#D4AF37]">
                     Endpoint: <code className="text-white">http://localhost:8001/docs</code>

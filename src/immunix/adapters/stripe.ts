@@ -62,7 +62,7 @@ export const stripeAdapter: VendorAdapter = {
       isDeprecated,
       sunsetDate: sunset || undefined,
       warningMessage: isDeprecated
-        ? `Stripe API version ${stripeVersion || 'v2020-08-27'} deprecated. Sunset date: ${sunset || 'Immediate'}`
+        ? `Stripe API version ${stripeVersion || '2025-03-31.basil'} deprecated. Sunset date: ${sunset || 'Immediate'}`
         : undefined,
     };
   },

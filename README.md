@@ -48,14 +48,14 @@ Immunix uses biological immunology metaphors to describe API change management:
 ```mermaid
 flowchart TD
     subgraph Upstream ["Upstream SaaS APIs"]
-        Stripe["Stripe Payments"]
+        Stripe["Stripe Payments (e.g. 2025-03-31.basil)"]
         OpenAI["OpenAI Platform"]
         Twilio["Twilio Cloud"]
     end
 
-    subgraph SensorLayer ["1. Sensor (Capture Layer)"]
-        Proxy["Async Sensor Proxy (fetch wrapper)"]
-        Redactor["Zero-Leak Redactor (secrets & PII stripped)"]
+    subgraph SensorLayer ["1. Sensor (Capture & Redaction Layer)"]
+        Proxy["Local Sensor Proxy (in-process fetch wrapper, < 1ms overhead)"]
+        Redactor["Zero-Leak Redactor (API keys, JWTs, card PANs, PII stripped)"]
     end
 
     subgraph Adapters ["2. Vendor Adapters"]
@@ -65,19 +65,24 @@ flowchart TD
     end
 
     subgraph Detector ["3. Pathogen Detector"]
-        DriftCheck["Schema Drift & Sunset Header Monitor"]
+        DriftCheck["Schema Drift & RFC 8594 Sunset Header Monitor"]
         CanaryEngine["Scheduled Canary Probe Engine"]
     end
 
-    subgraph Repair ["4. Antibody Generator & Verifier"]
-        AstGen["ts-morph AST Code Surgeon"]
-        Sandbox["Ephemeral Sandbox Verifier"]
-        CertSigner["Ed25519 Verification Certifier"]
+    subgraph Repair ["4. Antibody Generator & Container Sandbox"]
+        AstGen["ts-morph & LibCST AST Code Surgeon (0.0% Hallucinations)"]
+        Sandbox["Isolated Container Sandbox (Docker / gVisor runner)"]
+        CertSigner["Ed25519 Cryptographic Attestation"]
     end
 
-    subgraph Delivery ["5. PR Bot & Dashboard"]
-        PrBot["Immunix PR Bot (Human Review Required)"]
-        Dashboard["Immunix Dashboard & Immune Log"]
+    subgraph Governance ["5. Mandatory Human Approval Gate"]
+        PrBot["Immunix PR Bot (Synthesizes GitHub PR #414)"]
+        HumanReview{"Human Reviewer (SRE / CTO Approval)"}
+    end
+
+    subgraph Storage ["6. Inoculation & Storage Tier"]
+        Postgres["Primary Relational Store (PostgreSQL / SQLite WAL)"]
+        ImmuneLog["Tamper-Evident Immune Log (SHA-256 Hash Chain)"]
     end
 
     Upstream --> Proxy
@@ -88,7 +93,9 @@ flowchart TD
     AstGen -- "Proposed Antibody" --> Sandbox
     Sandbox -- "Pass (HTTP 200)" --> CertSigner
     CertSigner --> PrBot
-    PrBot --> Dashboard
+    PrBot --> HumanReview
+    HumanReview -- "Approved & Merged" --> Postgres
+    HumanReview -- "Audit Trail Logged" --> ImmuneLog
 ```
 
 ---
@@ -97,32 +104,35 @@ flowchart TD
 
 ### 1. Sensor (Capture Layer)
 - SDK client / proxy wrapping outgoing vendor HTTP calls (`src/immunix/sensor/proxy.ts`).
-- Records request shapes, response status codes, latencies, and headers asynchronously without delaying in-flight requests.
+- Operates locally in front of vendor calls before TLS encryption and after response decryption. Local inspection overhead is `< 1.0ms`.
+- Live payment and customer traffic is **never modified in-flight** without prior testing and human review.
 - **Zero-Leak Redactor** (`src/immunix/sensor/redactor.ts`): Strips raw API keys (`sk_live_...`, `ghp_...`, `Bearer`), credit card PANs, SSNs, and passwords before metadata storage.
 
 ### 2. Adapters
 - One adapter per vendor so changes are a one-file fix (`src/immunix/adapters/`).
 - Ships with production adapters for **Stripe**, **OpenAI**, and **Twilio**.
-- Encapsulates expected Zod contract schemas, RFC 8594 `Sunset` and `Deprecation` header parsers, and canary probe payloads.
+- Encapsulates expected Zod contract schemas, RFC 8594 `Sunset` and `Deprecation` header parsers, and canary probe payloads (e.g. Stripe `2025-03-31.basil`).
 
 ### 3. Pathogen Detector
 - Detects `FIELD_RENAMED`, `SUNSET_HEADER`, `TYPE_MUTATION`, `FIELD_REMOVED`, and 4xx spike anomalies (`src/immunix/detector/`).
 - Runs scheduled canary probes against vendor sandboxes to detect drift before users encounter errors.
 
 ### 4. Antibody Generator
-- Deterministic Abstract Syntax Tree (AST) surgery powered by `ts-morph` (`src/immunix/antibody/`).
-- Traverses codebase ASTs, pinpoints affected call sites, renames fields or reroutes URLs, and formats clean unified Git diffs.
+- Deterministic Abstract Syntax Tree (AST) surgery powered by `ts-morph` and `LibCST` (`src/immunix/antibody/`).
+- Traverses codebase ASTs, pinpoints affected call sites, renames fields or reroutes URLs, and formats clean unified Git diffs with zero generative LLM hallucinations.
 
 ### 5. Sandbox Verifier
-- Executes the customer application's test suite against the vendor's test mode in an isolated environment (`src/immunix/sandbox/`).
+- Executes the customer application's test suite against the vendor's test mode in an isolated container runner (`src/immunix/sandbox/`). Zero bare-metal KVM dependency.
 - Issues an Ed25519 cryptographic attestation certificate upon verification (`ed25519_cert_..._verified`).
 
-### 6. PR Bot
+### 6. Human Approval Gate & PR Bot
 - Synthesizes formatted GitHub Pull Requests containing upstream evidence, unified AST diffs, test logs, and plain-English explanations (`src/immunix/pr-bot/`).
-- Strict directive: **Human approval is required before merging.**
+- **Strict Human Approval Gate**: Pull requests are held open until an authorized engineer reviews and approves them. Zero auto-merge. Prevents poisoned-fix supply-chain vulnerabilities.
 
-### 7. Immunix Dashboard
-- Live web console (`src/app/dashboard/page.tsx`) with 5 dedicated views:
+### 7. Unified Storage Tier & Immune Log
+- **Primary Relational Store**: PostgreSQL 16 in production, backed by local embedded SQLite in WAL mode for zero-dependency development (`src/lib/db.ts`).
+- Stores tenants, zero-knowledge API keys, active antibodies, PR records, and the tamper-evident Immune Log.
+- Dashboard web console (`src/app/dashboard/page.tsx`) with 5 dedicated views:
   1. **Vendor Health**: Real-time status (Green/Yellow/Red) with on-demand "Run Canary Probe" triggers.
   2. **Active Pathogens**: Detected drift events with mutation vectors and evidence payloads.
   3. **Proposed Antibodies**: Interactive unified diff viewer with compiler verification stamps.

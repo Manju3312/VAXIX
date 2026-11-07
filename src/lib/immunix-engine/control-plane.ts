@@ -178,7 +178,7 @@ export interface SandboxVerificationReport {
 
 export function runEphemeralSandboxVerifier(service: string): SandboxVerificationReport {
   return {
-    sandboxId: `vm_firecracker_${Math.random().toString(36).substring(2, 7)}`,
+    sandboxId: `container_runner_docker_${Math.random().toString(36).substring(2, 7)}`,
     targetStagingUrl: `https://staging.${service.toLowerCase().replace(/[^a-z]/g, '')}.com/v2/verify`,
     testsRun: 48,
     testsPassed: 48,

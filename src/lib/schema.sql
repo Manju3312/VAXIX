@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS provider_vault (
     circuit_breaker VARCHAR(64) NOT NULL DEFAULT 'CLOSED_SHIELDED',
     health_score INT NOT NULL DEFAULT 99,
     mean_latency_ms REAL NOT NULL DEFAULT 0.32,
-    upstream_version VARCHAR(64) NOT NULL DEFAULT 'v2026-03',
+    upstream_version VARCHAR(64) NOT NULL DEFAULT '2025-03-31.basil',
     env_var VARCHAR(64) NOT NULL,
     last_verified TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

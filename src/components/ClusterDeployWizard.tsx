@@ -87,14 +87,14 @@ helm install immunix-mesh immunix/ebpf-agent \\
   --set resources.limits.cpu="200m" \\
   --set resources.limits.memory="256Mi"
 
-# Verify eBPF Kprobe Attachment
+# Verify Sensor Agent Deployment
 kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=immunix-agent`,
     },
     terraform: {
       title: 'Terraform AWS EKS / GCP GKE Module',
       filename: 'main.tf',
       code: `module "immunix_sovereign_mesh" {
-  source  = "immunix/ebpf-agent/kubernetes"
+  source  = "immunix/sensor-agent/kubernetes"
   version = "~> 4.2.0"
 
   cluster_name       = "enterprise-core-eks"
@@ -102,8 +102,8 @@ kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=immunix-a
   environment        = "production"
   
   # Sovereign Defense Parameters
-  enable_ebpf_socket_interception = true
-  ebpf_latency_budget_ms          = 0.4
+  enable_sensor_proxy             = true
+  sensor_inspection_overhead_ms   = 1.0
   zero_payload_retention          = true
   global_herd_immunity_sync       = true
   
@@ -117,10 +117,10 @@ kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=immunix-a
 }`,
     },
     systemd: {
-      title: 'Bare-Metal Linux Systemd eBPF Bootstrap',
+      title: 'Bare-Metal Linux Systemd Agent Bootstrap',
       filename: 'immunix-agent.service',
       code: `[Unit]
-Description=IMMUNIX Autonomous eBPF Kernel Mesh Agent
+Description=IMMUNIX Autonomous Software Immune Agent
 After=network.target
 Documentation=https://immunix.network/docs/architecture
 
@@ -128,7 +128,7 @@ Documentation=https://immunix.network/docs/architecture
 Type=simple
 User=root
 WorkingDirectory=/opt/immunix
-ExecStart=/opt/immunix/bin/immunix-agent --cluster-id=baremetal-${clusterNamespace} --ebpf-mode=kprobe
+ExecStart=/opt/immunix/bin/immunix-agent --cluster-id=baremetal-${clusterNamespace} --mode=proxy
 Restart=always
 RestartSec=3s
 LimitMEMLOCK=infinity

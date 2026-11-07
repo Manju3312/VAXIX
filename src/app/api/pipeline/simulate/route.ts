@@ -144,6 +144,12 @@ export async function POST(req: NextRequest) {
               status: 'PR_OPENED_ON_GITHUB',
               pr: prResult,
             },
+            humanApprovalGate: {
+              status: 'HUMAN_REVIEW_REQUIRED',
+              policy: 'STRICT_ZERO_AUTO_MERGE',
+              reviewer: 'cto@sovereign-holdings.ch',
+              notice: 'Human engineer must review and approve AST diff before merge.',
+            },
           },
         },
         globalHerdMesh: {

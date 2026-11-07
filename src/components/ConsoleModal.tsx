@@ -66,12 +66,12 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
     {
       timestamp: '05:22:14.102',
       level: 'INFO',
-      message: 'Cluster aws-us-east-1 connected via eBPF kprobe v6.8.0-45',
+      message: 'Sensor Proxy active: Zero-leak HTTP client interceptor initialized',
     },
     {
       timestamp: '05:22:15.340',
       level: 'SHIELD',
-      message: 'Antibody #ATB-892 active: Stripe /v1/charges ➔ /v2/checkout/pay translation mapped (0.32ms)',
+      message: 'Pathogen Detector armed: Monitoring Stripe, OpenAI, and Twilio contracts',
     },
     {
       timestamp: '05:22:16.892',

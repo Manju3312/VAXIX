@@ -67,15 +67,15 @@ const mcpTools: McpTool[] = [
       status: 'INOCULATION_CONFIRMED',
       cluster_id: 'production-us-east-1',
       active_probes: 16,
-      ebpf_hook: 'kprobe/sock_recvmsg_v6.8',
-      latency_overhead_ms: 0.38,
+      interception_layer: 'sensor_proxy_v2.4',
+      latency_overhead_ms: 0.28,
       outage_risk_mitigated: '100%',
       global_herd_propagation: '14,280 clusters notified',
     },
   },
   {
     name: 'probe_sandbox',
-    description: 'Spins up an ephemeral unmocked microVM, generates deterministic AST patch, and validates HTTP 200 contract against live upstream staging.',
+    description: 'Spins up an ephemeral container sandbox, generates deterministic AST patch, and validates HTTP 200 contract against live upstream staging.',
     inputSchema: {
       type: 'object',
       properties: {

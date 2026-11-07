@@ -366,8 +366,8 @@ export default function GlobalHerdImmunity() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-white/80 leading-relaxed text-[11px]">
-                <strong className="text-[#D4AF37] block mb-1">Kernel eBPF Probe Status:</strong>
-                Active kprobe hooks attached to socket ring buffer. Zero packet drop, 100% SLA maintained.
+                <strong className="text-[#D4AF37] block mb-1">Sensor Proxy Status:</strong>
+                Zero-leak client proxy attached. Outbound traffic monitored, zero secrets retained, 100% SLA maintained.
               </div>
             </div>
 
