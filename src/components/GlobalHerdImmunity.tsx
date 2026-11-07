@@ -180,7 +180,8 @@ export default function GlobalHerdImmunity() {
   };
 
   return (
-    <section id="herd-immunity" className="py-24 bg-[#0B0B0C] text-white relative overflow-hidden">
+    <section id="herd-immunity" className="py-24 bg-[#0B0B0C] text-white relative overflow-hidden scroll-mt-20">
+      <div id="global-herd-immunity" className="absolute -top-20 left-0" />
       {/* Background radial gold glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-r from-[#D4AF37]/15 via-[#997D25]/10 to-transparent blur-[140px] pointer-events-none" />
 

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { Shield, Lock, ArrowRight, Sparkles, AlertCircle, KeyRound, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tokenNotice, setTokenNotice] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +41,15 @@ export default function LoginPage() {
   const handleDemoAutofill = () => {
     setEmail('cto@sovereign-holdings.ch');
     setPassword('SovereignPasskey_2026');
+    setTokenNotice('Demo CTO passkey credentials populated.');
+    setTimeout(() => setTokenNotice(null), 4000);
+  };
+
+  const handleHardwareTokenAutofill = () => {
+    setEmail('ciso-yubikey@sovereign-holdings.ch');
+    setPassword('yubikey-fips-sovereign-9921');
+    setTokenNotice('FIPS 140-3 YubiKey Authenticator detected & synchronized.');
+    setTimeout(() => setTokenNotice(null), 5000);
   };
 
   return (
@@ -111,9 +121,14 @@ export default function LoginPage() {
                 <label className="text-xs font-mono font-bold text-[#0B0B0C]">
                   Sovereign Passkey / Password:
                 </label>
-                <a href="#" className="text-[11px] text-[#997D25] font-mono hover:underline">
-                  Hardware Token?
-                </a>
+                <button
+                  type="button"
+                  onClick={handleHardwareTokenAutofill}
+                  className="text-[11px] text-[#997D25] font-mono hover:underline cursor-pointer flex items-center gap-1"
+                >
+                  <KeyRound className="w-3 h-3 text-[#D4AF37]" />
+                  <span>Hardware Token?</span>
+                </button>
               </div>
               <input
                 type="password"
@@ -125,6 +140,13 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#FBFBF9] text-xs font-mono text-[#0B0B0C] focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
               />
             </div>
+
+            {tokenNotice && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-mono flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>{tokenNotice}</span>
+              </div>
+            )}
 
             <button
               type="submit"

@@ -40,7 +40,7 @@ export default function SovereignCompliance({ onOpenAudit }: ComplianceProps) {
   ];
 
   return (
-    <section className="py-24 bg-[#FBFBF9] border-t border-[#D4AF37]/25 relative">
+    <section id="sovereign-compliance" className="py-24 bg-[#FBFBF9] border-t border-[#D4AF37]/25 relative scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   Zap,
@@ -14,6 +15,8 @@ import {
   Sparkles,
   Cpu,
   CreditCard,
+  LayoutDashboard,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -33,6 +36,7 @@ export default function CommandPalette({
   onOpenDossier,
   onOpenCheckout,
 }: CommandPaletteProps) {
+  const router = useRouter();
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -67,13 +71,29 @@ export default function CommandPalette({
       category: 'Simulations',
       action: () => {
         onClose();
-        document.getElementById('breakmyapi-arena')?.scrollIntoView({ behavior: 'smooth' });
+        const el = document.getElementById('break-my-api') || document.getElementById('breakmyapi-arena');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          router.push('/arena');
+        }
+      },
+    },
+    {
+      id: 'dashboard',
+      title: 'Open Enterprise Mission Control Dashboard',
+      subtitle: 'Inspect live eBPF telemetry, active antibodies, and DNA repairs',
+      icon: LayoutDashboard,
+      category: 'Operations',
+      action: () => {
+        onClose();
+        router.push('/dashboard');
       },
     },
     {
       id: 'console',
-      title: 'Launch Sovereign Mesh Console',
-      subtitle: 'Inspect live eBPF kprobes, active antibodies, and socket stream',
+      title: 'Launch Sovereign HUD Inspector',
+      subtitle: 'Quick in-page diagnostics overlay (press `~` backtick anywhere)',
       icon: Terminal,
       category: 'Operations',
       action: () => {
@@ -89,7 +109,7 @@ export default function CommandPalette({
       category: 'Mesh',
       action: () => {
         onClose();
-        document.getElementById('global-herd-immunity')?.scrollIntoView({ behavior: 'smooth' });
+        (document.getElementById('herd-immunity') || document.getElementById('global-herd-immunity'))?.scrollIntoView({ behavior: 'smooth' });
       },
     },
     {
@@ -101,6 +121,17 @@ export default function CommandPalette({
       action: () => {
         onClose();
         document.getElementById('cluster-deploy-wizard')?.scrollIntoView({ behavior: 'smooth' });
+      },
+    },
+    {
+      id: 'compliance',
+      title: 'View Sovereign Compliance & Audits',
+      subtitle: 'SOC2 Type II, ISO/IEC 27001, and Zero-Knowledge governance',
+      icon: ShieldCheck,
+      category: 'Security',
+      action: () => {
+        onClose();
+        document.getElementById('sovereign-compliance')?.scrollIntoView({ behavior: 'smooth' });
       },
     },
     {

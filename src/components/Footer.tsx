@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Shield, Terminal, Lock, Cpu } from 'lucide-react';
 
 interface FooterProps {
@@ -16,12 +17,12 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
         {/* Top: MCP & CLI Protocols */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-white/10">
           <div className="lg:col-span-5 flex flex-col items-start">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-3 mb-4 group">
+              <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Shield className="w-4 h-4 text-[#0B0B0C]" />
               </div>
               <span className="font-black text-xl tracking-wider text-white font-display">IMMUNIX</span>
-            </div>
+            </Link>
 
             <p className="text-[#6E6E73] text-sm leading-relaxed max-w-sm">
               The world’s first autonomous immune network for cloud software. Protecting the global digital economy from upstream contract entropy.
@@ -51,17 +52,26 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
               <div>• <span className="font-bold text-[#D4AF37]">probe_sandbox</span>(pr_number: 42) ── Execute unmocked synthetic verification probe</div>
             </div>
 
-            {onOpenConsole && (
-              <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
-                <button
-                  suppressHydrationWarning
-                  onClick={onOpenConsole}
-                  className="px-3 py-1.5 rounded-lg bg-[#0B0B0C] border border-[#D4AF37]/40 text-[#D4AF37] hover:border-[#D4AF37] text-[11px] transition-colors cursor-pointer"
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+              <span className="text-[10px] text-white/40">Quick inspect: Press `~` backtick anywhere</span>
+              <div className="flex items-center gap-2">
+                {onOpenConsole && (
+                  <button
+                    suppressHydrationWarning
+                    onClick={onOpenConsole}
+                    className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/20 text-[#6E6E73] hover:text-white text-[11px] transition-colors cursor-pointer"
+                  >
+                    Quick HUD
+                  </button>
+                )}
+                <Link
+                  href="/dashboard"
+                  className="px-3 py-1.5 rounded-lg bg-[#0B0B0C] border border-[#D4AF37]/40 text-[#D4AF37] hover:border-[#D4AF37] text-[11px] transition-colors cursor-pointer inline-flex items-center gap-1.5 font-bold"
                 >
-                  Launch Live MCP Console &gt;_
-                </button>
+                  Enterprise Dashboard &gt;_
+                </Link>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -69,10 +79,10 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#6E6E73] font-sans">
           <div>© 2026 IMMUNIX Network, Inc. Sovereign Cloud Standard. All rights reserved.</div>
           <div className="flex items-center gap-6 mt-4 sm:mt-0 font-medium">
-            <a href="#" className="hover:text-white transition-colors">Security Disclosures</a>
-            <a href="#" className="hover:text-white transition-colors">Zero-Knowledge Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Mesh</a>
+            <a href="#sovereign-compliance" className="hover:text-white transition-colors">Security Disclosures</a>
+            <a href="#sovereign-compliance" className="hover:text-white transition-colors">Zero-Knowledge Policy</a>
+            <a href="#sovereign-compliance" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#sovereign-compliance" className="hover:text-white transition-colors">Terms of Mesh</a>
           </div>
         </div>
       </div>

@@ -158,7 +158,7 @@ WantedBy=multi-user.target`,
   };
 
   return (
-    <section className="py-24 bg-white relative">
+    <section id="cluster-deploy-wizard" className="py-24 bg-white relative scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">

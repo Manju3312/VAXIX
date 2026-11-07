@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Shield,
@@ -16,15 +16,191 @@ import {
   Code2,
 } from 'lucide-react';
 
-export default function ArenaPage() {
-  const [selectedScenario, setSelectedScenario] = useState<'stripe' | 'twilio' | 'openai' | 'custom'>('stripe');
-  const [httpMethod, setHttpMethod] = useState<'POST' | 'GET'>('POST');
-  const [endpointUrl, setEndpointUrl] = useState('https://api.stripe.com/v1/payment_intents');
-  const [requestBody, setRequestBody] = useState(`{
+// Preset scenarios
+const PRESET_SCENARIOS = {
+  stripe: {
+    url: 'https://api.stripe.com/v1/payment_intents',
+    method: 'POST' as const,
+    body: `{
   "customer_email": "cto@enterprise.com",
   "amount_cents": 49000,
   "currency": "usd"
-}`);
+}`,
+    unshieldedStatus: 400,
+    unshieldedError: `{
+  "error": {
+    "type": "invalid_request_error",
+    "message": "Missing required parameter 'email_address'. Field 'customer_email' was deprecated at 03:00 UTC.",
+    "param": "email_address"
+  }
+}`,
+    shieldedResponse: `{
+  "id": "pi_3N4xLm2eZvKYlo2C",
+  "status": "succeeded",
+  "amount": 49000,
+  "currency": "usd",
+  "receipt_email": "cto@enterprise.com",
+  "paid": true,
+  "_immunix_wire_bridge": "SYNTHESIZED_FIELD_ALIAS"
+}`,
+    astPatch: `// consumer-app/src/services/billing.ts (ts-morph AST Refactor)
+- const recipient = charge.customer_email;
++ const recipient = charge.email_address ?? charge.customer_email;
+// Ephemeral Sandbox Probe: PASS (HTTP 200 in 5.8ms) | Attestation: Ed25519 Signed`,
+  },
+  twilio: {
+    url: 'https://api.twilio.com/2010-04-01/Accounts/AC123/Messages.json',
+    method: 'POST' as const,
+    body: `{
+  "To": "+14155552671",
+  "Body": "Your verification code is 894120"
+}`,
+    unshieldedStatus: 404,
+    unshieldedError: `{
+  "code": 404,
+  "message": "Endpoint /v1/Messages sunset permanently. Relocated to /v2/Dispatches."
+}`,
+    shieldedResponse: `{
+  "dispatch_id": "dsp_9814a0f",
+  "status": "delivered",
+  "recipient": "+14155552671",
+  "_immunix_rerouted": "/v1/Messages ➔ /v2/Dispatches"
+}`,
+    astPatch: `// consumer-app/src/services/sms.ts (ts-morph AST Refactor)
+- return await http.post('/2010-04-01/Accounts/AC123/Messages.json', payload);
++ return await http.post('https://api.twilio.com/v2/Dispatches', payload);
+// Ephemeral Sandbox Probe: PASS (HTTP 200 in 4.9ms) | Attestation: Ed25519 Signed`,
+  },
+  openai: {
+    url: 'https://api.openai.com/v1/completions',
+    method: 'POST' as const,
+    body: `{
+  "model": "text-davinci-003",
+  "prompt": "Synthesize sovereign schema"
+}`,
+    unshieldedStatus: 410,
+    unshieldedError: `{
+  "error": {
+    "message": "The model text-davinci-003 has been deprecated. Migrate to /v1/chat/completions with gpt-4o.",
+    "type": "invalid_request_error"
+  }
+}`,
+    shieldedResponse: `{
+  "id": "chatcmpl-92b0f",
+  "choices": [{
+    "message": { "content": "Synthesizing sovereign schema successfully." }
+  }],
+  "_immunix_envelope_bridged": "text-davinci-003 ➔ gpt-4o"
+}`,
+    astPatch: `// consumer-app/src/ai/agent.ts (ts-morph AST Refactor)
+- const res = await openai.completions.create({ model: 'text-davinci-003', prompt });
++ const res = await openai.chat.completions.create({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }] });
+// Ephemeral Sandbox Probe: PASS (HTTP 200 in 6.2ms) | Attestation: Ed25519 Signed`,
+  },
+  custom: {
+    url: 'https://api.internal-service.mesh/v1/checkout',
+    method: 'POST' as const,
+    body: `{
+  "cart_id": "cart_88291",
+  "total": 12500
+}`,
+    unshieldedStatus: 422,
+    unshieldedError: `{
+  "error": "Unprocessable Entity: Missing tenant signature token"
+}`,
+    shieldedResponse: `{
+  "checkout_id": "chk_live_2026",
+  "status": "cleared",
+  "total": 12500,
+  "_immunix_synthetic_bridge": "INJECTED_TENANT_SIGNATURE"
+}`,
+    astPatch: `// Custom AST Patch synthesized for user-defined endpoint
++ headers['X-Tenant-Signature'] = await signClusterToken();
+// Ephemeral Sandbox Probe: PASS (HTTP 200 in 5.1ms)`,
+  },
+};
+
+const pythonPresetsAst: Record<string, string> = {
+  stripe: `--- a/services/billing.py
++++ b/services/billing.py
+@@ -2,10 +2,10 @@
+ def process_checkout(user_email: str, amount_cents: int):
+-    return stripe.Charge.create(
++    return stripe.PaymentIntent.create(
+         amount=amount_cents,
+         currency="usd",
+-        source="tok_visa",
+-        customer_email=user_email,
++        payment_method="tok_visa",
++        email_address=user_email,
+         description="Enterprise Grid Subscription"
+     )`,
+  twilio: `--- a/services/sms.py
++++ b/services/sms.py
+@@ -2,4 +2,4 @@
+ def send_twilio_charge(to_phone: str, amount_cents: int):
+-    endpoint = "https://api.twilio.com/v1/charges"
++    endpoint = "https://api.twilio.com/v2/checkout/pay"
+     return requests.post(endpoint, json={"to": to_phone, "amount": amount_cents})`,
+  openai: `--- a/services/ai.py
++++ b/services/ai.py
+@@ -2,6 +2,6 @@
+ def generate_sovereign_summary(prompt_text: str):
+-    return openai.Completion.create(
+-        model="text-davinci-003",
+-        prompt=prompt_text,
++    return openai.chat.completions.create(
++        model="gpt-4o",
++        messages=[{"role": "user", "content": prompt_text}],
+         max_tokens=256
+     )`,
+  custom: `--- a/services/custom_mesh.py
++++ b/services/custom_mesh.py
+@@ -1,4 +1,5 @@
+ def call_internal_service(cart_id: str, total: int):
++    headers["X-Tenant-Signature"] = sign_cluster_token()
+     return requests.post("/v1/checkout", json={"cart_id": cart_id, "total": total})`,
+ };
+
+export default function ArenaPage() {
+  const [selectedScenario, setSelectedScenario] = useState<'stripe' | 'twilio' | 'openai' | 'custom'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const prov = params.get('provider') || params.get('scenario');
+      if (prov && ['stripe', 'twilio', 'openai', 'custom'].includes(prov)) {
+        return prov as 'stripe' | 'twilio' | 'openai' | 'custom';
+      }
+    }
+    return 'stripe';
+  });
+
+  const [httpMethod, setHttpMethod] = useState<'POST' | 'GET'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const prov = (params.get('provider') || params.get('scenario')) as keyof typeof PRESET_SCENARIOS;
+      if (prov && PRESET_SCENARIOS[prov]) return PRESET_SCENARIOS[prov].method;
+    }
+    return 'POST';
+  });
+
+  const [endpointUrl, setEndpointUrl] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const prov = (params.get('provider') || params.get('scenario')) as keyof typeof PRESET_SCENARIOS;
+      if (prov && PRESET_SCENARIOS[prov]) return PRESET_SCENARIOS[prov].url;
+    }
+    return 'https://api.stripe.com/v1/payment_intents';
+  });
+
+  const [requestBody, setRequestBody] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const prov = (params.get('provider') || params.get('scenario')) as keyof typeof PRESET_SCENARIOS;
+      if (prov && PRESET_SCENARIOS[prov]) return PRESET_SCENARIOS[prov].body;
+    }
+    return PRESET_SCENARIOS.stripe.body;
+  });
+
   const [isExecuting, setIsExecuting] = useState(false);
   const [runtimeEngine, setRuntimeEngine] = useState<'python' | 'typescript'>('python');
   const [executionResult, setExecutionResult] = useState<{
@@ -39,160 +215,40 @@ export default function ArenaPage() {
 
   const [copiedAst, setCopiedAst] = useState(false);
   const [copiedCurl, setCopiedCurl] = useState(false);
+  const [pythonEngineStatus, setPythonEngineStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
-  // Preset scenarios
-  const presets = {
-    stripe: {
-      url: 'https://api.stripe.com/v1/payment_intents',
-      method: 'POST' as const,
-      body: `{
-  "customer_email": "cto@enterprise.com",
-  "amount_cents": 49000,
-  "currency": "usd"
-}`,
-      unshieldedStatus: 400,
-      unshieldedError: `{
-  "error": {
-    "type": "invalid_request_error",
-    "message": "Missing required parameter 'email_address'. Field 'customer_email' was deprecated at 03:00 UTC.",
-    "param": "email_address"
-  }
-}`,
-      shieldedResponse: `{
-  "id": "pi_3N4xLm2eZvKYlo2C",
-  "status": "succeeded",
-  "amount": 49000,
-  "currency": "usd",
-  "receipt_email": "cto@enterprise.com",
-  "paid": true,
-  "_immunix_wire_bridge": "SYNTHESIZED_FIELD_ALIAS"
-}`,
-      astPatch: `// consumer-app/src/services/billing.ts (ts-morph AST Refactor)
-- const recipient = charge.customer_email;
-+ const recipient = charge.email_address ?? charge.customer_email;
-// Ephemeral Sandbox Probe: PASS (HTTP 200 in 5.8ms) | Attestation: Ed25519 Signed`,
-    },
-    twilio: {
-      url: 'https://api.twilio.com/2010-04-01/Accounts/AC123/Messages.json',
-      method: 'POST' as const,
-      body: `{
-  "To": "+14155552671",
-  "Body": "Your verification code is 894120"
-}`,
-      unshieldedStatus: 404,
-      unshieldedError: `{
-  "code": 404,
-  "message": "Endpoint /v1/Messages sunset permanently. Relocated to /v2/Dispatches."
-}`,
-      shieldedResponse: `{
-  "dispatch_id": "dsp_9814a0f",
-  "status": "delivered",
-  "recipient": "+14155552671",
-  "_immunix_rerouted": "/v1/Messages ➔ /v2/Dispatches"
-}`,
-      astPatch: `// consumer-app/src/services/sms.ts (ts-morph AST Refactor)
-- return await http.post('/2010-04-01/Accounts/AC123/Messages.json', payload);
-+ return await http.post('https://api.twilio.com/v2/Dispatches', payload);
-// Ephemeral Sandbox Probe: PASS (HTTP 200 in 4.9ms) | Attestation: Ed25519 Signed`,
-    },
-    openai: {
-      url: 'https://api.openai.com/v1/completions',
-      method: 'POST' as const,
-      body: `{
-  "model": "text-davinci-003",
-  "prompt": "Synthesize sovereign schema"
-}`,
-      unshieldedStatus: 410,
-      unshieldedError: `{
-  "error": {
-    "message": "The model text-davinci-003 has been deprecated. Migrate to /v1/chat/completions with gpt-4o.",
-    "type": "invalid_request_error"
-  }
-}`,
-      shieldedResponse: `{
-  "id": "chatcmpl-92b0f",
-  "choices": [{
-    "message": { "content": "Synthesizing sovereign schema successfully." }
-  }],
-  "_immunix_envelope_bridged": "text-davinci-003 ➔ gpt-4o"
-}`,
-      astPatch: `// consumer-app/src/ai/agent.ts (ts-morph AST Refactor)
-- const res = await openai.completions.create({ model: 'text-davinci-003', prompt });
-+ const res = await openai.chat.completions.create({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }] });
-// Ephemeral Sandbox Probe: PASS (HTTP 200 in 6.2ms) | Attestation: Ed25519 Signed`,
-    },
-    custom: {
-      url: 'https://api.internal-service.mesh/v1/checkout',
-      method: 'POST' as const,
-      body: `{
-  "cart_id": "cart_88291",
-  "total": 12500
-}`,
-      unshieldedStatus: 422,
-      unshieldedError: `{
-  "error": "Unprocessable Entity: Missing tenant signature token"
-}`,
-      shieldedResponse: `{
-  "checkout_id": "chk_live_2026",
-  "status": "cleared",
-  "total": 12500,
-  "_immunix_synthetic_bridge": "INJECTED_TENANT_SIGNATURE"
-}`,
-      astPatch: `// Custom AST Patch synthesized for user-defined endpoint
-+ headers['X-Tenant-Signature'] = await signClusterToken();
-// Ephemeral Sandbox Probe: PASS (HTTP 200 in 5.1ms)`,
-    },
-  };
-
-  const pythonPresetsAst: Record<string, string> = {
-    stripe: `--- a/services/billing.py
-+++ b/services/billing.py
-@@ -2,10 +2,10 @@
- def process_checkout(user_email: str, amount_cents: int):
--    return stripe.Charge.create(
-+    return stripe.PaymentIntent.create(
-         amount=amount_cents,
-         currency="usd",
--        source="tok_visa",
--        customer_email=user_email,
-+        payment_method="tok_visa",
-+        email_address=user_email,
-         description="Enterprise Grid Subscription"
-     )`,
-    twilio: `--- a/services/sms.py
-+++ b/services/sms.py
-@@ -2,4 +2,4 @@
- def send_twilio_charge(to_phone: str, amount_cents: int):
--    endpoint = "https://api.twilio.com/v1/charges"
-+    endpoint = "https://api.twilio.com/v2/checkout/pay"
-     return requests.post(endpoint, json={"to": to_phone, "amount": amount_cents})`,
-    openai: `--- a/services/ai.py
-+++ b/services/ai.py
-@@ -2,6 +2,6 @@
- def generate_sovereign_summary(prompt_text: str):
--    return openai.Completion.create(
--        model="text-davinci-003",
--        prompt=prompt_text,
-+    return openai.chat.completions.create(
-+        model="gpt-4o",
-+        messages=[{"role": "user", "content": prompt_text}],
-         max_tokens=256
-     )`,
-    custom: `--- a/services/custom_mesh.py
-+++ b/services/custom_mesh.py
-@@ -1,4 +1,5 @@
- def call_internal_service(cart_id: str, total: int):
-+    headers["X-Tenant-Signature"] = sign_cluster_token()
-     return requests.post("/v1/checkout", json={"cart_id": cart_id, "total": total})`,
-  };
+  const presets = PRESET_SCENARIOS;
 
   const loadPreset = (presetKey: 'stripe' | 'twilio' | 'openai' | 'custom') => {
     setSelectedScenario(presetKey);
-    setEndpointUrl(presets[presetKey].url);
-    setHttpMethod(presets[presetKey].method);
-    setRequestBody(presets[presetKey].body);
+    setEndpointUrl(PRESET_SCENARIOS[presetKey].url);
+    setHttpMethod(PRESET_SCENARIOS[presetKey].method);
+    setRequestBody(PRESET_SCENARIOS[presetKey].body);
     setExecutionResult(null);
   };
+
+  const checkPythonHealth = async () => {
+    setPythonEngineStatus('checking');
+    try {
+      const res = await fetch('http://localhost:8001/api/health');
+      if (res.ok) {
+        setPythonEngineStatus('online');
+      } else {
+        setPythonEngineStatus('offline');
+      }
+    } catch {
+      setPythonEngineStatus('offline');
+    }
+  };
+
+  useEffect(() => {
+    fetch('http://localhost:8001/api/health')
+      .then((res) => {
+        if (res.ok) setPythonEngineStatus('online');
+        else setPythonEngineStatus('offline');
+      })
+      .catch(() => setPythonEngineStatus('offline'));
+  }, []);
 
   const handleExecute = async () => {
     setIsExecuting(true);
@@ -334,6 +390,25 @@ export default function ArenaPage() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Python Engine Health Badge */}
+            {pythonEngineStatus === 'online' ? (
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-[11px] font-mono text-emerald-800">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Python Engine: Online (:8001)</span>
+              </div>
+            ) : pythonEngineStatus === 'offline' ? (
+              <button
+                type="button"
+                onClick={checkPythonHealth}
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-[11px] font-mono text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+                title="Click to retry Python microservice connection"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>Python Engine: Offline (TS Fallback)</span>
+                <RefreshCw className="w-2.5 h-2.5 text-amber-700" />
+              </button>
+            ) : null}
+
             <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/25 text-[11px] font-mono">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
               <span>eBPF Wire Kernel Active (0.34ms)</span>

@@ -22,6 +22,11 @@ import {
   Cpu,
   Sparkles,
   Terminal,
+  RefreshCw,
+  X,
+  GitCommit,
+  GitBranch,
+  CheckCheck,
 } from 'lucide-react';
 
 interface SessionData {
@@ -32,6 +37,74 @@ interface SessionData {
   token: string;
 }
 
+interface GitHubPrModalData {
+  prNumber: number;
+  title: string;
+  repo: string;
+  branch: string;
+  targetBranch: string;
+  status: 'passed' | 'merged';
+  sandboxLatencyMs: number;
+  cert: string;
+  description: string;
+  astDiff: string;
+  callSitesModified: number;
+}
+
+const DEMO_SESSION: SessionData = {
+  user: 'cto@sovereign-holdings.ch',
+  role: 'Principal SRE & Infrastructure Architect',
+  tenant: 'Sovereign Core Holdings',
+  tier: 'Enterprise Grid',
+  token: 'imx_session_demo_2026',
+};
+
+const pr412Data: GitHubPrModalData = {
+  prNumber: 412,
+  title: 'fix(stripe): adopt official email_address parameter',
+  repo: 'acme-corp/payment-service',
+  branch: 'immunix/auto-heal-stripe-pr412',
+  targetBranch: 'main',
+  status: 'passed',
+  sandboxLatencyMs: 5.8,
+  cert: 'ed25519_cert_9941a82b9c0182def41_verified',
+  description: 'Refactored 3 call sites in consumer-app/src/services/billing.ts. Upstream schema updated to v2026-03.',
+  callSitesModified: 3,
+  astDiff: `--- a/src/services/billing.ts
++++ b/src/services/billing.ts
+@@ -14,7 +14,7 @@ export async function chargeCustomer(payload: ChargeRequest) {
+-  const customerEmail = payload.customer_email;
++  const customerEmail = payload.email_address ?? payload.customer_email;
+   return stripe.paymentIntents.create({
+     amount: payload.amount_cents,
+-    customer_email: customerEmail,
++    receipt_email: customerEmail,
+   });
+ }`,
+};
+
+const pr413Data: GitHubPrModalData = {
+  prNumber: 413,
+  title: 'fix(twilio): relocate /v1/charges ➔ /v2/checkout/pay',
+  repo: 'acme-corp/crm-sync-worker',
+  branch: 'immunix/auto-heal-twilio-pr413',
+  targetBranch: 'main',
+  status: 'passed',
+  sandboxLatencyMs: 6.2,
+  cert: 'ed25519_cert_8820f14a88bc0192ea9_verified',
+  description: 'Updated caller endpoints in consumer-app/src/services/checkout.ts. Verified against staging provider sandbox.',
+  callSitesModified: 2,
+  astDiff: `--- a/src/services/checkout.ts
++++ b/src/services/checkout.ts
+@@ -28,5 +28,5 @@ export async function dispatchSmsVerification(toPhone: string, code: string) {
+-  const endpoint = "https://api.twilio.com/v1/charges";
++  const endpoint = "https://api.twilio.com/v2/checkout/pay";
+   return httpClient.post(endpoint, {
+     recipient: toPhone,
+     token: code,
+   });`,
+};
+
 function formatNumber(num: number | string): string {
   if (num === null || num === undefined) return '';
   const parts = num.toString().split('.');
@@ -41,31 +114,24 @@ function formatNumber(num: number | string): string {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [session] = useState<SessionData | null>(() => {
+  const [session] = useState<SessionData>(() => {
     if (typeof window !== 'undefined') {
       try {
         const rawSession = localStorage.getItem('immunix_session');
         if (rawSession) {
           return JSON.parse(rawSession);
         }
-        const demoSession: SessionData = {
-          user: 'cto@sovereign-holdings.ch',
-          role: 'Principal SRE & Infrastructure Architect',
-          tenant: 'Sovereign Core Holdings',
-          tier: 'Enterprise Grid',
-          token: `imx_session_${Date.now()}`,
-        };
-        localStorage.setItem('immunix_session', JSON.stringify(demoSession));
-        return demoSession;
-      } catch {
-        return null;
-      }
+        localStorage.setItem('immunix_session', JSON.stringify(DEMO_SESSION));
+      } catch {}
     }
-    return null;
+    return DEMO_SESSION;
   });
 
   const [activeTab, setActiveTab] = useState<'antibodies' | 'telemetry' | 'prs' | 'mesh' | 'keys' | 'python_ml'>('antibodies');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [selectedPr, setSelectedPr] = useState<GitHubPrModalData | null>(null);
+  const [mergedPrs, setMergedPrs] = useState<number[]>([]);
+  const [pythonEngineStatus, setPythonEngineStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
   // Python Engine Live State
   const [pythonCodeInput, setPythonCodeInput] = useState(`import stripe
@@ -299,7 +365,26 @@ def execute_payment(token, amount):
         if (data.providers) setProviderIntegrations(data.providers);
       })
       .catch(() => {});
+
+    // Live Python Engine Health Check
+    fetch('http://localhost:8001/api/health')
+      .then((res) => {
+        if (res.ok) setPythonEngineStatus('online');
+        else setPythonEngineStatus('offline');
+      })
+      .catch(() => setPythonEngineStatus('offline'));
   }, [router]);
+
+  const checkPythonHealth = async () => {
+    setPythonEngineStatus('checking');
+    try {
+      const res = await fetch('http://localhost:8001/api/health');
+      if (res.ok) setPythonEngineStatus('online');
+      else setPythonEngineStatus('offline');
+    } catch {
+      setPythonEngineStatus('offline');
+    }
+  };
 
   const handleTestProviderPing = async (id: string) => {
     setTestingProviderId(id);
@@ -475,6 +560,25 @@ def execute_payment(token, amount):
 
           {/* User actions */}
           <div className="flex items-center gap-3">
+            {/* Live Python Engine Health Badge */}
+            {pythonEngineStatus === 'online' ? (
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-[11px] font-mono text-emerald-800">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Python Engine: Online (:8001)</span>
+              </div>
+            ) : pythonEngineStatus === 'offline' ? (
+              <button
+                type="button"
+                onClick={checkPythonHealth}
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-[11px] font-mono text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+                title="Click to re-probe Python AI microservice"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>Python Engine: Offline (TS Fallback)</span>
+                <RefreshCw className="w-2.5 h-2.5 text-amber-700" />
+              </button>
+            ) : null}
+
             <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/25 text-[11px] font-mono">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
               <span>14,280 Inoculated Nodes</span>
@@ -772,8 +876,10 @@ def execute_payment(token, amount):
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
-                    PASSED EPHEMERAL SANDBOX (5.8ms)
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    mergedPrs.includes(412) ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {mergedPrs.includes(412) ? 'MERGED TO MAIN' : 'PASSED EPHEMERAL SANDBOX (5.8ms)'}
                   </span>
                   <span className="text-xs font-mono text-[#6E6E73]">PR #412</span>
                 </div>
@@ -785,16 +891,22 @@ def execute_payment(token, amount):
                 </p>
                 <div className="pt-3 border-t border-black/5 flex items-center justify-between text-xs font-mono">
                   <span className="text-emerald-600 font-bold">Cryptographically Signed</span>
-                  <a href="#" className="text-[#997D25] hover:underline flex items-center gap-1 font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPr(pr412Data)}
+                    className="text-[#997D25] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                  >
                     View on GitHub <ExternalLink className="w-3 h-3" />
-                  </a>
+                  </button>
                 </div>
               </div>
 
               <div className="bg-white p-6 rounded-3xl border border-[#D4AF37]/30 shadow-md space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
-                    PASSED EPHEMERAL SANDBOX (6.2ms)
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    mergedPrs.includes(413) ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {mergedPrs.includes(413) ? 'MERGED TO MAIN' : 'PASSED EPHEMERAL SANDBOX (6.2ms)'}
                   </span>
                   <span className="text-xs font-mono text-[#6E6E73]">PR #413</span>
                 </div>
@@ -806,9 +918,13 @@ def execute_payment(token, amount):
                 </p>
                 <div className="pt-3 border-t border-black/5 flex items-center justify-between text-xs font-mono">
                   <span className="text-emerald-600 font-bold">Cryptographically Signed</span>
-                  <a href="#" className="text-[#997D25] hover:underline flex items-center gap-1 font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPr(pr413Data)}
+                    className="text-[#997D25] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                  >
                     View on GitHub <ExternalLink className="w-3 h-3" />
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1155,6 +1271,154 @@ def execute_payment(token, amount):
         )}
 
       </main>
+
+      {/* Sovereign GitHub PR Drawer / Modal */}
+      {selectedPr && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-[#D4AF37]/50 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+            
+            {/* Header */}
+            <div className="p-6 border-b border-black/10 flex items-center justify-between sticky top-0 bg-white z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0B0B0C] border border-[#D4AF37] flex items-center justify-center text-[#D4AF37]">
+                  <GitPullRequest className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-[#997D25] font-bold">{selectedPr.repo}</span>
+                    <span className="text-xs text-[#6E6E73] font-mono">#{selectedPr.prNumber}</span>
+                    {mergedPrs.includes(selectedPr.prNumber) ? (
+                      <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-mono font-bold">
+                        MERGED TO MAIN
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
+                        OPEN • READY TO MERGE
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-[#0B0B0C] mt-0.5">{selectedPr.title}</h3>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedPr(null)}
+                className="p-2 rounded-xl text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              {/* Branch strip & status */}
+              <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-black/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+                <div className="flex items-center gap-2 text-[#0B0B0C]">
+                  <GitBranch className="w-4 h-4 text-[#997D25]" />
+                  <span className="bg-white px-2 py-1 rounded-md border border-black/10">{selectedPr.branch}</span>
+                  <span>➔</span>
+                  <span className="bg-white px-2 py-1 rounded-md border border-black/10">{selectedPr.targetBranch}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                  <span className="text-emerald-700 font-bold">Sandbox: {selectedPr.sandboxLatencyMs}ms (HTTP 200)</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h4 className="text-xs font-mono font-bold text-[#6E6E73] uppercase mb-1.5">PR Description & Impact:</h4>
+                <p className="text-xs text-[#0B0B0C] bg-[#FBFBF9] p-3 rounded-xl border border-black/5 leading-relaxed font-mono">
+                  {selectedPr.description}
+                </p>
+              </div>
+
+              {/* Verified ts-morph AST Diff */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-mono font-bold text-[#0B0B0C] flex items-center gap-1.5">
+                    <GitCommit className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>Verified ts-morph AST Diff ({selectedPr.callSitesModified} call sites)</span>
+                  </h4>
+                  <span className="text-[10px] text-[#6E6E73] font-mono">Compiler Verified • Zero Hallucinations</span>
+                </div>
+                <pre className="p-4 rounded-2xl bg-[#0B0B0C] text-white font-mono text-xs overflow-x-auto border border-[#D4AF37]/30 leading-relaxed">
+                  {selectedPr.astDiff.split('\n').map((line, idx) => {
+                    let color = 'text-white/80';
+                    if (line.startsWith('+')) color = 'text-emerald-400 font-bold';
+                    else if (line.startsWith('-')) color = 'text-rose-400 font-bold';
+                    else if (line.startsWith('@')) color = 'text-[#D4AF37]';
+                    return (
+                      <div key={idx} className={color}>
+                        {line}
+                      </div>
+                    );
+                  })}
+                </pre>
+              </div>
+
+              {/* Cryptographic Attestation Proof */}
+              <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 text-xs font-mono space-y-1.5">
+                <div className="flex items-center justify-between text-emerald-900 font-bold">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Ed25519 Cryptographic Attestation Certificate
+                  </span>
+                  <span className="text-[10px] text-emerald-700">VERIFIED</span>
+                </div>
+                <div className="text-[11px] text-emerald-800 break-all bg-white/70 p-2 rounded-lg border border-emerald-200/50">
+                  {selectedPr.cert}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-black/10 bg-[#FBFBF9] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setSelectedPr(null)}
+                className="px-4 py-2.5 rounded-xl border border-black/15 text-xs font-mono font-bold text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-white transition-colors cursor-pointer"
+              >
+                Close Drawer
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(selectedPr.cert);
+                    alert('Ed25519 Cryptographic Certificate copied to clipboard!');
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-[#D4AF37]/40 text-xs font-mono font-bold text-[#997D25] hover:bg-white hover:border-[#D4AF37] transition-all cursor-pointer"
+                >
+                  Copy Certificate
+                </button>
+
+                {!mergedPrs.includes(selectedPr.prNumber) ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMergedPrs((prev) => [...prev, selectedPr.prNumber]);
+                      setTimeout(() => setSelectedPr(null), 1200);
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] text-xs font-mono font-bold uppercase tracking-wider hover:bg-black hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <CheckCheck className="w-4 h-4 text-[#D4AF37]" />
+                    <span>Simulate Merge PR</span>
+                  </button>
+                ) : (
+                  <div className="px-5 py-2.5 rounded-xl bg-purple-100 text-purple-900 border border-purple-300 text-xs font-mono font-bold flex items-center gap-2">
+                    <CheckCheck className="w-4 h-4 text-purple-700" />
+                    <span>Merged to main</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

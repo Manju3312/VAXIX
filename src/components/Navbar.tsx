@@ -48,7 +48,7 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Emblem */}
-        <a href="#" className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl bg-[#0B0B0C] border border-[#D4AF37] flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.3)] group-hover:scale-105 transition-transform">
             <Shield className="w-5 h-5 text-[#D4AF37]" />
           </div>
@@ -59,7 +59,7 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             </div>
             <span className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-medium -mt-0.5">Autonomous Immune Mesh</span>
           </div>
-        </a>
+        </Link>
 
         {/* The 4-Link Standard */}
         <nav className="hidden md:flex items-center gap-8">
