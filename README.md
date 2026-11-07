@@ -149,10 +149,27 @@ The transactional tier enforces multi-tenant boundaries, zero-knowledge keys, an
    - Interactive sliders for monthly API transaction velocity, calculating revenue protected and ROI multipliers.
 9. **Cluster Deployment Wizard (`components/ClusterDeployWizard.tsx`)**:
    - One-click manifests for Kubernetes DaemonSet, Helm v3, Terraform, and systemd.
-10. **Sovereign Key Manager (`components/ApiKeyModal.tsx`)**:
-    - Generates and encrypts `imx_live_...` and `imx_test_...` credentials.
-11. **Mathematical Architecture Dossier (`components/ArchitectureDossierModal.tsx`)**:
-    - Formal mathematical proofs for $O(1)$ socket hash ring latency and deterministic compiler AST equivalence.
+10. **4-Tab Sovereign Key & Multi-Technology Vault (`components/ApiKeyModal.tsx`)**:
+   - Complete HSM management across 4 tabs: `Sovereign Mesh Keys`, `Upstream Providers`, `Infrastructure Engines`, and `Compliance & HSM`.
+   - Real-time diagnostic ping with DNS, TLS, and wire eBPF filter latency breakdown.
+   - Zero-downtime key rotation with 24-hour dual-key grace bridge.
+   - 1-click download of Ed25519-signed HSM vault manifest (`.json`).
+11. **Dedicated Fullscreen Developer Workbench (`/arena`)**:
+   - Real-time chaos playground with interactive curl generator, eBPF wire telemetry status, custom endpoint tester, and live JSON-RPC execution.
+12. **Enterprise Mission Control Dashboard (`/dashboard`)**:
+   - 6-Tab Sovereign Command Center:
+     - Tab 1: Active Antibodies with live toggle retirement/reactivation.
+     - Tab 2: High-velocity Live Wire Telemetry console.
+     - Tab 3: DNA Repairs with automated GitHub PRs and unmocked sandbox proofs.
+     - Tab 4: Global Herd Consensus ledger with Byzantine fault-tolerant voting.
+     - Tab 5: Sovereign Key Vault & Monitored Upstream Technologies.
+     - Tab 6: Python 3.12 LibCST & Scikit-learn AI Anomaly Engine.
+13. **Python 3.12 LibCST & Scikit-Learn Hybrid Microservice (`backend/`)**:
+   - FastAPI microservice running on port `8001` with LibCST deterministic AST surgery and Scikit-learn DBSCAN clustering.
+14. **Stripe Enterprise Checkout Gateway (`/api/checkout`)**:
+   - Real-time subscription payments, auto-provisioned tenants, and encrypted access passes.
+15. **Mathematical Architecture Dossier (`components/ArchitectureDossierModal.tsx`)**:
+   - Formal mathematical proofs for $O(1)$ socket hash ring latency and deterministic compiler AST equivalence.
 
 ---
 
@@ -174,7 +191,37 @@ curl -X POST http://localhost:3000/api/sabotage/trigger \
   -d '{"scenario_id":"PROPERTY_RENAMED"}'
 ```
 
-### 3. `POST /api/mcp`
+### 3. `GET & POST /api/keys/providers`
+Multi-technology provider key vault, live diagnostic ping, zero-downtime key rotation, and Ed25519 HSM manifest export:
+```bash
+# Get all monitored technologies
+curl -s http://localhost:3000/api/keys/providers
+
+# Test diagnostic ping with microsecond breakdown
+curl -X POST http://localhost:3000/api/keys/providers \
+  -H "Content-Type: application/json" \
+  -d '{"action":"test_ping","provider_id":"stripe"}'
+
+# Rotate key with 24-hour dual-key grace bridge
+curl -X POST http://localhost:3000/api/keys/providers \
+  -H "Content-Type: application/json" \
+  -d '{"action":"rotate_key","provider_id":"stripe"}'
+
+# Export Ed25519-signed HSM vault manifest
+curl -X POST http://localhost:3000/api/keys/providers \
+  -H "Content-Type: application/json" \
+  -d '{"action":"export_vault"}'
+```
+
+### 4. `POST /api/checkout`
+Processes Stripe enterprise subscription checkout and auto-provisions tenant credentials:
+```bash
+curl -X POST http://localhost:3000/api/checkout \
+  -H "Content-Type: application/json" \
+  -d '{"tier":"enterprise-grid","company":"Goldman Sachs","email":"ciso@gs.test","simulateCard":{"last4":"4242"}}'
+```
+
+### 5. `POST /api/mcp`
 Model Context Protocol JSON-RPC 2.0 endpoint:
 ```bash
 curl -X POST http://localhost:3000/api/mcp \
@@ -182,18 +229,22 @@ curl -X POST http://localhost:3000/api/mcp \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
 
-### 4. `GET /api/clusters`
+### 6. `GET /api/clusters`
 Returns synchronized nodes and global shielded request counts:
 ```bash
 curl -s http://localhost:3000/api/clusters
 ```
 
-### 5. `POST /api/keys`
-Generates a new sovereign cluster authorization key:
+### 7. `GET /api/health`
+Liveness, readiness, and 5-tier topology diagnostic probe:
 ```bash
-curl -X POST http://localhost:3000/api/keys \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Production Node US-East","tier":"enterprise"}'
+curl -s http://localhost:3000/api/health
+```
+
+### 8. `http://localhost:8001/api/health` (Python AI Engine)
+Python 3.12 LibCST & Scikit-learn microservice health check:
+```bash
+curl -s http://localhost:8001/api/health
 ```
 
 ---
@@ -205,8 +256,14 @@ curl -X POST http://localhost:3000/api/keys \
 git clone https://github.com/immunix/immunix.network.git
 cd immunix
 
-# Install dependencies
+# Install Node.js dependencies
 npm install
+
+# (Optional) Setup Python 3.12 virtual environment for AI Engine
+uv venv backend/.venv
+uv pip install -p backend/.venv -r backend/requirements.txt
+# Start Python AI engine (runs on port 8001)
+backend/.venv/Scripts/python.exe backend/main.py
 
 # Configure environment (copy template)
 cp .env.example .env.local
@@ -217,8 +274,11 @@ npm run dev
 # Option B: Run full sovereign multi-container stack (PostgreSQL + Redis + Redpanda + ClickHouse)
 docker-compose up -d
 
-# Execute automated sovereign resilience test suite across all 7 endpoints
+# Execute automated sovereign resilience test suite across all 13 architecture suites
 npm test
+
+# Run ESLint validation
+npm run lint
 
 # Compile production build
 npm run build

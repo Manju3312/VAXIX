@@ -190,6 +190,26 @@ CREATE TABLE IF NOT EXISTS subscription_payments (
 );
 
 -- ------------------------------------------------------------------------------
+-- 13. Upstream Technology Provider Vault (NIST SP 800-207 Zero-Trust Credentials)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS provider_vault (
+    id VARCHAR(64) PRIMARY KEY,
+    provider_id VARCHAR(64) NOT NULL UNIQUE,
+    provider_name VARCHAR(128) NOT NULL,
+    category VARCHAR(64) NOT NULL,
+    target_host VARCHAR(255) NOT NULL,
+    key_prefix VARCHAR(64) NOT NULL,
+    encrypted_key_hash VARCHAR(255) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'inoculated',
+    circuit_breaker VARCHAR(64) NOT NULL DEFAULT 'CLOSED_SHIELDED',
+    health_score INT NOT NULL DEFAULT 99,
+    mean_latency_ms REAL NOT NULL DEFAULT 0.32,
+    upstream_version VARCHAR(64) NOT NULL DEFAULT 'v2026-03',
+    env_var VARCHAR(64) NOT NULL,
+    last_verified TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ------------------------------------------------------------------------------
 -- PERFORMANCE INDICES
 -- ------------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_pg_api_keys_hash ON api_keys(key_hash);
@@ -204,3 +224,4 @@ CREATE INDEX IF NOT EXISTS idx_pg_sabotage_created ON sabotage_events(created_at
 CREATE INDEX IF NOT EXISTS idx_pg_audit_requests_created ON audit_requests(created_at);
 CREATE INDEX IF NOT EXISTS idx_pg_payments_tenant ON subscription_payments(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_pg_payments_stripe_id ON subscription_payments(stripe_payment_id);
+CREATE INDEX IF NOT EXISTS idx_pg_provider_vault_id ON provider_vault(provider_id);

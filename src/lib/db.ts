@@ -165,6 +165,23 @@ export interface SystemMetrics {
   global_peer_votes: number;
 }
 
+export interface ProviderVaultRecord {
+  id: string;
+  provider_id: string;
+  provider_name: string;
+  category: string;
+  target_host: string;
+  key_prefix: string;
+  encrypted_key_hash: string;
+  status: 'connected' | 'inoculated' | 'sandbox';
+  circuit_breaker: string;
+  health_score: number;
+  mean_latency_ms: number;
+  upstream_version: string;
+  env_var: string;
+  last_verified: string;
+}
+
 /**
  * IMMUNIX 5-TIER POLYGLOT DATA TOPOLOGY (SQLite Embedded Engine)
  * --------------------------------------------------------------
@@ -356,6 +373,26 @@ export function initDatabase(): void {
     );
   `);
 
+  // 13. Upstream Technology Provider Vault (NIST SP 800-207 Zero-Trust Credentials)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS provider_vault (
+      id TEXT PRIMARY KEY,
+      provider_id TEXT NOT NULL UNIQUE,
+      provider_name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      target_host TEXT NOT NULL,
+      key_prefix TEXT NOT NULL,
+      encrypted_key_hash TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'inoculated',
+      circuit_breaker TEXT NOT NULL DEFAULT 'CLOSED_SHIELDED',
+      health_score INTEGER NOT NULL DEFAULT 99,
+      mean_latency_ms REAL NOT NULL DEFAULT 0.32,
+      upstream_version TEXT NOT NULL DEFAULT 'v2026-03',
+      env_var TEXT NOT NULL,
+      last_verified DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   // Run schema migrations for backwards compatibility with pre-existing sqlite files
   try {
     db.exec("ALTER TABLE api_keys ADD COLUMN tenant_id TEXT DEFAULT 'ten_enterprise_01';");
@@ -378,6 +415,7 @@ export function initDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_clusters_region ON clusters(region);
     CREATE INDEX IF NOT EXISTS idx_sabotage_created ON sabotage_events(created_at);
     CREATE INDEX IF NOT EXISTS idx_audit_requests_created ON audit_requests(created_at);
+    CREATE INDEX IF NOT EXISTS idx_provider_vault_id ON provider_vault(provider_id);
   `);
 
   // ============================================================================
@@ -515,6 +553,34 @@ export function initDatabase(): void {
       14280,
       1
     );
+  }
+
+  // Seed Upstream Provider Technology Vault
+  try {
+    const vaultCount = db.prepare('SELECT count(*) as count FROM provider_vault').get() as { count: number };
+    if (vaultCount.count === 0) {
+      const insertVault = db.prepare(`
+        INSERT INTO provider_vault (id, provider_id, provider_name, category, target_host, key_prefix, encrypted_key_hash, status, circuit_breaker, health_score, mean_latency_ms, upstream_version, env_var)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const defaultVaultEntries = [
+        ['pv_stripe', 'stripe', 'Stripe Payments', 'Payment Infrastructure', 'api.stripe.com', 'sk_test_51P98...', 'argon2_stripe_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 99, 0.31, 'v2026-03-01', 'STRIPE_SECRET_KEY'],
+        ['pv_openai', 'openai', 'OpenAI Platform', 'AI Inference Egress', 'api.openai.com', 'sk-proj-...', 'argon2_openai_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 99, 0.28, 'v1.48.2 (Responses)', 'OPENAI_API_KEY'],
+        ['pv_anthropic', 'anthropic', 'Anthropic Claude', 'Sovereign Agent Egress', 'api.anthropic.com', 'sk-ant-ap...', 'argon2_anthropic_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 99, 0.32, 'v1 Messages', 'ANTHROPIC_API_KEY'],
+        ['pv_twilio', 'twilio', 'Twilio Cloud', 'Telecom & SMS Egress', 'api.twilio.com', 'AC_imx...', 'argon2_twilio_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 98, 0.28, '2010-04-01 / v2', 'TWILIO_ACCOUNT_SID'],
+        ['pv_salesforce', 'salesforce', 'Salesforce CRM', 'Enterprise Data Graph', 'salesforce.com/services/data', '3MVG9_...', 'argon2_salesforce_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 99, 0.35, 'v59.0 REST API', 'SALESFORCE_CLIENT_ID'],
+        ['pv_plaid', 'plaid', 'Plaid Core Banking', 'Fintech Interbank', 'api.plaid.com', 'plaid_cl...', 'argon2_plaid_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 97, 0.36, 'v2020-09-14', 'PLAID_CLIENT_ID'],
+        ['pv_github', 'github', 'GitHub Operations', 'Developer Operations', 'api.github.com', 'ghp_imx...', 'argon2_github_sec_hash_2026', 'inoculated', 'CLOSED_SHIELDED', 100, 0.29, 'REST v3 / Webhooks', 'GITHUB_TOKEN'],
+        ['pv_python_ai', 'python_ai', 'Python 3.12 AI Engine', 'LibCST & Scikit-Learn Engine', 'localhost:8001', 'imx_local_kernel_8001', 'local_in_memory_ipc_8001', 'connected', 'CLOSED_SHIELDED', 100, 0.38, 'LibCST 1.9.0', 'PYTHON_AI_ENGINE_URL'],
+      ];
+
+      for (const entry of defaultVaultEntries) {
+        insertVault.run(...entry);
+      }
+    }
+  } catch {
+    // Migration fallback
   }
 
   // Seed Schema Vector Index (Tier 4)
