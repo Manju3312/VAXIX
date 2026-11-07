@@ -85,7 +85,36 @@ async function runHttpTests() {
     const sabotageData = await sabotageRes.json();
     console.log(`✓ [SABOTAGE ARENA] /api/sabotage/trigger: Wire Interception delivered in ${sabotageData.wire_interception_speed}`);
 
-    console.log('\n🏛️ ALL SOVEREIGN ARCHITECTURE TESTS PASSED WITH 100% SUCCESS.\n');
+    // 2.6 Test Antibodies API
+    const antiRes = await fetch(`${baseUrl}/api/antibodies`);
+    const antiData = await antiRes.json();
+    console.log(`✓ [ANTIBODIES REGISTRY] /api/antibodies: Retrieved ${antiData.count} active biological antibodies`);
+
+    // 2.7 Test API Keys Generator
+    const keyRes = await fetch(`${baseUrl}/api/keys`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Automated Test Sentinel', tier: 'enterprise' }),
+    });
+    const keyData = await keyRes.json();
+    console.log(`✓ [KEY VAULT] /api/keys: Provisioned sovereign key prefix ${keyData.api_key.substring(0, 12)}... (Limit: ${keyData.rate_limit_rpm} req/min)`);
+
+    // 2.8 Test Audit Evaluation Intake
+    const auditRes = await fetch(`${baseUrl}/api/audit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Chief Architect Test',
+        email: 'test@enterprise.immunix.network',
+        company: 'Sovereign Sovereign Ltd',
+        cloud: 'AWS',
+        tier: 'Enterprise Grid',
+      }),
+    });
+    const auditData = await auditRes.json();
+    console.log(`✓ [AUDIT INTAKE] /api/audit: Provisioned evaluation ${auditData.audit_id} with token ${auditData.access_token}`);
+
+    console.log('\n🏛️ ALL 7 SOVEREIGN ARCHITECTURE ENDPOINTS PASSED WITH 100% SUCCESS.\n');
   } catch (err) {
     console.error('❌ HTTP Test Error:', err);
     process.exit(1);

@@ -92,3 +92,4 @@ CREATE TABLE IF NOT EXISTS schema_vector_index (
     embedding vector(1536),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
