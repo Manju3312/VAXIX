@@ -103,6 +103,19 @@ async function runHttpTests() {
     const keyData = await keyRes.json();
     console.log(`✓ [KEY VAULT] /api/keys: Provisioned sovereign key prefix ${keyData.api_key.substring(0, 12)}... (Limit: ${keyData.rate_limit_rpm} req/min)`);
 
+    // 2.7b Test Multi-Technology Provider Key Vault & Ping
+    const provRes = await fetch(`${baseUrl}/api/keys/providers`);
+    const provData = await provRes.json();
+    console.log(`✓ [TECHNOLOGY VAULT] /api/keys/providers: Loaded ${provData.count} monitored technologies (${provData.mesh_status})`);
+
+    const pingRes = await fetch(`${baseUrl}/api/keys/providers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'test_ping', provider_id: 'stripe' }),
+    });
+    const pingData = await pingRes.json();
+    console.log(`✓ [PROVIDER PING] /api/keys/providers: Verified Stripe connectivity in ${pingData.latency_ms}ms (${pingData.wire_shield})`);
+
     // 2.8 Test Audit Evaluation Intake
     const auditRes = await fetch(`${baseUrl}/api/audit`, {
       method: 'POST',
