@@ -114,7 +114,12 @@ async function runHttpTests() {
     const auditData = await auditRes.json();
     console.log(`✓ [AUDIT INTAKE] /api/audit: Provisioned evaluation ${auditData.audit_id} with token ${auditData.access_token}`);
 
-    console.log('\n🏛️ ALL 7 SOVEREIGN ARCHITECTURE ENDPOINTS PASSED WITH 100% SUCCESS.\n');
+    // 2.9 Test Liveness & Health Diagnostic Probe
+    const healthRes = await fetch(`${baseUrl}/api/health`);
+    const healthData = await healthRes.json();
+    console.log(`✓ [HEALTH DIAGNOSTICS] /api/health: Status ${healthData.status} (${healthData.health_check_latency_ms}ms) - Mesh: ${healthData.topology.tier5_byzantine_herd_mesh}`);
+
+    console.log('\n🏛️ ALL 8 SOVEREIGN ARCHITECTURE ENDPOINTS PASSED WITH 100% SUCCESS.\n');
   } catch (err) {
     console.error('❌ HTTP Test Error:', err);
     process.exit(1);

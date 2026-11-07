@@ -370,7 +370,7 @@ export default function GlobalHerdImmunity() {
 
             <div className="pt-2">
               <a
-                href="#breakmyapi-arena"
+                href="#break-my-api"
                 className="w-full py-3 rounded-xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <span>Test Sabotage on this Node</span>

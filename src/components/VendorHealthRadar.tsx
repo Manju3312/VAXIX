@@ -168,8 +168,8 @@ export default function VendorHealthRadar() {
               <div className="mt-5 pt-3 border-t border-[#D4AF37]/15 flex items-center justify-between text-xs font-mono">
                 <span className="text-[#6E6E73]">Antibodies: {vendor.activeAntibodiesCount} Active</span>
                 <a
-                  href="#breakmyapi-arena"
-                  className="text-[#997D25] hover:text-[#0B0B0C] font-bold flex items-center gap-1"
+                  href="#break-my-api"
+                  className="text-[#997D25] hover:text-[#0B0B0C] font-bold flex items-center gap-1 transition-colors"
                 >
                   Simulate <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
