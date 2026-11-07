@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { Check, Shield, Zap, Sparkles, Building2, ArrowRight } from 'lucide-react';
 
-// Helper for deterministic locale-independent format
+// Deterministic en-IN locale formatter
+const inFormat = new Intl.NumberFormat('en-IN');
+
 function formatNumber(num: number): string {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return inFormat.format(num);
 }
 
 interface PricingProps {
@@ -168,7 +170,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps) {
 
                   <div className="mt-6 mb-6 pb-6 border-b border-[#D4AF37]/20">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-heading font-black text-[#0B0B0C]" suppressHydrationWarning>
+                      <span className="text-4xl font-heading font-black text-[#0B0B0C]">
                         ${formatNumber(price)}
                       </span>
                       {price > 0 && (
@@ -178,7 +180,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps) {
                       )}
                     </div>
                     {isAnnual && tier.priceAnnual > 0 && (
-                      <div className="text-[11px] font-mono text-[#997D25] mt-1 font-semibold" suppressHydrationWarning>
+                      <div className="text-[11px] font-mono text-[#997D25] mt-1 font-semibold">
                         Billed annually ({tier.annualBilledText || `$${formatNumber(tier.priceAnnual * 12)}/yr`})
                       </div>
                     )}

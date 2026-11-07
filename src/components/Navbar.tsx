@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Activity, Dna, Menu, X, ArrowUpRight, Terminal, Search, KeyRound, Command } from 'lucide-react';
 
+// Deterministic en-IN locale formatter
+const inFormat = new Intl.NumberFormat('en-IN');
+
 function formatNumber(num: number): string {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return inFormat.format(num);
 }
 
 interface NavbarProps {
@@ -121,7 +124,7 @@ export default function Navbar({ onOpenConsole, onOpenAudit, onOpenKeys, onOpenP
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]" />
               </span>
-              <span className="text-[#0B0B0C] font-bold" suppressHydrationWarning>
+              <span className="text-[#0B0B0C] font-bold">
                 {formatNumber(inoculatedCount)}
               </span>
               <span className="text-[#6E6E73] hidden 2xl:inline">CLUSTERS</span>
@@ -173,7 +176,7 @@ export default function Navbar({ onOpenConsole, onOpenAudit, onOpenKeys, onOpenP
         <div className="lg:hidden px-4 pt-4 pb-6 bg-white/95 backdrop-blur-xl border-b border-[#D4AF37]/20 space-y-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/25 text-xs font-mono">
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-            <span className="font-bold text-[#0B0B0C]" suppressHydrationWarning>
+            <span className="font-bold text-[#0B0B0C]">
               {formatNumber(inoculatedCount)} CLUSTERS INOCULATED
             </span>
           </div>

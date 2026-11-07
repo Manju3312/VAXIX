@@ -192,13 +192,14 @@ export default function ImmuneHelix3D({ interactive = true }: ImmuneHelix3DProps
 
     window.addEventListener('resize', handleResize);
 
-    // ANIMATION LOOP
+    // ANIMATION LOOP & TIMING (Modern THREE.Timer replaces deprecated THREE.Clock)
     let animationFrameId: number;
-    const startTime = performance.now();
+    const timer = new THREE.Timer();
 
-    const animate = (currentTime: number) => {
+    const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = ((currentTime || performance.now()) - startTime) * 0.001;
+      timer.update();
+      const elapsedTime = timer.getElapsed();
       const currentSpeed = speedRef.current;
 
       // Base rotation
@@ -227,6 +228,7 @@ export default function ImmuneHelix3D({ interactive = true }: ImmuneHelix3DProps
         container.removeChild(renderer.domElement);
       }
 
+      timer.dispose();
       geometry.dispose();
       material.dispose();
       lineGeometry.dispose();

@@ -7,11 +7,11 @@ interface FinancialLossCalculatorProps {
   onOpenAudit: () => void;
 }
 
-// Consistent locale-independent thousand separator
-function formatUSD(val: number): string {
-  return Math.round(val)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// Consistent deterministic en-IN locale formatter
+const inFormat = new Intl.NumberFormat('en-IN');
+
+function formatCurrency(val: number): string {
+  return inFormat.format(Math.round(val));
 }
 
 export default function FinancialLossCalculator({ onOpenAudit }: FinancialLossCalculatorProps) {
@@ -34,14 +34,14 @@ Generated: 2026-11-07
 Classification: Enterprise Confidential
 
 INPUT PARAMETERS:
-- Monthly Processed API Transaction Volume: $${formatUSD(monthlyVolumeMillions)},000,000
+- Monthly Processed API Transaction Volume: $${formatCurrency(monthlyVolumeMillions)},000,000
 - Average Industry MTTR for Silent Schema Drift: ${incidentMttrHours} Hours
 - Frequency of Unannounced Upstream Schema Drift: ${incidentsPerYear} Incidents / Year
 
 PREDICTED LOSS PREVENTION & ROI:
-- Direct Transaction Revenue Protected: $${formatUSD(totalAnnualLossPrevented)} / year
-- Incident Engineering War-Room Hours Saved: ${engineeringHoursSaved} Engineer-Hours
-- Estimated SLA Penalty Avoidance: $${formatUSD(totalAnnualLossPrevented * 0.15)}
+- Direct Transaction Revenue Protected: $${formatCurrency(totalAnnualLossPrevented)} / year
+- Incident Engineering War-Room Hours Saved: ${inFormat.format(engineeringHoursSaved)} Engineer-Hours
+- Estimated SLA Penalty Avoidance: $${formatCurrency(totalAnnualLossPrevented * 0.15)}
 - IMMUNIX Projected ROI Multiplier: ${roiMultiplier}x
 - Underwritten Financial Loss Warranty: $5,000,000 Sovereign Indemnity
 
@@ -165,14 +165,11 @@ https://immunix.network
                 </span>
               </div>
 
-              {/* Huge Top Metric with suppressHydrationWarning */}
+              {/* Huge Top Metric */}
               <div className="mt-6 mb-8">
                 <div className="text-xs font-mono text-white/50 uppercase">Total Revenue Loss Prevented</div>
-                <div
-                  className="text-4xl sm:text-5xl font-heading font-black text-white mt-1"
-                  suppressHydrationWarning
-                >
-                  ${formatUSD(totalAnnualLossPrevented)}
+                <div className="text-4xl sm:text-5xl font-heading font-black text-white mt-1">
+                  ${formatCurrency(totalAnnualLossPrevented)}
                   <span className="text-sm font-mono text-[#D4AF37] font-normal ml-2">/ year</span>
                 </div>
                 <div className="text-xs font-mono text-[#10B981] mt-2 flex items-center gap-1.5">
@@ -184,15 +181,15 @@ https://immunix.network
               <div className="grid grid-cols-2 gap-4 pb-6 border-b border-white/10">
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                   <div className="text-[11px] font-mono text-white/50">Engineering Hours Saved</div>
-                  <div className="text-2xl font-bold font-mono text-[#D4AF37] mt-1" suppressHydrationWarning>
-                    {engineeringHoursSaved} hrs
+                  <div className="text-2xl font-bold font-mono text-[#D4AF37] mt-1">
+                    {inFormat.format(engineeringHoursSaved)} hrs
                   </div>
                   <div className="text-[10px] font-mono text-white/40">Zero incident bridges</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                   <div className="text-[11px] font-mono text-white/50">Projected Defense ROI</div>
-                  <div className="text-2xl font-bold font-mono text-[#10B981] mt-1" suppressHydrationWarning>
+                  <div className="text-2xl font-bold font-mono text-[#10B981] mt-1">
                     {roiMultiplier}x
                   </div>
                   <div className="text-[10px] font-mono text-white/40">Enterprise Grid Basis</div>
