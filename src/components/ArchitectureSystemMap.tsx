@@ -9,6 +9,10 @@ import {
   GitPullRequest,
   Play,
   RefreshCw,
+  Database,
+  FileCode,
+  Check,
+  Copy,
 } from 'lucide-react';
 
 interface ActiveNodeDetail {
@@ -25,6 +29,118 @@ export default function ArchitectureSystemMap() {
   const [isTracing, setIsTracing] = useState(false);
   const [highlightedStep, setHighlightedStep] = useState<string | null>(null);
   const [traceLogs, setTraceLogs] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'3plane' | '5tier'>('3plane');
+  const [activeDdlTab, setActiveDdlTab] = useState<string>('tenants');
+  const [copiedDdl, setCopiedDdl] = useState(false);
+
+  const ddlTables: Record<string, { title: string; desc: string; sql: string }> = {
+    tenants: {
+      title: '1. Tenants & SLAs',
+      desc: 'Multi-tenant isolation with SLA warranty status and enterprise tier tiers.',
+      sql: `CREATE TABLE tenants (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    tier VARCHAR(50) DEFAULT 'growth' CHECK (tier IN ('open-core', 'growth', 'enterprise-grid', 'sovereign-mesh')),
+    sla_warranty_enabled BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+    api_keys: {
+      title: '2. Zero-Knowledge API Keys',
+      desc: 'Argon2id salted secret hashes with strictly scoped permission arrays.',
+      sql: `CREATE TABLE api_keys (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    key_prefix VARCHAR(16) NOT NULL,
+    hashed_secret VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    scopes TEXT[] DEFAULT ARRAY['wire:proxy', 'telemetry:write'],
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+    monitored_providers: {
+      title: '3. Monitored Providers',
+      desc: 'Upstream vendor hosts (Stripe, Twilio, OpenAI, Salesforce) and specs.',
+      sql: `CREATE TABLE monitored_providers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    provider_name VARCHAR(100) NOT NULL,
+    target_host VARCHAR(255) NOT NULL,
+    spec_type VARCHAR(50) DEFAULT 'openapi3',
+    last_health_status VARCHAR(50) DEFAULT 'healthy',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+    active_antibodies: {
+      title: '4. Speed 1: Active Antibodies',
+      desc: 'Sub-millisecond wire transformation rules (payload rewrite, url reroute).',
+      sql: `CREATE TABLE active_antibodies (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    provider_id UUID NOT NULL REFERENCES monitored_providers(id) ON DELETE CASCADE,
+    antigen_signature VARCHAR(128) NOT NULL,
+    rule_type VARCHAR(50) NOT NULL CHECK (rule_type IN ('payload_rewrite', 'url_reroute', 'header_transform', 'synthetic_mock')),
+    source_pattern JSONB NOT NULL,
+    target_mutation JSONB NOT NULL,
+    status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'evaluating', 'retired', 'failed')),
+    in_flight_rescues_count BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+    dna_repairs: {
+      title: '5. Speed 2: Permanent AST Repairs',
+      desc: 'Deterministic ts-morph code patches and sandbox verification proofs.',
+      sql: `CREATE TABLE dna_repairs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    antibody_id UUID NOT NULL REFERENCES active_antibodies(id) ON DELETE CASCADE,
+    repository_url VARCHAR(500) NOT NULL,
+    target_branch VARCHAR(100) DEFAULT 'main',
+    pr_number INT,
+    pr_url TEXT,
+    ast_diff_summary TEXT NOT NULL,
+    sandbox_verification_status VARCHAR(50) DEFAULT 'pending' CHECK (sandbox_verification_status IN ('pending', 'passed', 'failed')),
+    sandbox_latency_ms NUMERIC(8, 2),
+    cryptographic_certificate VARCHAR(255),
+    merged_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+    herd_vaccines: {
+      title: '6. Global Herd Immunity Ledger',
+      desc: 'Ed25519-signed vaccine bytecodes with Byzantine peer consensus.',
+      sql: `CREATE TABLE herd_vaccines (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vaccine_hash VARCHAR(128) UNIQUE NOT NULL,
+    origin_region VARCHAR(50) NOT NULL,
+    target_host VARCHAR(255) NOT NULL,
+    antigen_pattern JSONB NOT NULL,
+    antibody_bytecode BYTEA NOT NULL,
+    ed25519_signature VARCHAR(255) NOT NULL,
+    consensus_peer_votes INT DEFAULT 1,
+    is_globally_approved BOOLEAN DEFAULT FALSE,
+    broadcast_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+    schema_vector_index: {
+      title: '7. pgvector Semantic Memory',
+      desc: '1536-dimensional OpenAI embeddings for fuzzy schema drift recognition.',
+      sql: `CREATE TABLE schema_vector_index (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    provider_id UUID NOT NULL REFERENCES monitored_providers(id) ON DELETE CASCADE,
+    field_path VARCHAR(255) NOT NULL,
+    embedding vector(1536),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`,
+    },
+  };
+
+  const handleCopyDdl = () => {
+    navigator.clipboard.writeText(ddlTables[activeDdlTab]?.sql || '');
+    setCopiedDdl(true);
+    setTimeout(() => setCopiedDdl(false), 2000);
+  };
 
   const nodeSpecs: Record<string, ActiveNodeDetail> = {
     microservice: {
@@ -276,27 +392,57 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
             The canonical 3-tier software immunology architecture: Edge Wire Defense (Data Plane), Autonomous DNA Repair (Control Plane), and Collective Consensus (Global Herd Mesh).
           </p>
 
-          <div className="mt-6 flex items-center justify-center gap-3">
+          {/* View Toggle */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={runPipelineTrace}
-              disabled={isTracing}
-              className="px-6 py-3 rounded-2xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(212,175,55,0.4)] disabled:opacity-60"
+              onClick={() => setViewMode('3plane')}
+              className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                viewMode === '3plane'
+                  ? 'bg-[#D4AF37] text-[#0B0B0C] shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                  : 'bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-[#D4AF37]/50'
+              }`}
             >
-              {isTracing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" /> Tracing Packet (0.38ms ➔ 3.8ms)...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 fill-current" /> Run Live End-to-End Pipeline Trace
-                </>
-              )}
+              <Layers className="w-3.5 h-3.5" />
+              <span>3-Plane Biological Mesh</span>
             </button>
+
+            <button
+              onClick={() => setViewMode('5tier')}
+              className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                viewMode === '5tier'
+                  ? 'bg-[#D4AF37] text-[#0B0B0C] shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                  : 'bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-[#D4AF37]/50'
+              }`}
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>5-Tier Polyglot Data Topology &amp; DDL</span>
+            </button>
+
+            {viewMode === '3plane' && (
+              <button
+                onClick={runPipelineTrace}
+                disabled={isTracing}
+                className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-[#D4AF37]/40 text-[#F3E5AB] font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                {isTracing ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#D4AF37]" />
+                    <span>Tracing Packet (0.38ms ➔ 3.8ms)...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current text-[#D4AF37]" />
+                    <span>Run Live Pipeline Trace</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
         {/* 3-PLANE SYSTEM DIAGRAM (Replicating the exact uploaded architecture) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {viewMode === '3plane' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Diagram Area */}
           <div className="lg:col-span-8 space-y-8">
             {/* ======================================================== */}
@@ -675,6 +821,226 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
             )}
           </div>
         </div>
+        ) : (
+          /* VIEW 2: 5-TIER POLYGLOT DATA TOPOLOGY */
+          <div className="space-y-12">
+            {/* Architectural ASCII Topology Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-black/90 border border-[#D4AF37]/40 shadow-2xl overflow-x-auto font-mono text-xs">
+              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4 text-[#D4AF37]" />
+                  <span className="font-bold text-[#D4AF37] uppercase tracking-wider text-sm">
+                    IMMUNIX 5-TIER POLYGLOT DATA TOPOLOGY
+                  </span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-[#10B981] font-bold">
+                  PRODUCTION HIGH-AVAILABILITY
+                </span>
+              </div>
+
+              <div className="space-y-3 text-[11px] leading-relaxed text-[#F3E5AB]">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <span className="font-bold text-[#D4AF37]">[ TIER 1: SUB-MILLISECOND L1 CACHE ]</span>
+                  <span className="text-white/80">WASM Radix Trie / Redis Cluster</span>
+                  <span className="text-[#10B981]">&lt; 0.1ms wire antibody lookup</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <span className="font-bold text-[#D4AF37]">[ TIER 2: HIGH-THROUGHPUT TELEMETRY ]</span>
+                  <span className="text-white/80">ClickHouse + Redpanda Event Bus</span>
+                  <span className="text-[#10B981]">Billions of wire events, 10:1 compression</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <span className="font-bold text-[#D4AF37]">[ TIER 3: PRIMARY TRANSACTIONAL DB ]</span>
+                  <span className="text-white/80">PostgreSQL 16 Enterprise Grid</span>
+                  <span className="text-[#10B981]">Tenants, contracts, PR tracking, ACID guarantee</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <span className="font-bold text-[#D4AF37]">[ TIER 4: SEMANTIC VECTOR MEMORY ]</span>
+                  <span className="text-white/80">pgvector / Qdrant HNSW Index</span>
+                  <span className="text-[#10B981]">1536-dim fuzzy schema drift embeddings</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <span className="font-bold text-[#D4AF37]">[ TIER 5: DECENTRALIZED HERD LEDGER ]</span>
+                  <span className="text-white/80">Merkle-DAG + Ed25519 Gossip</span>
+                  <span className="text-[#10B981]">Global peer-to-peer consensus in 3.4ms</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 5-Tier Deep Technical Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Tier 1 */}
+              <div className="p-6 rounded-3xl bg-[#141416] border border-[#D4AF37]/30 shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#D4AF37] font-bold uppercase tracking-widest">
+                    Tier 1 • Wire Inception
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-white">0.08ms</span>
+                </div>
+                <h4 className="font-heading font-black text-lg text-white">WASM Radix Trie / Redis</h4>
+                <p className="text-xs text-[#6E6E73] leading-relaxed">
+                  In-kernel eBPF socket maps and lock-free WebAssembly Trie structures storing pre-compiled antibody bytecodes for instantaneous wire rewriting.
+                </p>
+                <div className="pt-2 text-[11px] font-mono text-white/50 border-t border-white/10">
+                  Engine: <strong className="text-white">proxy-wasm ABI + Rust</strong>
+                </div>
+              </div>
+
+              {/* Tier 2 */}
+              <div className="p-6 rounded-3xl bg-[#141416] border border-[#D4AF37]/30 shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#D4AF37] font-bold uppercase tracking-widest">
+                    Tier 2 • Telemetry
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-white">10M msg/s</span>
+                </div>
+                <h4 className="font-heading font-black text-lg text-white">ClickHouse + Redpanda</h4>
+                <p className="text-xs text-[#6E6E73] leading-relaxed">
+                  High-velocity anomaly logs and payload diff streams ingested with zero JVM garbage collection pauses and 10:1 columnar ZSTD compression.
+                </p>
+                <div className="pt-2 text-[11px] font-mono text-white/50 border-t border-white/10">
+                  Engine: <strong className="text-white">C++20 Native Engine</strong>
+                </div>
+              </div>
+
+              {/* Tier 3 */}
+              <div className="p-6 rounded-3xl bg-[#141416] border border-[#D4AF37]/30 shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#D4AF37] font-bold uppercase tracking-widest">
+                    Tier 3 • Primary Store
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-white">ACID Strict</span>
+                </div>
+                <h4 className="font-heading font-black text-lg text-white">PostgreSQL 16 Sovereign</h4>
+                <p className="text-xs text-[#6E6E73] leading-relaxed">
+                  Enterprise tenants, Argon2id salted API keys, active antibodies, and audited GitHub PR pull request verification certificates with row-level security.
+                </p>
+                <div className="pt-2 text-[11px] font-mono text-white/50 border-t border-white/10">
+                  Engine: <strong className="text-white">Postgres 16 + Citus Scale</strong>
+                </div>
+              </div>
+
+              {/* Tier 4 */}
+              <div className="p-6 rounded-3xl bg-[#141416] border border-[#D4AF37]/30 shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#D4AF37] font-bold uppercase tracking-widest">
+                    Tier 4 • Vector Memory
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-white">1536-dim</span>
+                </div>
+                <h4 className="font-heading font-black text-lg text-white">pgvector / Qdrant</h4>
+                <p className="text-xs text-[#6E6E73] leading-relaxed">
+                  Cosine distance index matching mutated payloads against historic OpenAPI/JSON-Schema embeddings to classify silent field renames in microseconds.
+                </p>
+                <div className="pt-2 text-[11px] font-mono text-white/50 border-t border-white/10">
+                  Engine: <strong className="text-white">HNSW Vector Quantization</strong>
+                </div>
+              </div>
+
+              {/* Tier 5 */}
+              <div className="p-6 rounded-3xl bg-[#141416] border border-[#D4AF37]/30 shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#D4AF37] font-bold uppercase tracking-widest">
+                    Tier 5 • P2P Consensus
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-white">3.4ms Mesh</span>
+                </div>
+                <h4 className="font-heading font-black text-lg text-white">Merkle-DAG + Ed25519</h4>
+                <p className="text-xs text-[#6E6E73] leading-relaxed">
+                  Decentralized cryptographic ledger propagating verified software antibodies worldwide with Byzantine fault tolerance and Zero-Knowledge redaction.
+                </p>
+                <div className="pt-2 text-[11px] font-mono text-white/50 border-t border-white/10">
+                  Engine: <strong className="text-white">libp2p GossipSub v1.2</strong>
+                </div>
+              </div>
+
+              {/* Zero-Knowledge Vault Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-[#1C1C1F] to-[#0B0B0C] border border-[#D4AF37]/50 shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#10B981] font-bold uppercase tracking-widest">
+                    Zero-Knowledge Vault
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-xs font-mono text-[#10B981]">0 PII Retained</span>
+                </div>
+                <h4 className="font-heading font-black text-lg text-white">Zero Storage Security</h4>
+                <p className="text-xs text-[#6E6E73] leading-relaxed">
+                  Upstream customer secrets (Stripe, Twilio, OpenAI) stream exclusively through ephemeral TLS memory buffers with zero disk writes.
+                </p>
+                <div className="pt-2 text-[11px] font-mono text-white/50 border-t border-white/10">
+                  Compliance: <strong className="text-[#D4AF37]">SOC2 Type II + ISO 27001</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive PostgreSQL Production DDL Inspector */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#141416] border border-[#D4AF37]/40 shadow-2xl space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
+                    <FileCode className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-heading font-black text-base text-white">
+                      PostgreSQL 16 Production DDL Specification
+                    </h4>
+                    <p className="text-xs font-mono text-[#6E6E73]">
+                      Immutable relational schema definitions powering IMMUNIX Control Plane
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleCopyDdl}
+                  className="self-start sm:self-auto px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-xs flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  {copiedDdl ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                      <span className="text-[#10B981]">Copied SQL!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <span>Copy Table DDL</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Table Selection Tabs */}
+              <div className="flex flex-wrap gap-2">
+                {Object.keys(ddlTables).map((tblKey) => (
+                  <button
+                    key={tblKey}
+                    onClick={() => setActiveDdlTab(tblKey)}
+                    className={`px-3.5 py-1.5 rounded-xl font-mono text-xs transition-all cursor-pointer ${
+                      activeDdlTab === tblKey
+                        ? 'bg-[#D4AF37] text-[#0B0B0C] font-bold shadow-md'
+                        : 'bg-white/5 hover:bg-white/10 text-white/70 border border-white/10'
+                    }`}
+                  >
+                    {tblKey}
+                  </button>
+                ))}
+              </div>
+
+              {/* Selected DDL Content */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-mono text-white/60">
+                  <span>{ddlTables[activeDdlTab]?.title} ── {ddlTables[activeDdlTab]?.desc}</span>
+                  <span className="text-[#D4AF37]">schema.sql</span>
+                </div>
+                <pre className="p-5 rounded-2xl bg-black border border-white/10 font-mono text-xs text-[#10B981] overflow-x-auto leading-relaxed shadow-inner">
+                  {ddlTables[activeDdlTab]?.sql}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

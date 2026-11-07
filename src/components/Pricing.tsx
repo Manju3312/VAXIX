@@ -1,231 +1,140 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Check, Shield, ArrowRight } from 'lucide-react';
-
-// Deterministic locale-consistent formatter
-const inFormatter = new Intl.NumberFormat('en-IN');
-
-function formatNumber(num: number): string {
-  return inFormatter.format(num);
-}
+import React from 'react';
+import { Check } from 'lucide-react';
 
 interface PricingProps {
-  onSelectTier: (tierName: string) => void;
-  onOpenConsole: () => void;
+  onSelectTier?: (tierName: string) => void;
+  onOpenConsole?: () => void;
 }
 
-export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps) {
-  const [isAnnual, setIsAnnual] = useState(true);
-
+export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = {}) {
   const tiers = [
     {
-      name: 'Community Edition',
-      badge: 'OPEN CORE',
-      priceMonthly: 0,
-      priceAnnual: 0,
-      description: 'For independent developers and single repos needing local AST codemods.',
+      name: 'Open Core Sentinel',
+      price: '$0',
+      period: 'forever free',
+      description: 'Single-developer local proxy and AST codemod engine for development clusters.',
       features: [
-        'Local CLI AST Codemod Engine',
-        'Single-Repository GitHub PR Generator',
-        'Standard Schema Diff Parser',
-        'Local Docker MicroVM Sandbox',
-        'Community Discord Support',
+        'Local in-memory wire proxy',
+        'Deterministic ts-morph AST engine',
+        'Standard GitHub Pull Request creation',
+        'Local mock sandbox verification',
       ],
       cta: 'Install Open Core',
-      highlighted: false,
-      action: 'console',
+      highlight: false,
+      action: () => onOpenConsole?.(),
     },
     {
       name: 'Growth Cluster',
-      badge: 'PRODUCTION READY',
-      priceMonthly: 199,
-      priceAnnual: 159,
-      description: 'Sub-millisecond wire-time interception for growing fintechs & SaaS apps.',
+      price: '$199',
+      period: 'per month',
+      description: 'Continuous production immunity for scaleups running mission-critical SaaS integrations.',
       features: [
-        'Speed 1: Wire Inception Interceptor (< 0.4ms)',
-        'Up to 5,000,000 Shielded Requests / mo',
-        'Up to 3 Production Kubernetes Clusters',
-        'Automated Deterministic PR Generation',
-        'Slack & PagerDuty Instant Inoculation Alerts',
-        'Standard Email & Ticket SLA (4 hrs)',
+        'Sub-0.8ms wire antibody hot-patching',
+        'Zero-downtime 3:00 AM SLA protection',
+        'Automated GitHub PRs with sandbox certificates',
+        'Up to 2,500,000 requests/month',
+        'Standard email & Slack alerts',
       ],
-      cta: 'Deploy Growth Cluster',
-      highlighted: false,
-      action: 'audit',
+      cta: 'Start 14-Day Free Trial',
+      highlight: false,
+      action: () => onSelectTier?.('Growth Cluster'),
     },
     {
       name: 'Enterprise Grid',
-      badge: 'MOST POPULAR • SOVEREIGN',
-      priceMonthly: 2500,
-      priceAnnual: 2000,
-      description: 'Global Herd Immunity sync, unmocked ephemeral probes, and SOC2 compliance.',
+      price: '$2,500',
+      period: 'per cluster / mo',
+      description: 'Full Global Herd Immunity mesh for distributed global infrastructure.',
       features: [
-        'All Growth Cluster capabilities',
-        'Global Herd Immunity Sync (14,280 Clusters)',
-        'Up to 50,000,000 Shielded Requests / mo',
-        'Unmocked Live Ephemeral Sandbox Validation',
-        'Model Context Protocol (MCP) Server Access',
-        'SOC2 Type II, ISO27001 & HIPAA Compliant',
-        'Zero-Payload Retention Policy Verified',
-        'Dedicated Solutions Architect (1 hr SLA)',
+        'Global Herd Immunity real-time network sync',
+        'Unmocked live ephemeral sandbox probe engine',
+        'Multi-repository polyglot taint graph',
+        'Custom Envoy / Cloudflare WASM filters',
+        'SOC2 Type II & ISO 27001 audit logs',
+        'Dedicated 24/7 SRE immune response desk',
       ],
       cta: 'Deploy Enterprise Grid',
-      highlighted: true,
-      action: 'audit',
+      highlight: true,
+      action: () => onSelectTier?.('Enterprise Grid'),
     },
     {
       name: 'Sovereign Mesh',
-      badge: 'AIR-GAPPED HIGH FINANCE',
-      priceMonthly: 4166,
-      priceAnnual: 3333,
-      annualBilledText: '$50,000 / year',
-      description: 'Dedicated air-gapped VPC deployment with $5,000,000 underwritten financial loss warranty.',
+      price: 'Custom',
+      period: 'annual contract',
+      description: 'Air-gapped private immune networks for global banks and sovereign clouds.',
       features: [
-        'All Enterprise Grid capabilities',
-        'Air-Gapped Private VPC / On-Prem Deployment',
-        'Unlimited Shielded Request Volume',
-        '$5,000,000 Financial Loss Outage SLA Warranty',
-        'Custom AST Rewrite Grammar Rules',
-        'Ed25519 Private Root Key Sovereignty',
-        '24/7 Dedicated Defense Operations Engineer',
-        'FedRAMP High Ready Architecture',
+        'Zero-downtime financial loss SLA warranty',
+        'Air-gapped on-premise Kubernetes DaemonSet',
+        'Private internal microservice cross-mesh',
+        'Custom proprietary AST codemod rules',
+        'Dedicated Solutions Architect team',
       ],
-      cta: 'Request Sovereign Access',
-      highlighted: false,
-      action: 'audit',
+      cta: 'Contact Sovereign Desk',
+      highlight: false,
+      action: () => onSelectTier?.('Sovereign Mesh'),
     },
   ];
 
   return (
-    <section id="enterprise-pricing" className="py-24 bg-white relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+    <section id="pricing" className="py-24 bg-[#FBFBF9] relative">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#997D25] text-xs font-mono font-bold tracking-widest uppercase mb-4">
-            <Shield className="w-3.5 h-3.5 text-[#D4AF37]" /> Sovereign Pricing Matrix
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-heading font-black text-[#0B0B0C] tracking-tight">
-            Predictable Defense, Sovereign SLA
-          </h2>
-          <p className="mt-4 text-[#6E6E73] text-base sm:text-lg leading-relaxed">
-            Never pay for incident bridge hours or catastrophic 3:00 AM API downtime again. 
-            Choose the tier matching your global transaction velocity.
-          </p>
-
-          {/* Monthly / Annual Toggle */}
-          <div className="mt-8 flex items-center justify-center gap-3">
-            <span className={`text-xs font-mono font-bold ${!isAnnual ? 'text-[#0B0B0C]' : 'text-[#6E6E73]'}`}>
-              Billed Monthly
-            </span>
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className="relative w-14 h-8 rounded-full bg-[#FBFBF9] border border-[#D4AF37] p-1 transition-colors cursor-pointer"
-            >
-              <div
-                className={`w-6 h-6 rounded-full bg-[#D4AF37] shadow-md transition-transform ${
-                  isAnnual ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-            <span className={`text-xs font-mono font-bold flex items-center gap-1.5 ${isAnnual ? 'text-[#0B0B0C]' : 'text-[#6E6E73]'}`}>
-              Billed Annually
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                Save 20%
-              </span>
-            </span>
-          </div>
+          <span className="text-[#997D25] text-xs font-mono font-bold tracking-widest uppercase">Predictable Scalability</span>
+          <h2 className="text-4xl sm:text-5xl font-black text-[#0B0B0C] mt-2 font-display">Sovereign Enterprise Plans</h2>
+          <p className="mt-4 text-[#6E6E73] text-lg">Invest in digital immunity that pays for itself on your very first averted 3:00 AM outage.</p>
         </div>
 
-        {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
-          {tiers.map((tier) => {
-            const price = isAnnual ? tier.priceAnnual : tier.priceMonthly;
-            return (
-              <div
-                key={tier.name}
-                className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 ${
-                  tier.highlighted
-                    ? 'bg-white border-2 border-[#D4AF37] shadow-[0_20px_50px_rgba(212,175,55,0.22)] lg:-translate-y-2'
-                    : 'bg-[#FBFBF9] border border-[#D4AF37]/30 hover:border-[#D4AF37]/70 hover:shadow-lg'
-                }`}
-              >
-                {tier.highlighted && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#D4AF37] text-[#0B0B0C] text-[10px] font-mono font-extrabold uppercase tracking-widest shadow-md whitespace-nowrap">
-                    {tier.badge}
-                  </div>
-                )}
+          {tiers.map((tier, idx) => (
+            <div
+              key={idx}
+              className={`rounded-3xl p-8 flex flex-col justify-between transition-all relative ${
+                tier.highlight
+                  ? 'bg-white border-2 border-[#D4AF37] shadow-[0_20px_50px_rgba(212,175,55,0.25)] ring-4 ring-[#D4AF37]/10'
+                  : 'bg-white border border-[#D4AF37]/30 hover:border-[#D4AF37] shadow-sm hover:shadow-md'
+              }`}
+            >
+              {tier.highlight && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#D4AF37] text-[#0B0B0C] text-[10px] font-mono font-black uppercase tracking-widest shadow-md">
+                  Most Popular Grid
+                </div>
+              )}
 
-                <div>
-                  {!tier.highlighted && (
-                    <div className="text-[10px] font-mono font-bold tracking-wider text-[#997D25] uppercase mb-2">
-                      {tier.badge}
-                    </div>
-                  )}
-
-                  <h3 className="font-heading font-black text-xl text-[#0B0B0C]">{tier.name}</h3>
-                  <p className="mt-2 text-xs text-[#6E6E73] leading-relaxed min-h-[36px]">
-                    {tier.description}
-                  </p>
-
-                  <div className="mt-6 mb-6 pb-6 border-b border-[#D4AF37]/20">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-heading font-black text-[#0B0B0C]">
-                        ${formatNumber(price)}
-                      </span>
-                      {price > 0 && (
-                        <span className="text-xs font-mono text-[#6E6E73]">
-                          / month
-                        </span>
-                      )}
-                    </div>
-                    {isAnnual && tier.priceAnnual > 0 && (
-                      <div className="text-[11px] font-mono text-[#997D25] mt-1 font-semibold">
-                        Billed annually ({tier.annualBilledText || `$${formatNumber(tier.priceAnnual * 12)}/yr`})
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Feature List */}
-                  <div className="space-y-3 mb-8">
-                    <div className="text-[11px] font-mono font-bold text-[#0B0B0C] uppercase tracking-wider">
-                      Included Capabilities:
-                    </div>
-                    {tier.features.map((feat, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-xs text-[#0B0B0C]">
-                        <Check className="w-4 h-4 text-[#997D25] shrink-0 mt-0.5 stroke-[2.5]" />
-                        <span className="leading-snug">{feat}</span>
-                      </div>
-                    ))}
-                  </div>
+              <div>
+                <h3 className="text-base font-bold text-[#0B0B0C]">{tier.name}</h3>
+                <p className="mt-2 text-xs text-[#6E6E73] min-h-[36px]">{tier.description}</p>
+                <div className="mt-6 mb-8 pb-6 border-b border-[#D4AF37]/15">
+                  <span className="text-4xl font-black text-[#0B0B0C] font-mono">{tier.price}</span>
+                  <span className="text-xs text-[#6E6E73] ml-2 font-mono">/ {tier.period}</span>
                 </div>
 
-                {/* Card CTA */}
-                <div>
-                  <button
-                    onClick={() => {
-                      if (tier.action === 'console') {
-                        onOpenConsole();
-                      } else {
-                        onSelectTier(tier.name);
-                      }
-                    }}
-                    className={`w-full py-3.5 px-4 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      tier.highlighted
-                        ? 'bg-[#0B0B0C] hover:bg-[#1C1C1F] text-white border border-[#D4AF37] shadow-[0_8px_25px_rgba(212,175,55,0.25)]'
-                        : 'bg-white hover:bg-[#FBFBF9] text-[#0B0B0C] border border-[#D4AF37]/50 hover:border-[#D4AF37]'
-                    }`}
-                  >
-                    <span>{tier.cta}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  </button>
-                </div>
+                <ul className="space-y-3.5 text-xs text-[#0B0B0C]">
+                  {tier.features.map((feat, fIdx) => (
+                    <li key={fIdx} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-[#997D25] shrink-0 mt-0.5" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            );
-          })}
+
+              <div className="mt-10 pt-4">
+                <button
+                  onClick={tier.action}
+                  className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    tier.highlight
+                      ? 'bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] hover:bg-black hover:shadow-lg'
+                      : 'bg-[#FBFBF9] text-[#0B0B0C] border border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-white'
+                  }`}
+                >
+                  {tier.cta}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-
