@@ -192,13 +192,13 @@ export default function ImmuneHelix3D({ interactive = true }: ImmuneHelix3DProps
 
     window.addEventListener('resize', handleResize);
 
-    // ANIMATION LOOP & TIMING (Modern THREE.Timer replaces deprecated THREE.Clock)
+    // ANIMATION LOOP
     let animationFrameId: number;
     const timer = new THREE.Timer();
 
-    const animate = () => {
+    const animate = (currentTime: number) => {
       animationFrameId = requestAnimationFrame(animate);
-      timer.update();
+      timer.update(currentTime);
       const elapsedTime = timer.getElapsed();
       const currentSpeed = speedRef.current;
 

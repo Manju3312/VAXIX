@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Dna, Terminal, Copy, Check, Shield, ArrowUpRight } from 'lucide-react';
+import { Dna, Terminal, Copy, Check } from 'lucide-react';
 
 interface FooterProps {
   onOpenConsole: () => void;

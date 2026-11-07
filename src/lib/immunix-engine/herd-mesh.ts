@@ -64,6 +64,9 @@ export interface GossipBroadcastResult {
 }
 
 export function broadcastGossipSub(signedBlock: SignedVaccineBlock): GossipBroadcastResult {
+  if (!signedBlock.signature) {
+    throw new Error('Invalid signature');
+  }
   return {
     propagationTimeMs: 3.4,
     totalNodesNotified: 14280,

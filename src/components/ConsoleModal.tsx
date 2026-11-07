@@ -11,10 +11,8 @@ import {
   CheckCircle2,
   RefreshCw,
   Cpu,
-  Globe2,
   Lock,
   Radio,
-  FileCode2,
 } from 'lucide-react';
 
 interface ConsoleModalProps {
@@ -26,7 +24,6 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'antibodies' | 'ebpf' | 'terminal'>('overview');
   const [selectedCluster, setSelectedCluster] = useState('aws-us-east-1');
   const [ebpfShieldEnabled, setEbpfShieldEnabled] = useState(true);
-  const [autoAstEnabled, setAutoAstEnabled] = useState(true);
   const [customTestInput, setCustomTestInput] = useState(
     JSON.stringify(
       {

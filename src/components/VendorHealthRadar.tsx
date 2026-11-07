@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Activity, ShieldCheck, Zap, ArrowUpRight, Search, CheckCircle } from 'lucide-react';
+import { Activity, ArrowUpRight, Search } from 'lucide-react';
 
 interface VendorStatus {
   id: string;

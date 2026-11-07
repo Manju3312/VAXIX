@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Globe, Radio, Shield, Zap, Server, Activity, ArrowUpRight, CheckCircle2, Play, RefreshCw } from 'lucide-react';
+import { Radio, Server, Activity, ArrowUpRight, Play, RefreshCw } from 'lucide-react';
 
 interface ClusterNode {
   id: string;

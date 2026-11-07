@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Terminal, Copy, Check, Download, Layers, Shield, Cpu, Cloud, CheckCircle2 } from 'lucide-react';
+import { Terminal, Copy, Check, Download, Cloud, CheckCircle2 } from 'lucide-react';
 
 export default function ClusterDeployWizard() {
   const [targetCloud, setTargetCloud] = useState<'k8s' | 'helm' | 'terraform' | 'systemd'>('k8s');

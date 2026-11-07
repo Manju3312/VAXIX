@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Activity, Dna, Menu, X, ArrowUpRight, Terminal, Search, KeyRound, Command } from 'lucide-react';
+import { Dna, Menu, X, ArrowUpRight, Terminal, Search, KeyRound } from 'lucide-react';
 
-// Deterministic en-IN locale formatter
-const inFormat = new Intl.NumberFormat('en-IN');
+const inFormatter = new Intl.NumberFormat('en-IN');
 
 function formatNumber(num: number): string {
-  return inFormat.format(num);
+  return inFormatter.format(num);
 }
 
 interface NavbarProps {

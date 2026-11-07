@@ -2,22 +2,13 @@
 
 import React, { useState } from 'react';
 import {
-  Cpu,
   Layers,
   Zap,
-  Server,
-  Shield,
   Activity,
   ArrowDown,
-  ArrowRight,
   GitPullRequest,
-  CheckCircle2,
-  Lock,
-  Radio,
   Play,
   RefreshCw,
-  Terminal,
-  ExternalLink,
 } from 'lucide-react';
 
 interface ActiveNodeDetail {

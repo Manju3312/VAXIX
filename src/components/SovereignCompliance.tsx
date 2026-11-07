@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, Lock, FileCheck, Award, KeyRound, Cpu } from 'lucide-react';
+import { ShieldCheck, Lock, Award, KeyRound, Cpu } from 'lucide-react';
 
 interface ComplianceProps {
   onOpenAudit: () => void;

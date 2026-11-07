@@ -4,16 +4,13 @@ import React, { useState } from 'react';
 import {
   ShieldCheck,
   Zap,
-  AlertTriangle,
   GitPullRequest,
   Activity,
-  FileCode,
   Terminal,
   CheckCircle,
   ArrowRight,
   RefreshCw,
   Sliders,
-  ExternalLink,
 } from 'lucide-react';
 
 interface SabotageScenario {
@@ -191,12 +188,10 @@ export default function BreakMyApiArena() {
     `[0.000s] ⚡ Ready. Click any sabotage attack on the left to inject contract mutation.`,
   ]);
   const [isHealing, setIsHealing] = useState(false);
-  const [hasRun, setHasRun] = useState(false);
 
   const triggerSabotage = async (scenario: SabotageScenario) => {
     setActiveScenario(scenario);
     setIsHealing(true);
-    setHasRun(true);
 
     // Initial shock
     setLogs([

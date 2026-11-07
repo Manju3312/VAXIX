@@ -4,14 +4,9 @@ import React, { useState } from 'react';
 import {
   Zap,
   Dna,
-  ShieldCheck,
   Cpu,
-  Layers,
-  ArrowRight,
   GitBranch,
   CheckCircle2,
-  Terminal,
-  Activity,
   Radio,
 } from 'lucide-react';
 

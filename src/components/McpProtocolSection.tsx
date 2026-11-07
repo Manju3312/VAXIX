@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Terminal, Bot, Zap, Play, CheckCircle2, Copy, Check, Code2, Sparkles } from 'lucide-react';
+import { Bot, Zap, Play, Copy, Check, Code2, Sparkles } from 'lucide-react';
 
 interface McpTool {
   name: string;

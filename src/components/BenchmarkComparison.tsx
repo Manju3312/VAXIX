@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, X, Minus, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
+import { Check, X, Minus, ShieldCheck, HelpCircle } from 'lucide-react';
 
 interface BenchmarkRow {
   capability: string;

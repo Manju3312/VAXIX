@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Shield, Zap, Sparkles, Building2, ArrowRight } from 'lucide-react';
+import { Check, Shield, ArrowRight } from 'lucide-react';
 
-// Deterministic en-IN locale formatter
-const inFormat = new Intl.NumberFormat('en-IN');
+// Deterministic locale-consistent formatter
+const inFormatter = new Intl.NumberFormat('en-IN');
 
 function formatNumber(num: number): string {
-  return inFormat.format(num);
+  return inFormatter.format(num);
 }
 
 interface PricingProps {

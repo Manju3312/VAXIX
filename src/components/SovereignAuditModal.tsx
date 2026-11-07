@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldCheck, Lock, Sparkles, Building2, Check, ArrowRight, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, Lock, Check, ArrowRight, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface SovereignAuditModalProps {

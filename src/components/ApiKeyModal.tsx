@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { KeyRound, Copy, Check, Plus, Shield, RefreshCw, X, Lock, CheckCircle2 } from 'lucide-react';
-
-const inFormat = new Intl.NumberFormat('en-IN');
+import { KeyRound, Copy, Check, Plus, RefreshCw, X, Lock, CheckCircle2 } from 'lucide-react';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -186,7 +184,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                     </span>
                   </div>
                   <div className="text-[#6E6E73] text-[11px] mt-0.5">
-                    Prefix: <code className="text-white/80">{k.key_prefix}</code> • Limit: {inFormat.format(k.rate_limit_rpm)} req/min
+                    Prefix: <code className="text-white/80">{k.key_prefix}</code> • Limit: {new Intl.NumberFormat('en-IN').format(k.rate_limit_rpm)} req/min
                   </div>
                 </div>
 

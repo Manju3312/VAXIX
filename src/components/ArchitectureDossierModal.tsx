@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, BookOpen, ShieldCheck, Check, Sparkles, Terminal, FileText, Cpu, Lock } from 'lucide-react';
+import { X, BookOpen, Lock } from 'lucide-react';
 
 interface ArchitectureDossierModalProps {
   isOpen: boolean;

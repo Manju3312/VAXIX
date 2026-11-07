@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Shield, Zap, ArrowRight, Terminal, CheckCircle2, Lock, Sparkles, Activity } from 'lucide-react';
+import { Zap, ArrowRight, Terminal, CheckCircle2 } from 'lucide-react';
 import ImmuneHelix3D from './ImmuneHelix3D';
 
 interface HeroProps {
