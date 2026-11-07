@@ -43,3 +43,4 @@ To report security vulnerabilities or request cryptographic verification certifi
 * **Security Ingestion Endpoint:** `security@immunix.network`
 * **PGP Key Fingerprint:** `4A9F B120 73EC 991D 002B  8F3E 5D14 C8A9 E200 48B1`
 * **SLA for Critical Disclosures:** Initial response within **2 hours**; fix deployment within **24 hours**.
+
