@@ -19,6 +19,13 @@ import confetti from 'canvas-confetti';
 
 export type TierKey = 'open-core' | 'growth' | 'enterprise-grid' | 'sovereign-mesh';
 
+function formatNumber(num: number | string): string {
+  if (num === null || num === undefined) return '';
+  const parts = num.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
 export interface PlanConfig {
   id: TierKey;
   name: string;
@@ -334,7 +341,7 @@ export default function StripeCheckoutModal({
                           <span className="text-[10px] text-[#6E6E73] font-mono">/{p.period}</span>
                         </div>
                         <div className="mt-1 text-[11px] font-mono text-[#10B981]">
-                          {p.rpm.toLocaleString()} RPM
+                          {formatNumber(p.rpm)} RPM
                         </div>
                       </button>
                     );
@@ -550,7 +557,7 @@ export default function StripeCheckoutModal({
                   <div className="text-right font-mono">
                     <div className="text-[10px] uppercase tracking-wider text-[#6E6E73]">Allocated Throughput</div>
                     <div className="text-xl font-bold text-[#D4AF37]">
-                      {accessPass.rate_limit_rpm.toLocaleString()} RPM
+                      {formatNumber(accessPass.rate_limit_rpm)} RPM
                     </div>
                     <div className="text-[10px] text-[#10B981]">Tier: {accessPass.tier}</div>
                   </div>

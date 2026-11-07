@@ -29,6 +29,13 @@ interface SessionData {
   token: string;
 }
 
+function formatNumber(num: number | string): string {
+  if (num === null || num === undefined) return '';
+  const parts = num.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [session] = useState<SessionData | null>(() => {
@@ -144,7 +151,7 @@ export default function DashboardPage() {
   const handleCreateKey = () => {
     const newKey = {
       id: `key_${Date.now()}`,
-      name: `Edge Gateway ${new Date().toLocaleTimeString()}`,
+      name: `Edge Gateway ${new Date().toISOString().substring(11, 19)} UTC`,
       prefix: `imx_live_${Math.random().toString(36).substring(2, 6)}...`,
       created: 'Just now',
       lastUsed: 'Never',
@@ -175,8 +182,8 @@ export default function DashboardPage() {
             <div className="h-6 w-px bg-black/10 hidden sm:block" />
 
             <div className="hidden sm:flex items-center gap-2 text-xs font-mono">
-              <span className="text-[#6E6E73]">{session?.tenant || 'Sovereign Core Holdings'}</span>
-              <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#997D25] border border-[#D4AF37]/30 font-bold text-[10px]">
+              <span className="text-[#6E6E73]" suppressHydrationWarning>{session?.tenant || 'Sovereign Core Holdings'}</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#997D25] border border-[#D4AF37]/30 font-bold text-[10px]" suppressHydrationWarning>
                 {session?.tier || 'Enterprise Grid'}
               </span>
             </div>
@@ -386,7 +393,7 @@ export default function DashboardPage() {
                             {atb.ruleType}
                           </span>
                         </td>
-                        <td className="p-4 text-[#0B0B0C] font-bold">{atb.rescues.toLocaleString()} reqs</td>
+                        <td className="p-4 text-[#0B0B0C] font-bold" suppressHydrationWarning>{formatNumber(atb.rescues)} reqs</td>
                         <td className="p-4 text-[#997D25] font-bold">{atb.latency}</td>
                         <td className="p-4 text-center">
                           <span

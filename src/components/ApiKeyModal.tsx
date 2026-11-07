@@ -19,6 +19,13 @@ interface ApiKeyRecord {
   created_at: string;
 }
 
+function formatNumber(num: number | string): string {
+  if (num === null || num === undefined) return '';
+  const parts = num.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
 export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
   const [keys, setKeys] = useState<ApiKeyRecord[]>([]);
   const [newKeyName, setNewKeyName] = useState('');
@@ -184,7 +191,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                     </span>
                   </div>
                   <div className="text-[#6E6E73] text-[11px] mt-0.5">
-                    Prefix: <code className="text-white/80">{k.key_prefix}</code> • Limit: {new Intl.NumberFormat('en-IN').format(k.rate_limit_rpm)} req/min
+                    Prefix: <code className="text-white/80">{k.key_prefix}</code> • Limit: {formatNumber(k.rate_limit_rpm)} req/min
                   </div>
                 </div>
 
