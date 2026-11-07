@@ -89,6 +89,7 @@ https://immunix.network
                 <span className="text-sm font-bold text-[#0B0B0C]">${monthlyVolumeMillions} Million / mo</span>
               </div>
               <input
+                suppressHydrationWarning
                 type="range"
                 min="5"
                 max="250"
@@ -111,6 +112,7 @@ https://immunix.network
                 <span className="text-sm font-bold text-[#0B0B0C]">{incidentMttrHours} Hours</span>
               </div>
               <input
+                suppressHydrationWarning
                 type="range"
                 min="1"
                 max="8"
@@ -133,6 +135,7 @@ https://immunix.network
                 <span className="text-sm font-bold text-[#0B0B0C]">{incidentsPerYear} Events / yr</span>
               </div>
               <input
+                suppressHydrationWarning
                 type="range"
                 min="1"
                 max="12"

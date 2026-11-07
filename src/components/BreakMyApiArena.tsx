@@ -229,6 +229,7 @@ X-Immunix-Latency: 0.29ms
               </h3>
               {logs.length > 1 && (
                 <button
+                  suppressHydrationWarning
                   onClick={resetConsole}
                   className="text-xs font-mono text-[#6E6E73] hover:text-[#0B0B0C] flex items-center gap-1 cursor-pointer"
                 >
@@ -328,6 +329,7 @@ X-Immunix-Latency: 0.29ms
               {/* View Switcher: Telemetry vs Wire Payloads vs AST Diff */}
               <div className="flex items-center gap-1.5 bg-white/10 p-1 rounded-xl">
                 <button
+                  suppressHydrationWarning
                   onClick={() => setActiveTab('telemetry')}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                     activeTab === 'telemetry' ? 'bg-[#D4AF37] text-[#0B0B0C]' : 'text-white/60 hover:text-white'
@@ -336,6 +338,7 @@ X-Immunix-Latency: 0.29ms
                   <Activity className="w-3 h-3" /> Telemetry
                 </button>
                 <button
+                  suppressHydrationWarning
                   onClick={() => setActiveTab('payload')}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                     activeTab === 'payload' ? 'bg-[#D4AF37] text-[#0B0B0C]' : 'text-white/60 hover:text-white'
@@ -344,6 +347,7 @@ X-Immunix-Latency: 0.29ms
                   <FileCode className="w-3 h-3" /> Raw Payloads
                 </button>
                 <button
+                  suppressHydrationWarning
                   onClick={() => setActiveTab('ast')}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                     activeTab === 'ast' ? 'bg-[#D4AF37] text-[#0B0B0C]' : 'text-white/60 hover:text-white'
