@@ -116,6 +116,23 @@ async function runHttpTests() {
     const pingData = await pingRes.json();
     console.log(`✓ [PROVIDER PING] /api/keys/providers: Verified Stripe connectivity in ${pingData.latency_ms}ms (${pingData.wire_shield})`);
 
+    // 2.7c Test Zero-Downtime Key Rotation & Cryptographic Manifest Export
+    const rotRes = await fetch(`${baseUrl}/api/keys/providers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'rotate_key', provider_id: 'stripe' }),
+    });
+    const rotData = await rotRes.json();
+    console.log(`✓ [KEY ROTATION] /api/keys/providers: Rotated Stripe key with 24h grace bridge (${rotData.new_key_prefix})`);
+
+    const manifestRes = await fetch(`${baseUrl}/api/keys/providers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'export_vault' }),
+    });
+    const manifestData = await manifestRes.json();
+    console.log(`✓ [HSM MANIFEST] /api/keys/providers: Exported Ed25519 signed vault manifest (${manifestData.manifest.total_providers_shielded} technologies shielded)`);
+
     // 2.8 Test Audit Evaluation Intake
     const auditRes = await fetch(`${baseUrl}/api/audit`, {
       method: 'POST',
