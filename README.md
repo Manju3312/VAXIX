@@ -208,17 +208,23 @@ cd immunix
 # Install dependencies
 npm install
 
-# Start local server with Turbopack
+# Configure environment (copy template)
+cp .env.example .env.local
+
+# Option A: Start local development server with Turbopack (SQLite Embedded Engine)
 npm run dev
+
+# Option B: Run full sovereign multi-container stack (PostgreSQL + Redis + Redpanda + ClickHouse)
+docker-compose up -d
+
+# Execute automated sovereign resilience test suite across all 7 endpoints
+npm test
 
 # Compile production build
 npm run build
 
 # Start production server
 npm run start -p 3000
-
-# Run automated sovereign test suite
-node scripts/test-sovereign-pipeline.mjs
 ```
 
 ---
