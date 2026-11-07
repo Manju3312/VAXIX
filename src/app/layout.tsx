@@ -61,6 +61,26 @@ export default function RootLayout({
       lang="en"
       className={`${montserrat.variable} ${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
+      <head>
+        {/* Suppress third-party password manager & autofill extension noise (e.g. fdprocessedid) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var origError = console.error;
+                console.error = function() {
+                  for (var i = 0; i < arguments.length; i++) {
+                    if (typeof arguments[i] === 'string' && arguments[i].indexOf('fdprocessedid') !== -1) {
+                      return;
+                    }
+                  }
+                  return origError.apply(console, arguments);
+                };
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-white text-[#0B0B0C] antialiased selection:bg-[#D4AF37] selection:text-[#0B0B0C]">
         {children}
       </body>
