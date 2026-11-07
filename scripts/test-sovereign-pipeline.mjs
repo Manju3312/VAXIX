@@ -119,7 +119,27 @@ async function runHttpTests() {
     const healthData = await healthRes.json();
     console.log(`✓ [HEALTH DIAGNOSTICS] /api/health: Status ${healthData.status} (${healthData.health_check_latency_ms}ms) - Mesh: ${healthData.topology.tier5_byzantine_herd_mesh}`);
 
-    console.log('\n🏛️ ALL 8 SOVEREIGN ARCHITECTURE ENDPOINTS PASSED WITH 100% SUCCESS.\n');
+    // 2.10 Test Stripe Checkout & Sovereign Access Pass Provisioning
+    const checkoutRes = await fetch(`${baseUrl}/api/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tier: 'enterprise-grid',
+        company: 'Goldman Sachs Sovereign Mesh Test',
+        email: 'ciso@gs-mesh.test',
+        simulateCard: { last4: '4242' },
+      }),
+    });
+    const checkoutData = await checkoutRes.json();
+    if (!checkoutData.success || !checkoutData.access_pass) {
+      throw new Error(`Stripe checkout failed: ${JSON.stringify(checkoutData)}`);
+    }
+    console.log(`✓ [STRIPE CHECKOUT] /api/checkout: Paid $${checkoutData.amount_charged_usd} via Stripe (${checkoutData.stripe_payment_id})`);
+    console.log(`   - Provisioned Tenant: ${checkoutData.access_pass.tenant_name} (${checkoutData.access_pass.tenant_slug})`);
+    console.log(`   - Master Key Issued: ${checkoutData.access_pass.key_prefix} (Allocated ${checkoutData.access_pass.rate_limit_rpm} RPM)`);
+    console.log(`   - Access Pass ID: ${checkoutData.access_pass.access_pass_id}`);
+
+    console.log('\n🏛️ ALL 9 SOVEREIGN ARCHITECTURE ENDPOINTS PASSED WITH 100% SUCCESS.\n');
   } catch (err) {
     console.error('❌ HTTP Test Error:', err);
     process.exit(1);

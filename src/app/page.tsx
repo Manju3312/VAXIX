@@ -20,6 +20,7 @@ import SovereignAuditModal from '@/components/SovereignAuditModal';
 import ArchitectureDossierModal from '@/components/ArchitectureDossierModal';
 import ApiKeyModal from '@/components/ApiKeyModal';
 import CommandPalette from '@/components/CommandPalette';
+import StripeCheckoutModal from '@/components/StripeCheckoutModal';
 
 export default function Home() {
   const [consoleModalOpen, setConsoleModalOpen] = useState(false);
@@ -28,6 +29,8 @@ export default function Home() {
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [selectedAuditTier, setSelectedAuditTier] = useState('Enterprise Grid');
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [selectedCheckoutTier, setSelectedCheckoutTier] = useState<string>('enterprise-grid');
 
   useEffect(() => {
     const handleOpenPaletteEvent = () => setPaletteOpen(true);
@@ -38,6 +41,11 @@ export default function Home() {
   const handleOpenAudit = (tierName: string = 'Enterprise Grid') => {
     setSelectedAuditTier(tierName);
     setAuditModalOpen(true);
+  };
+
+  const handleOpenCheckout = (tier: string = 'enterprise-grid') => {
+    setSelectedCheckoutTier(tier);
+    setCheckoutModalOpen(true);
   };
 
   return (
@@ -87,7 +95,8 @@ export default function Home() {
 
         {/* 11. Enterprise Pricing with Hand-Crafted Gold Trim */}
         <Pricing
-          onSelectTier={(tierName) => handleOpenAudit(tierName)}
+          onSelectTier={(tierName) => handleOpenCheckout(tierName)}
+          onCheckout={(tierKey) => handleOpenCheckout(tierKey)}
           onOpenConsole={() => setConsoleModalOpen(true)}
         />
 
@@ -106,6 +115,16 @@ export default function Home() {
         isOpen={consoleModalOpen}
         onClose={() => setConsoleModalOpen(false)}
       />
+
+      {checkoutModalOpen && (
+        <StripeCheckoutModal
+          key={selectedCheckoutTier}
+          isOpen={checkoutModalOpen}
+          onClose={() => setCheckoutModalOpen(false)}
+          initialTier={selectedCheckoutTier}
+          onOpenConsole={() => setConsoleModalOpen(true)}
+        />
+      )}
 
       <SovereignAuditModal
         isOpen={auditModalOpen}
@@ -129,6 +148,7 @@ export default function Home() {
         onOpenConsole={() => setConsoleModalOpen(true)}
         onOpenAudit={() => handleOpenAudit('Sovereign Mesh')}
         onOpenDossier={() => setDossierModalOpen(true)}
+        onOpenCheckout={(tier) => handleOpenCheckout(tier || 'enterprise-grid')}
       />
     </div>
   );

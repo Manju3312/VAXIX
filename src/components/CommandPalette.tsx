@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Sparkles,
   Cpu,
+  CreditCard,
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -21,6 +22,7 @@ interface CommandPaletteProps {
   onOpenConsole: () => void;
   onOpenAudit: () => void;
   onOpenDossier: () => void;
+  onOpenCheckout?: (tier?: string) => void;
 }
 
 export default function CommandPalette({
@@ -29,6 +31,7 @@ export default function CommandPalette({
   onOpenConsole,
   onOpenAudit,
   onOpenDossier,
+  onOpenCheckout,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
 
@@ -142,6 +145,17 @@ export default function CommandPalette({
       action: () => {
         onClose();
         onOpenDossier();
+      },
+    },
+    {
+      id: 'checkout',
+      title: 'Provision Sovereign License & Key (Stripe Gateway)',
+      subtitle: 'Subscribe to Enterprise Grid or Sovereign Mesh and mint live master API keys',
+      icon: CreditCard,
+      category: 'Billing',
+      action: () => {
+        onClose();
+        onOpenCheckout?.('enterprise-grid');
       },
     },
     {

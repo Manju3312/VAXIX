@@ -6,9 +6,10 @@ import { Check } from 'lucide-react';
 interface PricingProps {
   onSelectTier?: (tierName: string) => void;
   onOpenConsole?: () => void;
+  onCheckout?: (tierKey: string) => void;
 }
 
-export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = {}) {
+export default function Pricing({ onSelectTier, onOpenConsole, onCheckout }: PricingProps = {}) {
   const tiers = [
     {
       name: 'Open Core Sentinel',
@@ -23,7 +24,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = 
       ],
       cta: 'Install Open Core',
       highlight: false,
-      action: () => onOpenConsole?.(),
+      action: () => (onCheckout ? onCheckout('open-core') : onOpenConsole?.()),
     },
     {
       name: 'Growth Cluster',
@@ -39,7 +40,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = 
       ],
       cta: 'Start 14-Day Free Trial',
       highlight: false,
-      action: () => onSelectTier?.('Growth Cluster'),
+      action: () => (onCheckout ? onCheckout('growth') : onSelectTier?.('Growth Cluster')),
     },
     {
       name: 'Enterprise Grid',
@@ -56,7 +57,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = 
       ],
       cta: 'Deploy Enterprise Grid',
       highlight: true,
-      action: () => onSelectTier?.('Enterprise Grid'),
+      action: () => (onCheckout ? onCheckout('enterprise-grid') : onSelectTier?.('Enterprise Grid')),
     },
     {
       name: 'Sovereign Mesh',
@@ -72,7 +73,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = 
       ],
       cta: 'Contact Sovereign Desk',
       highlight: false,
-      action: () => onSelectTier?.('Sovereign Mesh'),
+      action: () => (onCheckout ? onCheckout('sovereign-mesh') : onSelectTier?.('Sovereign Mesh')),
     },
   ];
 

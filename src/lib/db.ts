@@ -793,6 +793,87 @@ export function getApiKeys(): ApiKey[] {
     .all() as unknown as ApiKey[];
 }
 
+export function createTenant(data: {
+  name: string;
+  slug: string;
+  tier?: 'open-core' | 'growth' | 'enterprise-grid' | 'sovereign-mesh';
+  sla_warranty_enabled?: number;
+}): Tenant {
+  const id = `ten_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const tier = data.tier || 'growth';
+  const sla = data.sla_warranty_enabled ?? (tier === 'enterprise-grid' || tier === 'sovereign-mesh' ? 1 : 0);
+
+  db.prepare(`
+    INSERT INTO tenants (id, name, slug, tier, sla_warranty_enabled)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(id, data.name, data.slug, tier, sla);
+
+  return {
+    id,
+    name: data.name,
+    slug: data.slug,
+    tier,
+    sla_warranty_enabled: sla,
+    created_at: new Date().toISOString(),
+  };
+}
+
+export function provisionTenantWithAccess(data: {
+  company: string;
+  email: string;
+  tier: 'open-core' | 'growth' | 'enterprise-grid' | 'sovereign-mesh';
+  stripe_payment_id?: string;
+}): {
+  tenant: Tenant;
+  apiKey: string;
+  keyPrefix: string;
+  rateLimitRpm: number;
+  accessPassId: string;
+  clusterUrl: string;
+  licenseCertificate: string;
+} {
+  const cleanSlug =
+    data.company
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .substring(0, 25) + `-${Math.random().toString(36).substring(2, 6)}`;
+
+  const tenant = createTenant({
+    name: data.company,
+    slug: cleanSlug,
+    tier: data.tier,
+    sla_warranty_enabled: data.tier === 'enterprise-grid' || data.tier === 'sovereign-mesh' ? 1 : 0,
+  });
+
+  const tierKeyMapping: Record<string, string> = {
+    'open-core': 'community',
+    growth: 'growth',
+    'enterprise-grid': 'enterprise',
+    'sovereign-mesh': 'sovereign',
+  };
+
+  const internalTier = tierKeyMapping[data.tier] || 'growth';
+  const { apiKey, rateLimitRpm } = createApiKey({
+    name: `${data.company} Production Master`,
+    tier: internalTier,
+    tenant_id: tenant.id,
+  });
+
+  const accessPassId = `PASS-IMX-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  const clusterUrl = `https://${data.tier === 'sovereign-mesh' ? 'ch-zurich-vault' : 'us-east-1'}.immunix.network/v1`;
+  const licenseCertificate = `ed25519_cert_${Math.random().toString(36).substring(2, 14)}_${data.stripe_payment_id || 'zero_trust'}`;
+
+  return {
+    tenant,
+    apiKey,
+    keyPrefix: `${apiKey.substring(0, 12)}...`,
+    rateLimitRpm,
+    accessPassId,
+    clusterUrl,
+    licenseCertificate,
+  };
+}
+
 export function getSystemMetrics(): SystemMetrics {
   const clusterAgg = db.prepare('SELECT count(*) as count, SUM(shielded_count) as total_shielded, AVG(latency_ms) as avg_latency FROM clusters').get() as {
     count: number;
