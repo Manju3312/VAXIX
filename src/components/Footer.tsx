@@ -54,6 +54,7 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
             {onOpenConsole && (
               <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
                 <button
+                  suppressHydrationWarning
                   onClick={onOpenConsole}
                   className="px-3 py-1.5 rounded-lg bg-[#0B0B0C] border border-[#D4AF37]/40 text-[#D4AF37] hover:border-[#D4AF37] text-[11px] transition-colors cursor-pointer"
                 >

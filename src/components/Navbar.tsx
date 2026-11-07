@@ -109,6 +109,7 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
 
         {/* Mobile Toggle */}
         <button
+          suppressHydrationWarning
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 text-[#0B0B0C] hover:text-[#D4AF37] cursor-pointer"
           aria-label="Toggle Menu"

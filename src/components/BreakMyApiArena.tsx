@@ -80,6 +80,7 @@ export default function BreakMyApiArena() {
 
             <div className="space-y-3">
               <button
+                suppressHydrationWarning
                 onClick={() => setSelectedSabotage('rename')}
                 className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                   selectedSabotage === 'rename'
@@ -92,6 +93,7 @@ export default function BreakMyApiArena() {
               </button>
 
               <button
+                suppressHydrationWarning
                 onClick={() => setSelectedSabotage('delete')}
                 className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                   selectedSabotage === 'delete'
@@ -104,6 +106,7 @@ export default function BreakMyApiArena() {
               </button>
 
               <button
+                suppressHydrationWarning
                 onClick={() => setSelectedSabotage('timestamp')}
                 className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                   selectedSabotage === 'timestamp'
@@ -117,6 +120,7 @@ export default function BreakMyApiArena() {
             </div>
 
             <button
+              suppressHydrationWarning
               onClick={runSimulation}
               disabled={isRunning}
               className="mt-6 w-full py-4 rounded-2xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37] font-bold text-xs uppercase tracking-wider hover:bg-black hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"

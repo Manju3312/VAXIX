@@ -178,7 +178,7 @@ WantedBy=multi-user.target`,
           {/* Format Selection Tabs */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-[#D4AF37]/20 gap-4">
             <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#D4AF37]/30 shadow-sm overflow-x-auto w-full sm:w-auto">
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setTargetCloud('k8s')}
                 className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   targetCloud === 'k8s'
@@ -189,7 +189,7 @@ WantedBy=multi-user.target`,
                 Kubernetes DaemonSet
               </button>
 
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setTargetCloud('helm')}
                 className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   targetCloud === 'helm'
@@ -200,7 +200,7 @@ WantedBy=multi-user.target`,
                 Helm v3 Chart
               </button>
 
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setTargetCloud('terraform')}
                 className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   targetCloud === 'terraform'
@@ -211,7 +211,7 @@ WantedBy=multi-user.target`,
                 Terraform Module
               </button>
 
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setTargetCloud('systemd')}
                 className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   targetCloud === 'systemd'
@@ -226,7 +226,7 @@ WantedBy=multi-user.target`,
             {/* Namespace customization */}
             <div className="flex items-center gap-2 text-xs font-mono">
               <span className="text-[#6E6E73]">Target Namespace:</span>
-              <input
+              <input suppressHydrationWarning
                 type="text"
                 value={clusterNamespace}
                 onChange={(e) => setClusterNamespace(e.target.value)}
@@ -245,7 +245,7 @@ WantedBy=multi-user.target`,
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <button suppressHydrationWarning
                   onClick={handleCopy}
                   className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors flex items-center gap-1.5 cursor-pointer text-[11px]"
                 >
@@ -260,7 +260,7 @@ WantedBy=multi-user.target`,
                   )}
                 </button>
 
-                <button
+                <button suppressHydrationWarning
                   onClick={handleDownload}
                   className="px-3 py-1.5 rounded-xl bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#D4AF37] border border-[#D4AF37]/40 transition-colors flex items-center gap-1.5 cursor-pointer text-[11px]"
                 >

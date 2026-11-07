@@ -114,6 +114,7 @@ export default function VendorHealthRadar() {
           <div className="mt-8 max-w-md mx-auto relative">
             <Search className="w-4 h-4 text-[#997D25] absolute left-4 top-1/2 -translate-y-1/2" />
             <input
+              suppressHydrationWarning
               type="text"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}

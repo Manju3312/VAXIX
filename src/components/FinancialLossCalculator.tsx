@@ -200,6 +200,7 @@ https://immunix.network
             {/* CTAs */}
             <div className="pt-6 flex flex-col sm:flex-row items-center gap-4">
               <button
+                suppressHydrationWarning
                 onClick={downloadAuditReport}
                 className="w-full sm:w-auto flex-1 py-3.5 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer border border-white/20"
               >
@@ -208,6 +209,7 @@ https://immunix.network
               </button>
 
               <button
+                suppressHydrationWarning
                 onClick={onOpenAudit}
                 className="w-full sm:w-auto flex-1 py-3.5 px-4 rounded-2xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.35)]"
               >

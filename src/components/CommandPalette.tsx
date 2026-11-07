@@ -170,7 +170,7 @@ export default function CommandPalette({
         {/* Search Input Bar */}
         <div className="flex items-center px-6 py-4 border-b border-white/10 bg-[#141416]">
           <Search className="w-5 h-5 text-[#D4AF37] mr-3 shrink-0" />
-          <input
+          <input suppressHydrationWarning
             type="text"
             autoFocus
             value={query}
@@ -180,7 +180,7 @@ export default function CommandPalette({
           />
           <div className="flex items-center gap-1.5 ml-3">
             <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/60">ESC</span>
-            <button onClick={onClose} className="text-white/40 hover:text-white p-1">
+            <button suppressHydrationWarning onClick={onClose} className="text-white/40 hover:text-white p-1">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -196,7 +196,7 @@ export default function CommandPalette({
             filtered.map((item) => {
               const Icon = item.icon;
               return (
-                <button
+                <button suppressHydrationWarning
                   key={item.id}
                   onClick={item.action}
                   className="w-full text-left p-3.5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-[#D4AF37]/30 transition-all flex items-center justify-between group cursor-pointer"

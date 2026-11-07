@@ -87,7 +87,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
               <p className="text-xs text-[#6E6E73] font-mono">Kernel Socket eBPF Authorization & MCP Tokens</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl text-white/50 hover:text-white cursor-pointer">
+          <button suppressHydrationWarning onClick={onClose} className="p-2 rounded-xl text-white/50 hover:text-white cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -105,7 +105,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
               </div>
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-black border border-[#D4AF37]/40 text-white select-all">
                 <code className="text-[#D4AF37]">{newlyCreatedKey}</code>
-                <button
+                <button suppressHydrationWarning
                   onClick={() => copyKey(newlyCreatedKey)}
                   className="ml-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white cursor-pointer"
                 >
@@ -126,7 +126,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input
+              <input suppressHydrationWarning
                 type="text"
                 required
                 value={newKeyName}
@@ -147,7 +147,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
               </select>
             </div>
 
-            <button
+            <button suppressHydrationWarning
               type="submit"
               disabled={isGenerating}
               className="w-full py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
@@ -204,7 +204,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
             <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Encrypted with SQLite in-process memory safety</span>
           </div>
-          <button onClick={onClose} className="text-white hover:underline cursor-pointer">
+          <button suppressHydrationWarning onClick={onClose} className="text-white hover:underline cursor-pointer">
             Close
           </button>
         </div>

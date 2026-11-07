@@ -59,6 +59,7 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
 
               {onOpenDossier && (
                 <button
+                  suppressHydrationWarning
                   onClick={onOpenDossier}
                   className="px-6 py-4 rounded-xl bg-[#FBFBF9] text-[#997D25] border border-[#D4AF37]/30 font-mono text-xs uppercase tracking-wider hover:border-[#D4AF37] hover:bg-white transition-all cursor-pointer"
                 >

@@ -115,6 +115,7 @@ export default function SovereignCompliance({ onOpenAudit }: ComplianceProps) {
 
           <div>
             <button
+              suppressHydrationWarning
               onClick={onOpenAudit}
               className="px-5 py-2.5 rounded-xl bg-[#0B0B0C] hover:bg-[#1C1C1F] text-white font-mono text-xs font-bold border border-[#D4AF37] transition-colors cursor-pointer"
             >

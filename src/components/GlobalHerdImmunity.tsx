@@ -211,6 +211,7 @@ export default function GlobalHerdImmunity() {
 
               {/* Simulation Trigger Button */}
               <button
+                suppressHydrationWarning
                 onClick={triggerWorldwideWave}
                 disabled={isSimulating}
                 className="px-4 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-60"
@@ -249,6 +250,7 @@ export default function GlobalHerdImmunity() {
                 const isWaveActive = activeSimulationNode === node.id;
                 return (
                   <button
+                    suppressHydrationWarning
                     key={node.id}
                     onClick={() => setSelectedNode(node)}
                     style={{ left: `${node.x}%`, top: `${node.y}%` }}

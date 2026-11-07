@@ -82,7 +82,7 @@ export default function SovereignAuditModal({
               <p className="text-xs text-[#6E6E73]">Zero-Downtime Guarantee & Private VPC Proof of Concept</p>
             </div>
           </div>
-          <button
+          <button suppressHydrationWarning
             onClick={resetAndClose}
             className="p-2 rounded-xl text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5 transition-colors"
           >
@@ -99,7 +99,7 @@ export default function SovereignAuditModal({
                   <label className="block text-xs font-mono font-bold text-[#997D25] uppercase tracking-wider mb-1.5">
                     Full Name
                   </label>
-                  <input
+                  <input suppressHydrationWarning
                     type="text"
                     required
                     value={formData.name}
@@ -113,7 +113,7 @@ export default function SovereignAuditModal({
                   <label className="block text-xs font-mono font-bold text-[#997D25] uppercase tracking-wider mb-1.5">
                     Work Email
                   </label>
-                  <input
+                  <input suppressHydrationWarning
                     type="email"
                     required
                     value={formData.email}
@@ -129,7 +129,7 @@ export default function SovereignAuditModal({
                   <label className="block text-xs font-mono font-bold text-[#997D25] uppercase tracking-wider mb-1.5">
                     Organization / Bank
                   </label>
-                  <input
+                  <input suppressHydrationWarning
                     type="text"
                     required
                     value={formData.company}
@@ -179,7 +179,7 @@ export default function SovereignAuditModal({
                 </span>
               </div>
 
-              <button
+              <button suppressHydrationWarning
                 type="submit"
                 className="w-full py-3.5 px-6 rounded-2xl bg-[#0B0B0C] hover:bg-[#1C1C1F] text-white font-mono font-bold text-sm tracking-wide border border-[#D4AF37] shadow-[0_10px_25px_rgba(212,175,55,0.25)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
               >
@@ -219,7 +219,7 @@ export default function SovereignAuditModal({
                 <div className="text-[#6E6E73]">Access Token: <code className="text-[#997D25]">{issuedToken}</code></div>
               </div>
 
-              <button
+              <button suppressHydrationWarning
                 onClick={resetAndClose}
                 className="mt-2 px-8 py-3 rounded-2xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono font-bold text-xs transition-colors"
               >

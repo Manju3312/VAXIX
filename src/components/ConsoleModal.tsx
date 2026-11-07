@@ -175,7 +175,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
               </select>
             </div>
 
-            <button
+            <button suppressHydrationWarning
               onClick={onClose}
               className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition-colors"
             >
@@ -186,7 +186,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
 
         {/* Tab Navigation */}
         <div className="flex items-center gap-2 px-6 pt-3 border-b border-white/10 bg-[#0B0B0C] text-xs font-mono overflow-x-auto">
-          <button
+          <button suppressHydrationWarning
             onClick={() => setActiveTab('overview')}
             className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition-all font-semibold ${
               activeTab === 'overview'
@@ -196,7 +196,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
           >
             <Activity className="w-3.5 h-3.5" /> Mesh Overview
           </button>
-          <button
+          <button suppressHydrationWarning
             onClick={() => setActiveTab('antibodies')}
             className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition-all font-semibold ${
               activeTab === 'antibodies'
@@ -206,7 +206,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
           >
             <Shield className="w-3.5 h-3.5" /> Active Antibodies (7)
           </button>
-          <button
+          <button suppressHydrationWarning
             onClick={() => setActiveTab('ebpf')}
             className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition-all font-semibold ${
               activeTab === 'ebpf'
@@ -216,7 +216,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
           >
             <Cpu className="w-3.5 h-3.5" /> eBPF Probe Simulator
           </button>
-          <button
+          <button suppressHydrationWarning
             onClick={() => setActiveTab('terminal')}
             className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition-all font-semibold ${
               activeTab === 'terminal'
@@ -272,7 +272,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
                     Intercepts broken JSON schemas at socket layer and synthesizes valid return payload in 0.4ms.
                   </p>
                 </div>
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setEbpfShieldEnabled(!ebpfShieldEnabled)}
                   className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                     ebpfShieldEnabled
@@ -397,7 +397,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
                 />
 
                 <div className="mt-3 flex items-center justify-between">
-                  <button
+                  <button suppressHydrationWarning
                     onClick={runPayloadTest}
                     disabled={isProcessing}
                     className="px-5 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono font-bold text-xs transition-colors flex items-center gap-2"

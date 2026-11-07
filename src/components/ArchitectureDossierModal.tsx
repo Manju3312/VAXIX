@@ -33,7 +33,7 @@ export default function ArchitectureDossierModal({ isOpen, onClose }: Architectu
             </div>
           </div>
 
-          <button
+          <button suppressHydrationWarning
             onClick={onClose}
             className="p-2 rounded-xl text-[#6E6E73] hover:text-[#0B0B0C] hover:bg-black/5 transition-colors cursor-pointer"
           >
@@ -117,7 +117,7 @@ Total Worst-Case Latency: T_inception <= 0.38 milliseconds`}
             <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Cryptographic Verification: Ed25519 Root Verified</span>
           </div>
-          <button
+          <button suppressHydrationWarning
             onClick={onClose}
             className="px-5 py-2 rounded-xl bg-[#0B0B0C] hover:bg-[#1C1C1F] text-white font-bold transition-colors cursor-pointer"
           >

@@ -197,7 +197,7 @@ export default function McpProtocolSection() {
             {mcpTools.map((tool) => {
               const isSelected = selectedTool.name === tool.name;
               return (
-                <button
+                <button suppressHydrationWarning
                   key={tool.name}
                   onClick={() => {
                     setSelectedTool(tool);
@@ -233,7 +233,7 @@ export default function McpProtocolSection() {
                 <span className="text-xs font-mono font-bold text-[#0B0B0C] flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" /> Agent Integration Config
                 </span>
-                <button
+                <button suppressHydrationWarning
                   onClick={copyConfigSnippet}
                   className="text-[11px] font-mono text-[#997D25] hover:text-[#0B0B0C] flex items-center gap-1 cursor-pointer font-bold"
                 >
@@ -265,7 +265,7 @@ export default function McpProtocolSection() {
                 </span>
               </div>
 
-              <button
+              <button suppressHydrationWarning
                 onClick={executeToolCall}
                 disabled={isExecuting}
                 className="px-4 py-1.5 rounded-xl bg-[#D4AF37] hover:bg-[#F3E5AB] text-[#0B0B0C] font-mono font-bold text-[11px] transition-all flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
@@ -284,7 +284,7 @@ export default function McpProtocolSection() {
 
             {/* Navigation Tabs */}
             <div className="flex items-center gap-2 px-5 pt-3 border-b border-white/10 bg-[#0E0E10] text-[11px]">
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setActiveJsonTab('request')}
                 className={`pb-2.5 px-2 border-b-2 font-bold transition-all ${
                   activeJsonTab === 'request'
@@ -294,7 +294,7 @@ export default function McpProtocolSection() {
               >
                 Request Payload
               </button>
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setActiveJsonTab('response')}
                 className={`pb-2.5 px-2 border-b-2 font-bold transition-all ${
                   activeJsonTab === 'response'
@@ -304,7 +304,7 @@ export default function McpProtocolSection() {
               >
                 Response Output {executedResponse && '✓'}
               </button>
-              <button
+              <button suppressHydrationWarning
                 onClick={() => setActiveJsonTab('schema')}
                 className={`pb-2.5 px-2 border-b-2 font-bold transition-all ${
                   activeJsonTab === 'schema'

@@ -394,7 +394,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
           {/* View Toggle */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <button
+            <button suppressHydrationWarning
               onClick={() => setViewMode('3plane')}
               className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 viewMode === '3plane'
@@ -406,7 +406,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
               <span>3-Plane Biological Mesh</span>
             </button>
 
-            <button
+            <button suppressHydrationWarning
               onClick={() => setViewMode('5tier')}
               className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 viewMode === '5tier'
@@ -419,7 +419,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
             </button>
 
             {viewMode === '3plane' && (
-              <button
+              <button suppressHydrationWarning
                 onClick={runPipelineTrace}
                 disabled={isTracing}
                 className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-[#D4AF37]/40 text-[#F3E5AB] font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
@@ -461,7 +461,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
               {/* Node 2.1: Kafka / Redpanda Event Broker */}
               <div className="flex justify-center">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.eventBroker)}
                   className={`w-full max-w-md p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'eventBroker'
@@ -480,7 +480,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
               {/* Node 2.2: Antigen Profiler & Anomaly Sentry */}
               <div className="flex justify-center">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.antigenProfiler)}
                   className={`w-full max-w-md p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'antigenProfiler'
@@ -502,7 +502,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                 {/* Branch A: Hot-Patch Rule Compiler */}
                 <div className="space-y-4 flex flex-col items-center">
                   <div className="text-[10px] font-mono text-[#D4AF37] uppercase font-bold">Fast-Path Wire Relief</div>
-                  <button
+                  <button suppressHydrationWarning
                     onClick={() => setActiveNode(nodeSpecs.hotPatchCompiler)}
                     className={`w-full p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                       highlightedStep === 'hotPatchCompiler'
@@ -522,7 +522,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                 {/* Branch B: AST Genome Engine */}
                 <div className="space-y-4 flex flex-col items-center">
                   <div className="text-[10px] font-mono text-blue-400 uppercase font-bold">Permanent Code Repair</div>
-                  <button
+                  <button suppressHydrationWarning
                     onClick={() => setActiveNode(nodeSpecs.astGenomeEngine)}
                     className={`w-full p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                       highlightedStep === 'astGenomeEngine'
@@ -536,7 +536,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
                   <ArrowDown className="w-3.5 h-3.5 text-blue-400" />
 
-                  <button
+                  <button suppressHydrationWarning
                     onClick={() => setActiveNode(nodeSpecs.sandboxVerifier)}
                     className={`w-full p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                       highlightedStep === 'sandboxVerifier'
@@ -550,7 +550,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
                   <ArrowDown className="w-3.5 h-3.5 text-blue-400" />
 
-                  <button
+                  <button suppressHydrationWarning
                     onClick={() => setActiveNode(nodeSpecs.prSynthesizer)}
                     className={`w-full p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                       highlightedStep === 'prSynthesizer'
@@ -582,7 +582,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.zkSanitizer)}
                   className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'zkSanitizer'
@@ -594,7 +594,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                   <div className="text-[9px] font-mono text-white/50 mt-0.5">Strips headers & tokens</div>
                 </button>
 
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.edSigner)}
                   className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'edSigner'
@@ -606,7 +606,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                   <div className="text-[9px] font-mono text-white/50 mt-0.5">Sovereign root key proof</div>
                 </button>
 
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.gossipSub)}
                   className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'gossipSub'
@@ -618,7 +618,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                   <div className="text-[9px] font-mono text-white/50 mt-0.5">3.4ms Global broadcast</div>
                 </button>
 
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.enterpriseClusters)}
                   className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'enterpriseClusters'
@@ -648,7 +648,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
               {/* Node 1.1: Downstream Consumer Microservices */}
               <div className="flex justify-center">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.microservice)}
                   className={`w-full max-w-md p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'microservice'
@@ -667,7 +667,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
               {/* Node 1.2: Envoy / Edge Ingress Gateway */}
               <div className="flex justify-center">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.envoy)}
                   className={`w-full max-w-md p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'envoy'
@@ -686,7 +686,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
 
               {/* Node 1.3: IMMUNIX WASM Kernel Filter */}
               <div className="flex justify-center">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.wasmFilter)}
                   className={`w-full max-w-lg p-5 rounded-2xl border-2 text-center transition-all cursor-pointer ${
                     highlightedStep === 'wasmFilter'
@@ -706,7 +706,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
               {/* Two sub-branches of WASM Filter */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 {/* 1. Fast Match Hot-Patch */}
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.antibodyTrie)}
                   className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'antibodyTrie'
@@ -722,7 +722,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                 </button>
 
                 {/* 2. In-Flight Payload Rewrite */}
-                <button
+                <button suppressHydrationWarning
                   onClick={() => setActiveNode(nodeSpecs.upstreamSaaS)}
                   className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                     highlightedStep === 'upstreamSaaS'
@@ -993,7 +993,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
                   </div>
                 </div>
 
-                <button
+                <button suppressHydrationWarning
                   onClick={handleCopyDdl}
                   className="self-start sm:self-auto px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-xs flex items-center gap-2 cursor-pointer transition-colors"
                 >
@@ -1014,7 +1014,7 @@ gh pr create --title "fix(stripe): adopt email_address" --body "Verified via Imm
               {/* Table Selection Tabs */}
               <div className="flex flex-wrap gap-2">
                 {Object.keys(ddlTables).map((tblKey) => (
-                  <button
+                  <button suppressHydrationWarning
                     key={tblKey}
                     onClick={() => setActiveDdlTab(tblKey)}
                     className={`px-3.5 py-1.5 rounded-xl font-mono text-xs transition-all cursor-pointer ${

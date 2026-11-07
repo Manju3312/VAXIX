@@ -34,6 +34,7 @@ export default function DualSpeedEngine() {
         <div className="flex justify-center mb-12">
           <div className="inline-flex p-1.5 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/30 shadow-md">
             <button
+              suppressHydrationWarning
               onClick={() => setActiveSpeed('speed1')}
               className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeSpeed === 'speed1'
@@ -46,6 +47,7 @@ export default function DualSpeedEngine() {
             </button>
 
             <button
+              suppressHydrationWarning
               onClick={() => setActiveSpeed('speed2')}
               className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeSpeed === 'speed2'
@@ -58,6 +60,7 @@ export default function DualSpeedEngine() {
             </button>
 
             <button
+              suppressHydrationWarning
               onClick={() => setActiveSpeed('herd')}
               className={`px-5 py-3 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeSpeed === 'herd'

@@ -121,6 +121,7 @@ export default function Pricing({ onSelectTier, onOpenConsole }: PricingProps = 
 
               <div className="mt-10 pt-4">
                 <button
+                  suppressHydrationWarning
                   onClick={tier.action}
                   className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     tier.highlight
