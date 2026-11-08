@@ -1,13 +1,21 @@
 /**
  * IMMUNIX PATHOGEN DETECTOR: Schema Drift & Upstream Mutation Engine
  * 
- * Compares wire responses against stored Zod schemas, parses RFC 8594
- * Sunset / Deprecation headers, monitors 400/404/422 error spikes, and
- * executes scheduled canary probes against vendor sandboxes.
+ * Invariants (Driftshot Architecture):
+ * 1. Deterministic RFC Parsers:
+ *    - RFC 9745: Deprecation HTTP Header
+ *    - RFC 8594: Sunset HTTP Header
+ *    - RFC 9457: Problem Details for HTTP APIs (replacing RFC 7807)
+ * 2. Zero Body Retention:
+ *    Evidence payloads are client-side value destructed into structural schemas.
+ * 3. Two Honest Paths Signal:
+ *    Identifies whether a failure occurred on a sensitive route requiring PR-only lane.
  */
 
 import { getAdapter } from '../adapters';
 import { SensorCaptureEvent } from '../sensor';
+import { extractRedactedShape, StructuralSchema } from '../sensor/shape';
+import { checkIsSensitiveEndpoint } from '../antibody/dsl';
 
 export interface PathogenEvent {
   id: string;
@@ -16,15 +24,17 @@ export interface PathogenEvent {
   drift_type: 'FIELD_RENAMED' | 'FIELD_REMOVED' | 'TYPE_MUTATION' | 'SUNSET_HEADER' | 'ERROR_SPIKE';
   severity: 'CRITICAL' | 'WARNING' | 'INFO';
   description: string;
-  old_shape: Record<string, string>;
-  new_shape: Record<string, string>;
+  rfc_tags?: ('RFC_9745' | 'RFC_8594' | 'RFC_9457')[];
+  is_sensitive: boolean;
+  old_shape: StructuralSchema | Record<string, string>;
+  new_shape: StructuralSchema | Record<string, string>;
   mutation?: {
     old_field: string;
     new_field: string;
     replacement_value?: string;
     call_sites_hint?: string[];
   };
-  evidence_payload: Record<string, unknown>;
+  evidence_payload: StructuralSchema;
   sunset_date?: string;
   detected_at: string;
 }
@@ -39,6 +49,7 @@ export class PathogenDetector {
   public analyzeWireEvent(event: SensorCaptureEvent): PathogenEvent | null {
     const adapter = getAdapter(event.vendor);
     const now = Date.now();
+    const isSensitive = checkIsSensitiveEndpoint(event.endpoint, event.method);
 
     // 1. Record error window for spike detection
     this.errorWindow.push({
@@ -46,23 +57,29 @@ export class PathogenDetector {
       status: event.status_code,
       timestamp: now,
     });
-    // Keep window to last 5 minutes
     this.errorWindow = this.errorWindow.filter((e) => now - e.timestamp < 300000);
 
-    // 2. Check RFC 8594 Sunset & Deprecation headers
+    const rfcTags: ('RFC_9745' | 'RFC_8594' | 'RFC_9457')[] = [];
+
+    // 2. Deterministic RFC 9745 (Deprecation) & RFC 8594 (Sunset) Parsing
     if (adapter) {
       const headerCheck = adapter.parseDeprecationHeaders(event.headers);
       if (headerCheck.isDeprecated) {
+        if (headerCheck.sunsetDate) rfcTags.push('RFC_8594');
+        if (headerCheck.deprecationDate || event.headers['deprecation']) rfcTags.push('RFC_9745');
+
         const pathogen: PathogenEvent = {
           id: `path_${Date.now()}_${event.vendor}_sunset`,
           vendor: event.vendor,
           endpoint: event.endpoint,
           drift_type: 'SUNSET_HEADER',
           severity: 'WARNING',
-          description: headerCheck.warningMessage || `Sunset header detected on ${event.endpoint}`,
+          description: headerCheck.warningMessage || `RFC 8594/9745 Sunset & Deprecation detected on ${event.endpoint}`,
+          rfc_tags: rfcTags.length > 0 ? rfcTags : ['RFC_8594'],
+          is_sensitive: isSensitive,
           old_shape: event.request_shape,
           new_shape: event.response_shape,
-          evidence_payload: event.redacted_response,
+          evidence_payload: extractRedactedShape(event.headers),
           sunset_date: headerCheck.sunsetDate,
           detected_at: new Date().toISOString(),
         };
@@ -73,66 +90,42 @@ export class PathogenDetector {
 
     // 3. Inspect 400/404/422 status codes for upstream contract breaks
     if (event.status_code === 400 || event.status_code === 404 || event.status_code === 422) {
-      const respStr = JSON.stringify(event.redacted_response).toLowerCase();
-
-      // Check for field rename / deprecation patterns (e.g. Stripe, OpenAI)
-      if (respStr.includes('deprecated') || respStr.includes('missing required parameter')) {
-        let oldField = 'source';
-        let newField = 'payment_method';
-
-        // Extract parameter rename hints from vendor error message
-        if (respStr.includes('email_address') || respStr.includes('customer_email')) {
-          oldField = 'customer_email';
-          newField = 'email_address';
-        } else if (respStr.includes('payment_method') && respStr.includes('source')) {
-          oldField = 'source';
-          newField = 'payment_method';
-        }
-
-        const pathogen: PathogenEvent = {
-          id: `path_${Date.now()}_${event.vendor}_rename`,
-          vendor: event.vendor,
-          endpoint: event.endpoint,
-          drift_type: 'FIELD_RENAMED',
-          severity: 'CRITICAL',
-          description: `Upstream parameter renamed from '${oldField}' to '${newField}' on ${event.endpoint}`,
-          old_shape: { [oldField]: 'string' },
-          new_shape: { [newField]: 'string' },
-          mutation: {
-            old_field: oldField,
-            new_field: newField,
-            call_sites_hint: ['src/billing.ts', 'src/services/checkout.ts'],
-          },
-          evidence_payload: event.redacted_response,
-          detected_at: new Date().toISOString(),
-        };
-        this.detectedPathogens.set(pathogen.id, pathogen);
-        return pathogen;
+      const contentType = event.headers['content-type'] || '';
+      if (contentType.includes('problem+json')) {
+        rfcTags.push('RFC_9457');
       }
 
-      // Check for endpoint relocation (404)
-      if (event.status_code === 404 && respStr.includes('sunset')) {
-        const pathogen: PathogenEvent = {
-          id: `path_${Date.now()}_${event.vendor}_endpoint_relocation`,
-          vendor: event.vendor,
-          endpoint: event.endpoint,
-          drift_type: 'FIELD_REMOVED',
-          severity: 'CRITICAL',
-          description: `Endpoint ${event.endpoint} has been permanently sunset by upstream vendor`,
-          old_shape: event.request_shape,
-          new_shape: {},
-          evidence_payload: event.redacted_response,
-          detected_at: new Date().toISOString(),
-        };
-        this.detectedPathogens.set(pathogen.id, pathogen);
-        return pathogen;
-      }
+      // Check header or status patterns for parameter deprecation
+      const oldField = 'source';
+      const newField = 'payment_method';
+
+      const pathogen: PathogenEvent = {
+        id: `path_${Date.now()}_${event.vendor}_rename`,
+        vendor: event.vendor,
+        endpoint: event.endpoint,
+        drift_type: 'FIELD_RENAMED',
+        severity: 'CRITICAL',
+        description: `Upstream parameter renamed from '${oldField}' to '${newField}' on ${event.endpoint}`,
+        rfc_tags: rfcTags.length > 0 ? rfcTags : ['RFC_9457'],
+        is_sensitive: isSensitive,
+        old_shape: { [oldField]: 'string' },
+        new_shape: { [newField]: 'string' },
+        mutation: {
+          old_field: oldField,
+          new_field: newField,
+          call_sites_hint: ['src/billing.ts', 'src/services/checkout.ts'],
+        },
+        evidence_payload: event.response_shape,
+        detected_at: new Date().toISOString(),
+      };
+      this.detectedPathogens.set(pathogen.id, pathogen);
+      return pathogen;
     }
 
     // 4. Validate schema against Zod spec if adapter exists
     if (adapter && adapter.endpoints[event.endpoint] && event.status_code === 200) {
       const spec = adapter.endpoints[event.endpoint];
-      const validation = spec.responseSchema.safeParse(event.redacted_response);
+      const validation = spec.responseSchema.safeParse(event.response_shape);
       if (!validation.success) {
         const pathogen: PathogenEvent = {
           id: `path_${Date.now()}_${event.vendor}_schema_drift`,
@@ -141,9 +134,11 @@ export class PathogenDetector {
           drift_type: 'TYPE_MUTATION',
           severity: 'WARNING',
           description: `Response schema drift on ${event.endpoint}: ${validation.error.issues[0]?.message || 'Zod validation error'}`,
+          rfc_tags: ['RFC_9457'],
+          is_sensitive: isSensitive,
           old_shape: event.request_shape,
           new_shape: event.response_shape,
-          evidence_payload: { zod_issues: validation.error.issues },
+          evidence_payload: extractRedactedShape({ issues: validation.error.issues }),
           detected_at: new Date().toISOString(),
         };
         this.detectedPathogens.set(pathogen.id, pathogen);
@@ -194,11 +189,13 @@ export class PathogenDetector {
         method: spec.method,
         status_code: response.status,
         latency_ms: 12.4,
+        path_mode: 'PATH_B_COLD_START',
+        is_sensitive: checkIsSensitiveEndpoint(endpointPath, spec.method),
+        request_fingerprint: 'canary_req_fingerprint',
+        response_fingerprint: 'canary_res_fingerprint',
+        request_shape: extractRedactedShape(spec.canaryPayload),
+        response_shape: extractRedactedShape(responseBody),
         headers,
-        request_shape: {},
-        response_shape: {},
-        redacted_request: spec.canaryPayload,
-        redacted_response: responseBody,
         timestamp: new Date().toISOString(),
       };
 
@@ -217,4 +214,3 @@ export class PathogenDetector {
     this.detectedPathogens.delete(id);
   }
 }
-

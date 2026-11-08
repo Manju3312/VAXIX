@@ -67,7 +67,24 @@ export interface ActiveAntibody {
   target_mutation: string;
   status: 'active' | 'evaluating' | 'retired' | 'failed';
   in_flight_rescues_count: number;
+  lifecycle?: 'PROPOSED' | 'SANDBOX_VERIFIED' | 'HUMAN_APPROVED' | 'SHADOW' | 'ACTIVE' | 'REVOKED';
+  sensitive?: number;
+  approved_by?: string | null;
+  signature?: string | null;
+  shadow_matches?: number;
   created_at: string;
+}
+
+export interface ImmuneLogRow {
+  id: string;
+  tenant_id: string;
+  actor: string;
+  action: string;
+  subject_id: string;
+  detail: string;
+  prev_hash: string;
+  entry_hash: string;
+  timestamp: string;
 }
 
 export interface Antibody {
@@ -393,12 +410,41 @@ export function initDatabase(): void {
     );
   `);
 
-  // Run schema migrations for backwards compatibility with pre-existing sqlite files
-  try {
-    db.exec("ALTER TABLE api_keys ADD COLUMN tenant_id TEXT DEFAULT 'ten_enterprise_01';");
-  } catch {
-    // Column already exists
-  }
+    // 14. Cryptographic Tamper-Evident Immune Log Table (SOC-2 / PCI-DSS v4.0)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS immune_log (
+        id VARCHAR(64) PRIMARY KEY,
+        tenant_id VARCHAR(64) NOT NULL DEFAULT 'default',
+        actor VARCHAR(255) NOT NULL,
+        action VARCHAR(100) NOT NULL,
+        subject_id VARCHAR(255) NOT NULL,
+        detail TEXT NOT NULL,
+        prev_hash VARCHAR(64) NOT NULL,
+        entry_hash VARCHAR(64) NOT NULL,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Run schema migrations for backwards compatibility with pre-existing sqlite files
+    try {
+      db.exec("ALTER TABLE api_keys ADD COLUMN tenant_id TEXT DEFAULT 'ten_enterprise_01';");
+    } catch {}
+
+    try {
+      db.exec("ALTER TABLE active_antibodies ADD COLUMN lifecycle VARCHAR(50) DEFAULT 'PROPOSED';");
+    } catch {}
+    try {
+      db.exec("ALTER TABLE active_antibodies ADD COLUMN sensitive BOOLEAN DEFAULT 0;");
+    } catch {}
+    try {
+      db.exec("ALTER TABLE active_antibodies ADD COLUMN approved_by VARCHAR(255) DEFAULT NULL;");
+    } catch {}
+    try {
+      db.exec("ALTER TABLE active_antibodies ADD COLUMN signature TEXT DEFAULT NULL;");
+    } catch {}
+    try {
+      db.exec("ALTER TABLE active_antibodies ADD COLUMN shadow_matches INT DEFAULT 0;");
+    } catch {}
 
   // ============================================================================
   // PERFORMANCE INDICES FOR HIGH-THROUGHPUT QUERIES
@@ -416,6 +462,7 @@ export function initDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_sabotage_created ON sabotage_events(created_at);
     CREATE INDEX IF NOT EXISTS idx_audit_requests_created ON audit_requests(created_at);
     CREATE INDEX IF NOT EXISTS idx_provider_vault_id ON provider_vault(provider_id);
+    CREATE INDEX IF NOT EXISTS idx_immune_log_hash ON immune_log(entry_hash);
   `);
 
   // ============================================================================
@@ -1016,6 +1063,32 @@ export function getSystemMetrics(): SystemMetrics {
     average_latency_ms: clusterAgg?.avg_latency ? Math.round(clusterAgg.avg_latency * 100) / 100 : 0.38,
     global_peer_votes: 14280,
   };
+}
+
+export function getImmuneLogRows(limit = 50): ImmuneLogRow[] {
+  try {
+    return db.prepare('SELECT * FROM immune_log ORDER BY rowid DESC LIMIT ?').all(limit) as unknown as ImmuneLogRow[];
+  } catch {
+    return [];
+  }
+}
+
+export function updateActiveAntibodyLifecycle(
+  id: string,
+  lifecycle: string,
+  approvedBy?: string | null
+): boolean {
+  try {
+    const stmt = db.prepare(`
+      UPDATE active_antibodies
+      SET lifecycle = ?, approved_by = COALESCE(?, approved_by)
+      WHERE id = ?
+    `);
+    stmt.run(lifecycle, approvedBy || null, id);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export default db;

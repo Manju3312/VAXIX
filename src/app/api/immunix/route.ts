@@ -258,27 +258,9 @@ export async function GET() {
         }));
       }
 
-      interface RawLog {
-        id: string;
-        event_type: string;
-        vendor: string;
-        entity_id: string | null;
-        message: string;
-        metadata: string | null;
-        timestamp: string;
-      }
-
-      const logRows = db.prepare('SELECT * FROM immune_logs ORDER BY timestamp DESC LIMIT 50').all() as unknown as RawLog[];
-      if (logRows.length > 0) {
-        logs = logRows.map((l) => ({
-          id: l.id,
-          event_type: l.event_type as unknown as import('@/immunix/immune-log').ImmuneLogEventType,
-          vendor: l.vendor,
-          entity_id: l.entity_id || undefined,
-          message: l.message,
-          metadata: l.metadata ? JSON.parse(l.metadata) : {},
-          timestamp: l.timestamp,
-        }));
+      const dbLogs = immuneLog.getEntries(50);
+      if (dbLogs.length > 0) {
+        logs = dbLogs;
       }
     } catch {}
   }
@@ -300,20 +282,11 @@ export async function POST(req: Request) {
     const db = getDb();
 
     if (action === 'trigger_canary') {
-      const logEntry = immuneLog.append('CANARY_EXECUTED', vendor, `Triggered scheduled canary probe for ${vendor}`);
+      immuneLog.append('CANARY_EXECUTED', vendor, `Triggered scheduled canary probe for ${vendor}`);
       const pathogen = await detector.executeCanaryProbe(vendor, '/v1/charges', 'http://localhost:4000').catch(() => null);
 
-      if (db) {
-        try {
-          db.prepare(`
-            INSERT INTO immune_logs (id, event_type, vendor, entity_id, message, metadata, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-          `).run(logEntry.id, logEntry.event_type, logEntry.vendor, logEntry.entity_id || null, logEntry.message, JSON.stringify(logEntry.metadata), logEntry.timestamp);
-        } catch {}
-      }
-
       if (pathogen) {
-        const pLog = immuneLog.append('PATHOGEN_DETECTED', vendor, `Canary probe detected pathogen: ${pathogen.description}`);
+        immuneLog.append('PATHOGEN_DETECTED', vendor, `Canary probe detected pathogen: ${pathogen.description}`, {}, pathogen.id);
         if (db) {
           try {
             db.prepare(`
@@ -333,11 +306,6 @@ export async function POST(req: Request) {
               pathogen.sunset_date || null,
               'ANTIBODY_GENERATED'
             );
-
-            db.prepare(`
-              INSERT INTO immune_logs (id, event_type, vendor, entity_id, message, metadata, timestamp)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
-            `).run(pLog.id, pLog.event_type, pLog.vendor, pathogen.id, pLog.message, JSON.stringify(pLog.metadata), pLog.timestamp);
           } catch {}
         }
       }
@@ -357,7 +325,7 @@ export async function POST(req: Request) {
       const verification = await verifier.verifyAntibody(antibody);
       const pr = await prBot.openPullRequest(samplePathogen, antibody, verification);
 
-      const prLog = immuneLog.append('PR_DISPATCHED', vendor, `PR #${pr.pr_number} dispatched for review.`);
+      immuneLog.append('PR_DISPATCHED', vendor, `PR #${pr.pr_number} dispatched for review.`, {}, pr.id);
 
       if (db) {
         try {
@@ -390,11 +358,6 @@ export async function POST(req: Request) {
             antibody.ast_diff,
             verification.cryptographic_certificate
           );
-
-          db.prepare(`
-            INSERT INTO immune_logs (id, event_type, vendor, entity_id, message, metadata, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-          `).run(prLog.id, prLog.event_type, prLog.vendor, pr.id, prLog.message, JSON.stringify(prLog.metadata), prLog.timestamp);
         } catch {}
       }
 
@@ -409,20 +372,17 @@ export async function POST(req: Request) {
     if (action === 'simulate_merge') {
       const prNumber = body.pr_number || 412;
       const repo = body.repo || 'acme-corp/payment-service';
-      const mergeLog = immuneLog.append(
+      immuneLog.append(
         'PR_MERGED',
         vendor,
         `PR #${prNumber} in ${repo} merged to main by human reviewer. Production code updated.`,
-        { pr_number: prNumber, reviewer: 'cto@sovereign-holdings.ch', strategy: 'SQUASH_AND_MERGE' }
+        { pr_number: prNumber, reviewer: 'cto@sovereign-holdings.ch', strategy: 'SQUASH_AND_MERGE' },
+        `pr_${prNumber}`
       );
 
       if (db) {
         try {
           db.prepare('UPDATE pull_requests SET status = ? WHERE pr_number = ?').run('MERGED', prNumber);
-          db.prepare(`
-            INSERT INTO immune_logs (id, event_type, vendor, entity_id, message, metadata, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-          `).run(mergeLog.id, mergeLog.event_type, mergeLog.vendor, `pr_${prNumber}`, mergeLog.message, JSON.stringify(mergeLog.metadata), mergeLog.timestamp);
         } catch {}
       }
 

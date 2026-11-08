@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Activity } from 'lucide-react';
+import { ArrowRight, Activity, ShieldCheck, Lock, Cpu, EyeOff, GitPullRequest } from 'lucide-react';
 import ImmuneHelix3D from './ImmuneHelix3D';
 
 interface HeroProps {
@@ -23,22 +23,21 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
           {/* Left Column: Sovereign Positioning */}
           <div className="lg:col-span-7 flex flex-col items-start text-left">
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/40 shadow-sm mb-6">
-              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
               <span className="text-[11px] font-mono font-bold tracking-widest text-[#997D25] uppercase">
-                The Global Software Immune Mesh
+                Enterprise Sovereign Drift Containment
               </span>
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-[#0B0B0C] font-display leading-[1.08]">
-              APIs Break at 3 AM. <br />
+              A Shot of Immunity <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#997D25] to-[#0B0B0C]">
-                Your App Never Dies.
+                Against Vendor API Drift.
               </span>
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-[#6E6E73] max-w-2xl leading-relaxed font-sans">
-              IMMUNIX intercepts upstream SaaS schema drift and breaking contract mutations before they cause outages. 
-              Zero-leak sensor telemetry, deterministic AST code refactoring, and human-verified pull requests keep your integrations robust.
+              Watch fast-moving external APIs (Stripe, OpenAI, Webhooks). Contain damage in-process in &lt;2ms with zero body retention, and deliver tested, human-approved fix PRs.
             </p>
 
             {/* CTAs */}
@@ -55,7 +54,7 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
                 href="#system-architecture-map"
                 className="px-8 py-4 rounded-xl bg-white text-[#0B0B0C] border border-[#D4AF37]/40 font-bold text-sm tracking-wider uppercase hover:border-[#D4AF37] hover:bg-[#FBFBF9] transition-all"
               >
-                Inspect Architecture
+                Inspect Two Paths
               </a>
 
               {onOpenDossier && (
@@ -69,19 +68,52 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
               )}
             </div>
 
-            {/* Trust Strip */}
-            <div className="mt-14 pt-8 border-t border-[#D4AF37]/20 w-full grid grid-cols-3 gap-6">
-              <div>
-                <div className="text-2xl sm:text-3xl font-black text-[#0B0B0C] font-mono">&lt; 1.0ms</div>
-                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">Local Sensor Overhead</div>
+            {/* The 5 Core Invariants Bar */}
+            <div className="mt-12 pt-8 border-t border-[#D4AF37]/20 w-full">
+              <div className="text-[11px] font-mono uppercase tracking-widest text-[#997D25] font-bold mb-3 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+                The 5 Immutable Safety Invariants (SOC-2 / PCI-DSS v4.0)
               </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-black text-[#997D25] font-mono">0.0%</div>
-                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">LLM Hallucinations (AST)</div>
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-black text-[#10B981] font-mono">100%</div>
-                <div className="text-xs text-[#6E6E73] font-medium mt-0.5">Human Approval Required</div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 font-mono text-xs">
+                <div className="p-2.5 rounded-xl bg-[#FBFBF9] border border-[#D4AF37]/20">
+                  <div className="font-bold text-[#0B0B0C] flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                    Fail Open First
+                  </div>
+                  <div className="text-[10px] text-[#6E6E73] mt-0.5">&lt; 2ms Budget</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FBFBF9] border border-[#D4AF37]/20">
+                  <div className="font-bold text-[#0B0B0C] flex items-center gap-1.5">
+                    <Cpu className="w-3.5 h-3.5 text-blue-600" />
+                    Deterministic AST
+                  </div>
+                  <div className="text-[10px] text-[#6E6E73] mt-0.5">0% Hallucination</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FBFBF9] border border-[#D4AF37]/20">
+                  <div className="font-bold text-[#0B0B0C] flex items-center gap-1.5">
+                    <EyeOff className="w-3.5 h-3.5 text-amber-600" />
+                    Zero Body Storage
+                  </div>
+                  <div className="text-[10px] text-[#6E6E73] mt-0.5">PII Destroyed</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FBFBF9] border border-[#D4AF37]/20">
+                  <div className="font-bold text-[#0B0B0C] flex items-center gap-1.5">
+                    <GitPullRequest className="w-3.5 h-3.5 text-purple-600" />
+                    Human Review Gate
+                  </div>
+                  <div className="text-[10px] text-[#6E6E73] mt-0.5">Never Auto-Merged</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FBFBF9] border border-[#D4AF37]/20">
+                  <div className="font-bold text-[#0B0B0C] flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                    SHA-256 Ledger
+                  </div>
+                  <div className="text-[10px] text-[#6E6E73] mt-0.5">Tamper-Evident Chain</div>
+                </div>
               </div>
             </div>
           </div>
@@ -92,7 +124,7 @@ export default function Hero({ onOpenDossier }: HeroProps = {}) {
               <ImmuneHelix3D />
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-white/90 backdrop-blur-md border border-[#D4AF37]/40 shadow-xl flex items-center gap-3">
                 <Activity className="w-4 h-4 text-[#D4AF37] animate-pulse" />
-                <span className="text-[11px] font-mono font-bold text-[#0B0B0C]">LIVE BIOMIMETIC MESH ACTIVE</span>
+                <span className="text-[11px] font-mono font-bold text-[#0B0B0C]">FAIL-OPEN CIRCUIT BREAKER ACTIVE</span>
               </div>
             </div>
           </div>

@@ -18,8 +18,8 @@ from ml_anomaly import MLAnomalyDetector
 
 app = FastAPI(
     title="IMMUNIX Sovereign Python AI Engine",
-    version="2.0.0",
-    description="Python 3.12 LibCST & Scikit-learn AI Autonomous Self-Healing Microservice",
+    version="2.5.0",
+    description="Python 3.12 LibCST & Scikit-learn AI Sovereign Drift Containment Microservice",
 )
 
 # Enable CORS for Next.js frontend
@@ -41,6 +41,8 @@ class SabotageRequest(BaseModel):
     url: Optional[str] = "https://api.stripe.com/v1/payment_intents"
     payload: Optional[Dict[str, Any]] = Field(default_factory=dict)
     runtime: Optional[str] = "python"
+    mode: Optional[str] = "path_a" # "path_a" (pre-flight rewrite) | "path_b" (cold start)
+    allow_sensitive_override: Optional[bool] = False
 
 class RepairRequest(BaseModel):
     source_code: str
@@ -80,6 +82,7 @@ def get_health():
         "clusters_online": clusters_count,
         "active_keys": keys_count,
         "mesh_nodes": 14280,
+        "fail_open_budget_ms": 15,
         "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
 
@@ -88,12 +91,18 @@ def trigger_sabotage(req: SabotageRequest):
     scenario_id = req.scenario_id or "stripe-field-rename"
     provider = req.provider or "stripe"
     incoming_payload = req.payload or {}
+    mode = req.mode or "path_a"
+    url = req.url or "https://api.stripe.com/v1/payment_intents"
+
+    # Check sensitive route
+    is_sensitive = any(kw in url.lower() for kw in ["charge", "payment", "payout", "refund", "transfer"])
 
     # Sample default Python source code for each scenario
     python_samples = {
         "stripe-field-rename": """import stripe
 
 def process_checkout(user_email: str, amount_cents: int):
+    \"\"\"Process customer payment with deprecation tolerance.\"\"\"
     # Deprecated call signature with legacy parameter
     return stripe.Charge.create(
         amount=amount_cents,
@@ -106,13 +115,15 @@ def process_checkout(user_email: str, amount_cents: int):
         "twilio-endpoint-sunset": """import requests
 
 def send_twilio_charge(to_phone: str, amount_cents: int):
-    # Sunset endpoint deprecated in upstream v2026-03
+    \"\"\"Dispatch telecom billing notification.\"\"\"
+    # Sunset endpoint deprecated in upstream 2025-03-31.basil
     endpoint = "https://api.twilio.com/v1/charges"
     return requests.post(endpoint, json={"to": to_phone, "amount": amount_cents})
 """,
         "openai-model-deprecate": """import openai
 
 def generate_sovereign_summary(prompt_text: str):
+    \"\"\"Generate executive summary via LLM.\"\"\"
     # Deprecated completions endpoint and model
     return openai.Completion.create(
         model="text-davinci-003",
@@ -125,111 +136,87 @@ def generate_sovereign_summary(prompt_text: str):
     source_code = python_samples.get(scenario_id, python_samples["stripe-field-rename"])
     repair_result = PythonASTRepairEngine.repair_code(source_code, provider)
 
-    if scenario_id == "stripe-field-rename" or "email" in str(incoming_payload):
-        # Unprotected failure: Stripe throws 400 Bad Request
-        unprotected = {
-            "status": 400,
-            "status_text": "Bad Request",
-            "error_type": "invalid_request_error",
-            "message": "Received unknown parameter: 'customer_email'. Did you mean 'email_address'?",
-            "raw_response": json.dumps({
-                "error": {
-                    "code": "parameter_unknown",
-                    "doc_url": "https://stripe.com/docs/error-codes/parameter-unknown",
-                    "message": "Received unknown parameter: customer_email",
-                    "param": "customer_email",
-                    "type": "invalid_request_error"
-                }
-            }, indent=2),
-        }
-        # Protected: Wire-time alias + 200 OK
-        healed_payload = dict(incoming_payload)
-        if "customer_email" in healed_payload:
-            healed_payload["email_address"] = healed_payload.pop("customer_email")
-        if not healed_payload:
-            healed_payload = {"email_address": "cto@sovereign-holdings.ch", "amount": 250000, "currency": "usd"}
-
-        protected = {
-            "status": 200,
-            "status_text": "OK (Inoculated by IMMUNIX)",
-            "latency_ms": 0.38,
-            "antibody_applied": "ATB-2810 (Stripe customer_email ➔ email_address alias)",
-            "healed_payload": healed_payload,
-            "upstream_response": {
-                "id": f"pi_{uuid.uuid4().hex[:14]}",
-                "object": "payment_intent",
-                "amount": healed_payload.get("amount", 250000),
-                "currency": healed_payload.get("currency", "usd"),
-                "status": "succeeded",
-                "receipt_email": healed_payload.get("email_address", "cto@sovereign-holdings.ch"),
-                "wire_intercept_time": "0.38ms",
+    if is_sensitive and not req.allow_sensitive_override:
+        # Sensitive endpoint hard-lock: PR-only lane
+        return {
+            "success": True,
+            "mode": "path_b_sensitive_locked",
+            "scenario_id": scenario_id,
+            "provider": provider,
+            "runtime": "python",
+            "is_sensitive": True,
+            "blocked_reason": "🚫 In-flight rewrite blocked: Financial endpoint. Routed to Human-Approved PR Lane.",
+            "http_status_delivered": 400,
+            "status_text": "Bad Request (Honest Failure Passed to Application)",
+            "pr_created": {
+                "pr_number": 414,
+                "title": "fix(stripe): adopt required schema for sunset endpoint",
+                "human_review_required": True,
+                "auto_merge": False,
             },
+            "ast_patch": repair_result.get("ast_diff", ""),
+            "original_code": repair_result.get("original_code", source_code),
+            "repaired_code": repair_result.get("repaired_code", ""),
+            "compiler_verified": True,
         }
 
-    elif scenario_id == "twilio-endpoint-sunset":
-        unprotected = {
-            "status": 410,
-            "status_text": "Gone",
-            "error_type": "endpoint_sunset",
-            "message": "HTTP 410 Gone: /v1/charges was deprecated on 2026-03-31. Use /v2/checkout/pay instead.",
-            "raw_response": json.dumps({
-                "code": 20410,
-                "message": "The requested resource /v1/charges is sunset.",
-                "more_info": "https://www.twilio.com/docs/errors/20410",
-                "status": 410
-            }, indent=2),
-        }
-        protected = {
-            "status": 200,
-            "status_text": "OK (Transparently Rerouted)",
-            "latency_ms": 0.42,
-            "antibody_applied": "ATB-3041 (Twilio /v1/charges ➔ /v2/checkout/pay)",
-            "rerouted_url": "https://api.twilio.com/v2/checkout/pay",
-            "upstream_response": {
-                "sid": f"CH_{uuid.uuid4().hex[:16]}",
-                "status": "delivered",
-                "channel": "enterprise_checkout",
-                "wire_reroute_overhead": "0.42ms",
+    if mode == "path_b":
+        # PATH B: Unknown Drift (Cold Start Lane)
+        return {
+            "success": True,
+            "mode": "path_b",
+            "scenario_id": scenario_id,
+            "provider": provider,
+            "runtime": "python",
+            "engine": "Python 3.12 LibCST Self-Healing Engine",
+            "honest_two_paths": "Path B: Cold-start 400 returned honestly to application; PR opened for human review",
+            "http_status_delivered": 400,
+            "status_text": "Bad Request (Parameter deprecated upstream)",
+            "pr_created": {
+                "pr_number": 414,
+                "title": "fix(stripe): adopt required schema for sunset endpoint",
+                "human_review_required": True,
+                "auto_merge": False,
             },
+            "ast_patch": repair_result.get("ast_diff", ""),
+            "original_code": repair_result.get("original_code", source_code),
+            "repaired_code": repair_result.get("repaired_code", ""),
+            "compiler_verified": True,
         }
 
-    else:
-        unprotected = {
-            "status": 404,
-            "status_text": "Not Found",
-            "error_type": "model_not_found",
-            "message": "The model `text-davinci-003` has been shut down. Migrate to `gpt-4o`.",
-            "raw_response": json.dumps({
-                "error": {
-                    "message": "The model `text-davinci-003` has been shut down.",
-                    "type": "invalid_request_error",
-                    "param": "model",
-                    "code": "model_not_found"
-                }
-            }, indent=2),
-        }
-        protected = {
-            "status": 200,
-            "status_text": "OK (Model Upgraded in Flight)",
-            "latency_ms": 0.34,
-            "antibody_applied": "ATB-1902 (OpenAI text-davinci-003 ➔ gpt-4o chat)",
-            "upstream_response": {
-                "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
-                "model": "gpt-4o",
-                "choices": [
-                    {"index": 0, "message": {"role": "assistant", "content": "IMMUNIX Wire-Kernel synthesized successful output."}}
-                ],
-                "wire_latency": "0.34ms",
-            },
-        }
+    # PATH A: Known Drift (Guarded Live Pre-Flight Rewrite Lane)
+    healed_payload = dict(incoming_payload)
+    if "customer_email" in healed_payload:
+        healed_payload["email_address"] = healed_payload.pop("customer_email")
+    if "source" in healed_payload:
+        healed_payload["payment_method"] = healed_payload.pop("source")
+    if not healed_payload:
+        healed_payload = {"payment_method": "tok_visa", "amount": 250000, "currency": "usd"}
+
+    protected = {
+        "status": 200,
+        "status_text": "OK (Inoculated by IMMUNIX Pre-Flight)",
+        "latency_ms": 1.15,
+        "antibody_applied": "ATB-2810 (Pre-Flight AST Rewrite in SDK)",
+        "healed_payload": healed_payload,
+        "upstream_response": {
+            "id": f"pi_{uuid.uuid4().hex[:14]}",
+            "object": "payment_intent",
+            "amount": healed_payload.get("amount", 250000),
+            "currency": healed_payload.get("currency", "usd"),
+            "status": "succeeded",
+            "preflight_rewrite_time": "< 1.2ms",
+        },
+    }
 
     return {
         "success": True,
+        "mode": "path_a",
         "scenario_id": scenario_id,
         "provider": provider,
         "runtime": "python",
         "engine": "Python 3.12 LibCST Self-Healing Engine",
-        "unprotected": unprotected,
+        "honest_two_paths": "Path A: In-process pre-flight AST rewrite in SDK (< 2ms, single roundtrip, 200 OK)",
         "protected": protected,
         "ast_patch": repair_result.get("ast_diff", ""),
         "original_code": repair_result.get("original_code", source_code),
@@ -292,11 +279,21 @@ def list_pull_requests():
 def list_immune_log():
     try:
         conn = get_db_connection()
-        cur = conn.execute("SELECT * FROM immune_logs ORDER BY timestamp DESC LIMIT 50")
-        rows = [dict(row) for row in cur.fetchall()]
+        # Query new cryptographic table if available
+        try:
+            cur = conn.execute("SELECT * FROM immune_log ORDER BY rowid DESC LIMIT 50")
+            rows = [dict(row) for row in cur.fetchall()]
+        except Exception:
+            cur = conn.execute("SELECT * FROM immune_logs ORDER BY timestamp DESC LIMIT 50")
+            rows = [dict(row) for row in cur.fetchall()]
         conn.close()
         for r in rows:
-            if r.get("metadata"):
+            if r.get("detail"):
+                try:
+                    r["detail"] = json.loads(r["detail"])
+                except Exception:
+                    pass
+            elif r.get("metadata"):
                 try:
                     r["metadata"] = json.loads(r["metadata"])
                 except Exception:

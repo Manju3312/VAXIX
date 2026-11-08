@@ -149,17 +149,21 @@ ORDER BY (vendor, http_status, timestamp);`,
     consumerApp: {
       id: 'consumerApp',
       stepNumber: 1,
-      title: 'Consumer Microservice Environment',
-      layerName: '1. Consumer Application (Node / Python / Go)',
-      description: 'Customer application runtime generating outbound HTTP calls. Sends plaintext HTTP to the co-located Envoy sidecar proxy prior to client-side TLS handshake initiation.',
-      metric: '0.0µs Egress Overhead',
-      technicalSpec: 'Application egress configured to route third-party SaaS traffic via localhost:15001 Envoy sidecar listener.',
-      codeSnippet: `// Outbound client call with no custom SDK instrumentation required
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  host: '127.0.0.1', // Routed through local Envoy sidecar proxy
-  port: 15001,
+      title: 'Host Application & @immunix/sensor',
+      layerName: '1. Host Application with @immunix/sensor',
+      description: 'Customer application runtime wrapped by @immunix/sensor with an integrated Fail-Open Circuit Breaker. Strips all customer secrets client-side via extractRedactedShape() and guarantees zero application blocking (< 2ms p99 overhead).',
+      metric: '< 2ms Fail-Open Budget (P99 Overhead)',
+      technicalSpec: 'Node.js / Python in-process SDK wrapper with fail-open circuit breaker and client-side PII shredder.',
+      codeSnippet: `// In-process sensor wrapper with Fail-Open Circuit Breaker
+const fetchClient = createSensorClient({
+  vendor: 'stripe',
+  activeAntibodies: [stripePreflightRule],
 });
-const charge = await stripe.charges.create({ source: 'tok_visa', amount: 2000 });`,
+// Automatically applies pre-flight AST rewrite in < 2ms before network dispatch
+const res = await fetchClient('https://api.stripe.com/v1/payment_intents', {
+  method: 'POST',
+  body: JSON.stringify({ source: 'tok_visa', amount: 2000 }),
+});`,
     },
     envoyL7: {
       id: 'envoyL7',

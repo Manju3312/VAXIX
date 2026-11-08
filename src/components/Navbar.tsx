@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Shield, Zap, ArrowRight, Menu, X, LayoutDashboard } from 'lucide-react';
+import { Shield, Zap, ArrowRight, Menu, X, LayoutDashboard, FileCheck2 } from 'lucide-react';
 
 interface NavbarProps {
   onOpenConsole?: () => void;
@@ -55,14 +55,14 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="font-black text-xl tracking-wider text-[#0B0B0C] font-display">IMMUNIX</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#D4AF37]/10 text-[#997D25] border border-[#D4AF37]/30 font-mono font-bold">2.0</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#D4AF37]/10 text-[#997D25] border border-[#D4AF37]/30 font-mono font-bold">2.5</span>
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-medium -mt-0.5">Autonomous Immune Mesh</span>
+            <span className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-medium -mt-0.5">Sovereign Resilience &amp; Drift Containment</span>
           </div>
         </Link>
 
-        {/* The 4-Link Standard */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* The Navigation Links */}
+        <nav className="hidden md:flex items-center gap-7">
           <Link
             href="/arena"
             className="text-sm font-semibold text-[#0B0B0C] hover:text-[#D4AF37] transition-colors flex items-center gap-1.5"
@@ -71,11 +71,18 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             BreakMyAPI Arena
           </Link>
           <a
-            href="#herd-immunity"
+            href="#system-architecture-map"
             className="text-sm font-semibold text-[#6E6E73] hover:text-[#0B0B0C] transition-colors"
           >
-            Herd Immunity
+            Two Paths Architecture
           </a>
+          <Link
+            href="/dashboard?tab=compliance"
+            className="text-sm font-semibold text-[#6E6E73] hover:text-[#0B0B0C] transition-colors flex items-center gap-1"
+          >
+            <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+            SOC-2 Audit Ledger
+          </Link>
           <a
             href="#benchmark"
             className="text-sm font-semibold text-[#6E6E73] hover:text-[#0B0B0C] transition-colors"
@@ -97,7 +104,9 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]" />
             </span>
-            <span className="font-bold text-[#10B981]">14,280</span> INOCULATED
+            <span className="font-bold text-[#10B981]">FAIL-OPEN ACTIVE</span>
+            <span className="text-black/40">•</span>
+            <span className="text-black/70">&lt;1.2ms P99 OVERHEAD</span>
           </div>
           <Link
             href="/dashboard"
@@ -146,12 +155,20 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
             BreakMyAPI Arena
           </Link>
           <a
-            href="#herd-immunity"
+            href="#system-architecture-map"
             onClick={() => setMobileMenuOpen(false)}
             className="text-sm font-semibold text-[#6E6E73]"
           >
-            Herd Immunity
+            Two Paths Architecture
           </a>
+          <Link
+            href="/dashboard?tab=compliance"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm font-semibold text-emerald-700 flex items-center gap-2"
+          >
+            <FileCheck2 className="w-4 h-4 text-emerald-600" />
+            SOC-2 Cryptographic Ledger
+          </Link>
           <a
             href="#benchmark"
             onClick={() => setMobileMenuOpen(false)}
@@ -168,7 +185,9 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
           </a>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FBFBF9] border border-[#D4AF37]/25 text-xs font-mono text-[#0B0B0C]">
             <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-            <span className="font-bold text-[#10B981]">14,280</span> INOCULATED
+            <span className="font-bold text-[#10B981]">FAIL-OPEN ACTIVE</span>
+            <span className="text-black/50">•</span>
+            <span className="text-black/70">&lt;1.2ms P99</span>
           </div>
           <Link
             href="/arena"

@@ -63,8 +63,29 @@ CREATE TABLE IF NOT EXISTS active_antibodies (
     target_mutation JSONB NOT NULL,
     status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'evaluating', 'retired', 'failed')),
     in_flight_rescues_count BIGINT DEFAULT 0,
+    lifecycle VARCHAR(50) DEFAULT 'PROPOSED' CHECK (lifecycle IN ('PROPOSED', 'SANDBOX_VERIFIED', 'HUMAN_APPROVED', 'SHADOW', 'ACTIVE', 'REVOKED')),
+    sensitive BOOLEAN DEFAULT FALSE,
+    approved_by VARCHAR(255) DEFAULT NULL,
+    signature TEXT DEFAULT NULL,
+    shadow_matches INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- ------------------------------------------------------------------------------
+-- 4b. Cryptographic Tamper-Evident SHA-256 Ledger (SOC-2 / PCI-DSS v4.0)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS immune_log (
+    id VARCHAR(64) PRIMARY KEY,
+    tenant_id VARCHAR(64) NOT NULL DEFAULT 'default',
+    actor VARCHAR(255) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    subject_id VARCHAR(255) NOT NULL,
+    detail TEXT NOT NULL, -- Pure JSON structural shape only (NO raw bodies)
+    prev_hash VARCHAR(64) NOT NULL,
+    entry_hash VARCHAR(64) NOT NULL,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_immune_log_hash ON immune_log(entry_hash);
 
 -- ------------------------------------------------------------------------------
 -- 5. Antibodies Registry (Legacy/Convenience View for UI & Tests)

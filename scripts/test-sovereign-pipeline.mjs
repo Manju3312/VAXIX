@@ -225,6 +225,14 @@ async function runHttpTests() {
     const auditData = await auditRes.json();
     console.log(`✓ [AUDIT INTAKE] /api/audit: Provisioned evaluation ${auditData.audit_id} with token ${auditData.access_token}`);
 
+    // 2.8b Test Cryptographic SHA-256 Audit Chain Verification
+    const verifyRes = await fetch(`${baseUrl}/api/audit/verify`);
+    const verifyData = await verifyRes.json();
+    if (verifyData.status !== 'VALID_UNBROKEN') {
+      throw new Error(`Audit chain verification failed: ${JSON.stringify(verifyData)}`);
+    }
+    console.log(`✓ [AUDIT VERIFY] /api/audit/verify: Status ${verifyData.status} (${verifyData.totalEntries} chained blocks, Zero Body Retention: ${verifyData.zeroBodyRetentionVerified})`);
+
     // 2.9 Test Liveness & Health Diagnostic Probe
     const healthRes = await fetch(`${baseUrl}/api/health`);
     const healthData = await healthRes.json();
