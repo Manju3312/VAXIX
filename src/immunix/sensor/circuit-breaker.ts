@@ -1,23 +1,28 @@
 /**
  * IMMUNIX SENSOR: Fail-Open Circuit Breaker (Driftshot Architecture)
  * 
- * Safety Invariant:
- * 1. Internal budget: <= 15ms hard cutoff, < 2ms p99 overhead.
+ * Safety Invariants:
+ * 1. Execution budget: <= 15ms hard cutoff, < 2ms p99 overhead.
  * 2. If IMMUNIX encounters any internal error, timeout, or crash,
  *    it FAILS OPEN immediately. The original vendor API call is NEVER blocked or failed.
  * 3. State machine: CLOSED (normal) -> OPEN (tripped, bypassing) -> HALF_OPEN (probing).
  */
 
-export type CircuitBreakerState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+export type CircuitBreakerState = CircuitState;
 
-export interface CircuitBreakerConfig {
-  maxInternalBudgetMs: number; // Max time allowed for internal processing (default: 15ms)
-  failureThreshold: number;    // Consecutive failures to open circuit (default: 5)
-  resetTimeoutMs: number;      // Time before testing half-open (default: 30000ms)
+export interface CircuitBreakerOptions {
+  failureThreshold?: number; // Failures before tripping OPEN (default: 3)
+  resetTimeoutMs?: number;   // Time before probing HALF_OPEN (default: 10000ms)
+  timeoutBudgetMs?: number;  // Hard timeout budget for telemetry (default: 15ms)
 }
 
+export type CircuitBreakerConfig = CircuitBreakerOptions & {
+  maxInternalBudgetMs?: number;
+};
+
 export interface CircuitBreakerStats {
-  state: CircuitBreakerState;
+  state: CircuitState;
   consecutiveFailures: number;
   totalExecutions: number;
   totalFailOpens: number;
@@ -26,48 +31,68 @@ export interface CircuitBreakerStats {
   meanInternalLatencyMs: number;
 }
 
-export class FailOpenCircuitBreaker {
-  private static instance: FailOpenCircuitBreaker;
+export class CircuitBreaker {
+  private static instance: CircuitBreaker;
 
-  private state: CircuitBreakerState = 'CLOSED';
+  private state: CircuitState = 'CLOSED';
   private consecutiveFailures = 0;
+  private lastStateChange: number = Date.now();
+  private lastFailureTime: number | null = null;
   private totalExecutions = 0;
   private totalFailOpens = 0;
-  private lastFailureTime: number | null = null;
-  private lastStateChange = Date.now();
   private totalLatencyMs = 0;
 
-  private config: CircuitBreakerConfig;
+  private readonly failureThreshold: number;
+  private readonly resetTimeoutMs: number;
+  readonly timeoutBudgetMs: number;
 
-  public static getInstance(config?: Partial<CircuitBreakerConfig>): FailOpenCircuitBreaker {
-    if (!FailOpenCircuitBreaker.instance) {
-      FailOpenCircuitBreaker.instance = new FailOpenCircuitBreaker(config);
+  public static getInstance(options?: CircuitBreakerOptions): CircuitBreaker {
+    if (!CircuitBreaker.instance) {
+      CircuitBreaker.instance = new CircuitBreaker(options);
     }
-    return FailOpenCircuitBreaker.instance;
+    return CircuitBreaker.instance;
   }
 
-  constructor(config?: Partial<CircuitBreakerConfig>) {
-    this.config = {
-      maxInternalBudgetMs: config?.maxInternalBudgetMs ?? 15,
-      failureThreshold: config?.failureThreshold ?? 5,
-      resetTimeoutMs: config?.resetTimeoutMs ?? 30000,
-    };
+  constructor(options: CircuitBreakerOptions = {}) {
+    this.failureThreshold = options.failureThreshold ?? 3;
+    this.resetTimeoutMs = options.resetTimeoutMs ?? 10000;
+    this.timeoutBudgetMs = options.timeoutBudgetMs ?? 15;
   }
 
-  public getState(): CircuitBreakerState {
-    // Check if OPEN state has expired and should transition to HALF_OPEN
-    if (this.state === 'OPEN' && this.lastFailureTime) {
-      if (Date.now() - this.lastFailureTime > this.config.resetTimeoutMs) {
-        this.transitionTo('HALF_OPEN');
+  getState(): CircuitState {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastStateChange >= this.resetTimeoutMs) {
+        this.state = 'HALF_OPEN';
+        this.lastStateChange = Date.now();
       }
     }
     return this.state;
   }
 
-  public getStats(): CircuitBreakerStats {
-    const currentState = this.getState();
+  recordSuccess(): void {
+    this.consecutiveFailures = 0;
+    if (this.state !== 'CLOSED') {
+      this.state = 'CLOSED';
+      this.lastStateChange = Date.now();
+    }
+  }
+
+  recordFailure(): void {
+    this.consecutiveFailures += 1;
+    this.lastFailureTime = Date.now();
+    this.totalFailOpens += 1;
+    if (this.consecutiveFailures >= this.failureThreshold) {
+      this.state = 'OPEN';
+      this.lastStateChange = Date.now();
+      console.warn(
+        `[IMMUNIX CircuitBreaker] ⚠️ Circuit Tripped to OPEN after ${this.consecutiveFailures} failures. Bypassing for ${this.resetTimeoutMs}ms. Failing open.`
+      );
+    }
+  }
+
+  getStats(): CircuitBreakerStats {
     return {
-      state: currentState,
+      state: this.getState(),
       consecutiveFailures: this.consecutiveFailures,
       totalExecutions: this.totalExecutions,
       totalFailOpens: this.totalFailOpens,
@@ -80,85 +105,63 @@ export class FailOpenCircuitBreaker {
     };
   }
 
-  private transitionTo(newState: CircuitBreakerState) {
-    this.state = newState;
-    this.lastStateChange = Date.now();
-    if (newState === 'CLOSED') {
-      this.consecutiveFailures = 0;
-    }
-  }
-
   /**
-   * Executes an internal Immunix hook with strict fail-open protection.
-   * If the internal hook takes > maxInternalBudgetMs or throws, fallback is executed
-   * or the failure is absorbed, guaranteeing the application traffic is never impacted.
+   * Executes background task within strict timeout budget.
+   * If task fails or times out, fails open immediately without blocking host app.
    */
-  public async executeWithBudget<T>(
-    operation: () => Promise<T> | T,
-    fallback: () => T,
+  async executeWithBudget<T>(
+    task: () => Promise<T> | T,
+    fallback: T | (() => T),
     operationName = 'immunix_internal_op'
   ): Promise<T> {
-    this.totalExecutions++;
-    const currentState = this.getState();
+    this.totalExecutions += 1;
 
-    // If circuit is OPEN, fail-open immediately without running internal operation
-    if (currentState === 'OPEN') {
-      this.totalFailOpens++;
-      return fallback();
+    const resolveFallback = (): T => {
+      return typeof fallback === 'function' ? (fallback as () => T)() : fallback;
+    };
+
+    if (this.getState() === 'OPEN') {
+      this.totalFailOpens += 1;
+      return resolveFallback();
     }
 
     const start = performance.now();
     let timer: NodeJS.Timeout | undefined;
 
     try {
-      const budgetPromise = new Promise<T>((_, reject) => {
+      const timeoutPromise = new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
-          reject(new Error(`[CircuitBreaker] Budget exceeded: ${this.config.maxInternalBudgetMs}ms for ${operationName}`));
-        }, this.config.maxInternalBudgetMs);
+          reject(new Error(`Immunix budget exceeded: ${this.timeoutBudgetMs}ms for ${operationName}`));
+        }, this.timeoutBudgetMs);
       });
 
-      const opPromise = Promise.resolve().then(() => operation());
-
-      const result = await Promise.race([opPromise, budgetPromise]);
+      const opPromise = Promise.resolve().then(() => task());
+      const result = await Promise.race([opPromise, timeoutPromise]);
       if (timer) clearTimeout(timer);
 
       const elapsed = performance.now() - start;
       this.totalLatencyMs += elapsed;
 
-      // In HALF_OPEN, a success transitions back to CLOSED
-      if (this.state === 'HALF_OPEN') {
-        this.transitionTo('CLOSED');
-      }
-
+      this.recordSuccess();
       return result;
     } catch (err) {
       if (timer) clearTimeout(timer);
       const elapsed = performance.now() - start;
       this.totalLatencyMs += elapsed;
-      this.consecutiveFailures++;
-      this.totalFailOpens++;
-      this.lastFailureTime = Date.now();
 
-      // Trip circuit if threshold reached
-      if (this.consecutiveFailures >= this.config.failureThreshold && this.state !== 'OPEN') {
-        this.transitionTo('OPEN');
-        console.warn(
-          `[IMMUNIX CircuitBreaker] ⚠️ Circuit Tripped to OPEN after ${this.consecutiveFailures} failures. Internal ops bypassed for ${this.config.resetTimeoutMs}ms. Failing open.`
-        );
-      }
-
-      // Log warning but return fallback to protect customer traffic
+      this.recordFailure();
       console.warn(`[IMMUNIX CircuitBreaker] 🛡️ Internal op failed open: ${(err as Error).message}`);
-      return fallback();
+      return resolveFallback(); // Fail open
     }
   }
 
-  public reset() {
-    this.transitionTo('CLOSED');
+  reset(): void {
+    this.state = 'CLOSED';
     this.consecutiveFailures = 0;
     this.lastFailureTime = null;
+    this.lastStateChange = Date.now();
   }
 }
 
-export const circuitBreaker = FailOpenCircuitBreaker.getInstance();
-
+export const FailOpenCircuitBreaker = CircuitBreaker;
+export const circuitBreaker = CircuitBreaker.getInstance();

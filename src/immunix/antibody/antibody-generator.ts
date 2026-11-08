@@ -10,6 +10,7 @@
 
 import { Project, SyntaxKind } from 'ts-morph';
 import { PathogenEvent } from '../detector';
+import { checkIsSensitiveEndpoint, AllowlistedOperation } from './dsl';
 
 export interface AntibodyProposal {
   id: string;
@@ -21,6 +22,8 @@ export interface AntibodyProposal {
   modified_code: string;
   ast_diff: string;
   modifications_count: number;
+  is_sensitive: boolean;
+  allowlisted_op?: AllowlistedOperation;
   created_at: string;
 }
 
@@ -69,6 +72,15 @@ export class AntibodyGenerator {
     let modifications = 0;
     const oldField = pathogen.mutation?.old_field || 'source';
     const newField = pathogen.mutation?.new_field || 'payment_method';
+    const isSensitive = checkIsSensitiveEndpoint(pathogen.endpoint);
+
+    // Allowlisted AST Operation representation
+    let allowlistedOp: AllowlistedOperation = {
+      op: 'rename_field',
+      path: targetFilePath,
+      from: oldField,
+      to: newField,
+    };
 
     // 1. AST Search: Find all object property assignments with the old field name
     const propertyAssignments = sourceFile.getDescendantsOfKind(SyntaxKind.PropertyAssignment);
@@ -88,6 +100,11 @@ export class AntibodyGenerator {
         if (str.getLiteralText() === '/v1/charges') {
           str.replaceWithText("'/v2/checkout/pay'");
           modifications++;
+          allowlistedOp = {
+            op: 'move_endpoint',
+            from: '/v1/charges',
+            to: '/v2/checkout/pay',
+          };
         }
       }
     }
@@ -111,6 +128,8 @@ export class AntibodyGenerator {
       modified_code: modifiedCode,
       ast_diff: astDiff,
       modifications_count: modifications,
+      is_sensitive: isSensitive,
+      allowlisted_op: allowlistedOp,
       created_at: new Date().toISOString(),
     };
   }

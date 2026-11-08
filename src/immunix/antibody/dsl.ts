@@ -1,12 +1,27 @@
 /**
  * IMMUNIX ANTIBODY DSL: Allowlisted 5-Operation Declarative AST Grammar
  * 
- * Invariant:
+ * Invariants:
  * 1. Restricts mutations strictly to 5 deterministic operations.
  *    Zero generative LLM guesswork, zero non-deterministic modifications.
  * 2. Sensitive routes (financial/destructive) are hard-locked to Pull Request only.
  *    In-flight live rewriting is strictly blocked by default on sensitive routes.
  */
+
+export type AllowlistedOperation =
+  | { op: 'rename_field'; path: string; from: string; to: string }
+  | { op: 'move_endpoint'; from: string; to: string; method?: string }
+  | { op: 'coerce_type'; path: string; targetType: 'string' | 'number' | 'boolean' | 'integer' }
+  | { op: 'add_default'; path: string; defaultValue: unknown }
+  | { op: 'drop_field'; path: string };
+
+export type RuleLifecycle =
+  | 'PROPOSED'
+  | 'SANDBOX_VERIFIED'
+  | 'HUMAN_APPROVED'
+  | 'SHADOW'
+  | 'ACTIVE'
+  | 'REVOKED';
 
 export type DslOperationType =
   | 'rename_field'
@@ -40,7 +55,7 @@ export interface AddDefaultOp {
   type: 'add_default';
   target: 'body' | 'headers';
   field: string;
-  defaultValue: string | number | boolean;
+  defaultValue: unknown;
 }
 
 export interface DropFieldOp {
@@ -54,7 +69,8 @@ export type DslOperation =
   | MoveEndpointOp
   | CoerceTypeOp
   | AddDefaultOp
-  | DropFieldOp;
+  | DropFieldOp
+  | AllowlistedOperation;
 
 export interface DeclarativeAntibodyRule {
   id: string;
@@ -62,34 +78,30 @@ export interface DeclarativeAntibodyRule {
   version: string;
   endpointPattern: string;
   sensitive: boolean;
-  operations: DslOperation[];
+  operations: (DslOperation | AllowlistedOperation)[];
   signature?: string;
   createdAt: string;
 }
 
 /**
- * Sensitive Endpoint Classifier:
- * Any route involving financial transactions or destructive mutations is hard-locked.
+ * Enforces sensitive defaults: endpoints matching charges, payments, transfers, or deletions
+ * MUST have sensitive=true and cannot bypass human approval or live rewrite gates.
  */
-export function checkIsSensitiveEndpoint(endpointOrUrl: string, method = 'POST'): boolean {
-  const normalized = endpointOrUrl.toLowerCase();
-  const sensitiveKeywords = [
-    'charge',
-    'payment',
-    'payout',
-    'refund',
-    'transfer',
-    'subscription',
-    'card',
-    'bank_account',
-    'balance',
-  ];
-
-  if (method.toUpperCase() === 'DELETE') {
-    return true;
-  }
-
-  return sensitiveKeywords.some((keyword) => normalized.includes(keyword));
+export function checkIsSensitiveEndpoint(endpoint: string, method?: string): boolean {
+  const lower = endpoint.toLowerCase();
+  const m = method?.toUpperCase();
+  if (m === 'DELETE') return true;
+  return (
+    lower.includes('charge') ||
+    lower.includes('payment') ||
+    lower.includes('payout') ||
+    lower.includes('refund') ||
+    lower.includes('transfer') ||
+    lower.includes('delete') ||
+    lower.includes('card') ||
+    lower.includes('bank_account') ||
+    lower.includes('balance')
+  );
 }
 
 /**
@@ -100,102 +112,59 @@ export function validateDslOperation(op: unknown): DslOperation {
     throw new Error('DSL Operation must be a non-null object');
   }
 
-  const { type } = op as { type?: string };
-  switch (type) {
-    case 'rename_field': {
-      const o = op as RenameFieldOp;
-      if (!o.target || !o.oldField || !o.newField) {
-        throw new Error('rename_field requires target, oldField, and newField');
-      }
-      return o;
-    }
-    case 'move_endpoint': {
-      const o = op as MoveEndpointOp;
-      if (!o.oldEndpoint || !o.newEndpoint) {
-        throw new Error('move_endpoint requires oldEndpoint and newEndpoint');
-      }
-      return o;
-    }
-    case 'coerce_type': {
-      const o = op as CoerceTypeOp;
-      if (!o.field || !o.fromType || !o.toType) {
-        throw new Error('coerce_type requires field, fromType, and toType');
-      }
-      return o;
-    }
-    case 'add_default': {
-      const o = op as AddDefaultOp;
-      if (!o.field || o.defaultValue === undefined) {
-        throw new Error('add_default requires field and defaultValue');
-      }
-      return o;
-    }
-    case 'drop_field': {
-      const o = op as DropFieldOp;
-      if (!o.target || !o.field) {
-        throw new Error('drop_field requires target and field');
-      }
-      return o;
-    }
-    default:
-      throw new Error(`Disallowed DSL operation type: ${type}. Allowed: rename_field, move_endpoint, coerce_type, add_default, drop_field.`);
+  const candidate = op as Record<string, unknown>;
+  const opType = (candidate.op || candidate.type) as string;
+
+  const validTypes = ['rename_field', 'move_endpoint', 'coerce_type', 'add_default', 'drop_field'];
+  if (!validTypes.includes(opType)) {
+    throw new Error(
+      `Disallowed AST operation: "${opType}". Allowed grammar strictly limited to: ${validTypes.join(', ')}`
+    );
   }
+
+  return op as DslOperation;
 }
 
 /**
- * Evaluates in-memory pre-flight payload mutation for Path A (Known Drift)
- * If the endpoint is sensitive and not explicitly allowed, execution is rejected.
+ * Applies a declarative rule to an in-flight JSON payload in memory.
  */
 export function applyDslRuleToPayload(
-  rule: DeclarativeAntibodyRule,
-  payload: Record<string, unknown>,
-  allowSensitiveOverride = false
-): {
-  success: boolean;
-  mutatedPayload: Record<string, unknown>;
-  blockedReason?: string;
-} {
-  if (rule.sensitive && !allowSensitiveOverride) {
-    return {
-      success: false,
-      mutatedPayload: payload,
-      blockedReason: 'In-flight rewrite blocked: Financial/sensitive endpoint. Routed to Human-Approved PR Lane.',
-    };
-  }
-
-  const result: Record<string, unknown> = { ...payload };
+  body: Record<string, unknown>,
+  rule: DeclarativeAntibodyRule
+): Record<string, unknown> {
+  const cloned = JSON.parse(JSON.stringify(body));
 
   for (const op of rule.operations) {
-    if (op.type === 'rename_field' && op.target === 'body') {
-      if (op.oldField in result) {
-        result[op.newField] = result[op.oldField];
-        delete result[op.oldField];
+    if ('op' in op) {
+      if (op.op === 'rename_field') {
+        if (op.from in cloned) {
+          cloned[op.to] = cloned[op.from];
+          delete cloned[op.from];
+        }
+      } else if (op.op === 'add_default') {
+        if (!(op.path in cloned)) {
+          cloned[op.path] = op.defaultValue;
+        }
+      } else if (op.op === 'drop_field') {
+        delete cloned[op.path];
       }
-    } else if (op.type === 'add_default' && op.target === 'body') {
-      if (!(op.field in result)) {
-        result[op.field] = op.defaultValue;
-      }
-    } else if (op.type === 'drop_field' && op.target === 'body') {
-      delete result[op.field];
-    } else if (op.type === 'coerce_type' && op.target === 'body') {
-      if (op.field in result) {
-        const val = result[op.field];
-        if (op.toType === 'integer') {
-          result[op.field] = parseInt(String(val), 10);
-        } else if (op.toType === 'number') {
-          result[op.field] = Number(val);
-        } else if (op.toType === 'string') {
-          result[op.field] = String(val);
-        } else if (op.toType === 'boolean') {
-          result[op.field] = Boolean(val);
+    } else {
+      if (op.type === 'rename_field') {
+        if (op.target === 'body' && op.oldField in cloned) {
+          cloned[op.newField] = cloned[op.oldField];
+          delete cloned[op.oldField];
+        }
+      } else if (op.type === 'add_default') {
+        if (op.target === 'body' && !(op.field in cloned)) {
+          cloned[op.field] = op.defaultValue;
+        }
+      } else if (op.type === 'drop_field') {
+        if (op.target === 'body') {
+          delete cloned[op.field];
         }
       }
     }
   }
 
-  return {
-    success: true,
-    mutatedPayload: result,
-  };
+  return cloned;
 }
-

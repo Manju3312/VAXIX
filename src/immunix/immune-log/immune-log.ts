@@ -296,6 +296,30 @@ export class ImmuneLogManager {
   }
 
   /**
+   * Iterates through all entries from genesis to head and verifies prevHash and entryHash continuity.
+   */
+  public verifyChainIntegrity(): {
+    isValid: boolean;
+    count: number;
+    genesisHash: string;
+    latestHash: string;
+    zeroBodyRetentionVerified: boolean;
+    tamperedEntryId?: string;
+    error?: string;
+  } {
+    const res = this.verifyChain();
+    return {
+      isValid: res.status === 'VALID_UNBROKEN' || res.status === 'EMPTY_LEDGER',
+      count: res.totalEntries,
+      genesisHash: res.genesisHash,
+      latestHash: res.latestHash,
+      zeroBodyRetentionVerified: res.zeroBodyRetentionVerified,
+      tamperedEntryId: res.tamperedEntryId,
+      error: res.error,
+    };
+  }
+
+  /**
    * Generates a formal SOC-2 / PCI-DSS compliance evidence pack.
    */
   public exportEvidencePack() {

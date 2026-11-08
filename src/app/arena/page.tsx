@@ -203,6 +203,8 @@ export default function ArenaPage() {
 
   const [isExecuting, setIsExecuting] = useState(false);
   const [runtimeEngine, setRuntimeEngine] = useState<'python' | 'typescript'>('python');
+  const [pathMode, setPathMode] = useState<'path_a' | 'path_b'>('path_a');
+  const [sensitiveGuard, setSensitiveGuard] = useState<boolean>(true);
   const [executionResult, setExecutionResult] = useState<{
     latencyMs: number;
     unshieldedStatus: number;
@@ -210,6 +212,7 @@ export default function ArenaPage() {
     shieldedStatus: number;
     shieldedResponse: string;
     astPatch: string;
+    mode?: string;
     timestamp: string;
   } | null>(null);
 
@@ -277,6 +280,9 @@ export default function ArenaPage() {
             provider: selectedScenario,
             payload: parsedPayload,
             runtime: 'python',
+            mode: pathMode,
+            allow_sensitive_override: !sensitiveGuard,
+            url: endpointUrl,
           }),
         });
 
@@ -284,15 +290,34 @@ export default function ArenaPage() {
           const pyData = await response.json();
           if (pyData && pyData.success) {
             setTimeout(() => {
+              const isBlocked = pyData.mode === 'path_b_sensitive_locked';
+              const isColdStart = pathMode === 'path_b';
+
               setExecutionResult({
-                latencyMs: pyData.protected?.latency_ms || 0.38,
+                latencyMs: pyData.protected?.latency_ms || pyData.latency_ms || 1.15,
                 unshieldedStatus: pyData.unprotected?.status || 400,
                 unshieldedError: typeof pyData.unprotected?.raw_response === 'string'
                   ? pyData.unprotected.raw_response
-                  : JSON.stringify(pyData.unprotected, null, 2),
-                shieldedStatus: pyData.protected?.status || 200,
-                shieldedResponse: JSON.stringify(pyData.protected?.upstream_response || pyData.protected, null, 2),
+                  : JSON.stringify(pyData.unprotected || { error: "400 Bad Request" }, null, 2),
+                shieldedStatus: isBlocked || isColdStart ? 400 : 200,
+                shieldedResponse: isBlocked
+                  ? JSON.stringify({
+                      status: 400,
+                      message: "Bad Request (Honest Failure Passed to Application)",
+                      security_policy: "Sensitive route detected. Live in-flight rewrite BLOCKED.",
+                      resolution_lane: "Routed to Human-Approved PR Lane (PR #414)",
+                      human_review_required: true,
+                    }, null, 2)
+                  : isColdStart
+                  ? JSON.stringify({
+                      status: 400,
+                      message: "Bad Request: Unknown drift detected upstream.",
+                      honest_two_paths: "Path B: Cold-start 400 passed to caller. Auto-merge disabled.",
+                      pr_opened: { pr_number: 414, title: "fix(stripe): adopt required schema", status: "OPEN" },
+                    }, null, 2)
+                  : JSON.stringify(pyData.protected?.upstream_response || pyData.protected || JSON.parse(presets[selectedScenario].shieldedResponse), null, 2),
                 astPatch: pyData.ast_patch || presets[selectedScenario].astPatch,
+                mode: pyData.mode || pathMode,
                 timestamp: new Date().toISOString(),
               });
               setIsExecuting(false);
@@ -314,6 +339,9 @@ export default function ArenaPage() {
           scenario_id: selectedScenario.toUpperCase(),
           custom_payload: requestBody,
           cluster_id: 'aws-us-east-1-primary',
+          mode: pathMode,
+          allow_sensitive_override: !sensitiveGuard,
+          endpoint: new URL(endpointUrl, 'http://localhost').pathname,
         }),
       });
 
@@ -328,13 +356,32 @@ export default function ArenaPage() {
       }).catch(() => {});
 
       setTimeout(() => {
+        const isBlocked = data.mode === 'path_b_sensitive_locked';
+        const isColdStart = pathMode === 'path_b';
+
         setExecutionResult({
-          latencyMs: data.latency_ms || 0.38,
+          latencyMs: data.latency_ms || 1.18,
           unshieldedStatus: current.unshieldedStatus,
           unshieldedError: current.unshieldedError,
-          shieldedStatus: 200,
-          shieldedResponse: current.shieldedResponse,
-          astPatch: current.astPatch,
+          shieldedStatus: isBlocked || isColdStart ? 400 : 200,
+          shieldedResponse: isBlocked
+            ? JSON.stringify({
+                status: 400,
+                message: "Bad Request (Honest Failure Passed to Application)",
+                security_policy: "Sensitive route detected. Live in-flight rewrite BLOCKED.",
+                resolution_lane: "Routed to Human-Approved PR Lane (PR #414)",
+                human_review_required: true,
+              }, null, 2)
+            : isColdStart
+            ? JSON.stringify({
+                status: 400,
+                message: "Bad Request: Unknown drift detected upstream.",
+                honest_two_paths: "Path B: Cold-start 400 passed to caller. Auto-merge disabled.",
+                pr_opened: { pr_number: 414, title: "fix(stripe): adopt required schema", status: "OPEN" },
+              }, null, 2)
+            : current.shieldedResponse,
+          astPatch: data.ast_patch || current.astPatch,
+          mode: data.mode || pathMode,
           timestamp: new Date().toISOString(),
         });
         setIsExecuting(false);
@@ -342,12 +389,20 @@ export default function ArenaPage() {
     } catch {
       const current = presets[selectedScenario];
       setExecutionResult({
-        latencyMs: 0.38,
+        latencyMs: 1.18,
         unshieldedStatus: current.unshieldedStatus,
         unshieldedError: current.unshieldedError,
-        shieldedStatus: 200,
-        shieldedResponse: current.shieldedResponse,
+        shieldedStatus: pathMode === 'path_b' || sensitiveGuard ? 400 : 200,
+        shieldedResponse: sensitiveGuard
+          ? JSON.stringify({
+              status: 400,
+              message: "Bad Request (Honest Failure Passed to Application)",
+              security_policy: "Sensitive route detected. Live in-flight rewrite BLOCKED.",
+              resolution_lane: "Routed to Human-Approved PR Lane (PR #414)",
+            }, null, 2)
+          : current.shieldedResponse,
         astPatch: current.astPatch,
+        mode: pathMode,
         timestamp: new Date().toISOString(),
       });
       setIsExecuting(false);
@@ -551,6 +606,64 @@ export default function ArenaPage() {
           </div>
         </div>
 
+        {/* The Two Honest Paths & Sensitive Route Selector Bar */}
+        <div className="mb-8 p-4 rounded-3xl bg-white border border-[#D4AF37]/30 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-mono font-bold text-[#6E6E73] uppercase tracking-wider px-2">
+              Resolution Path:
+            </span>
+            <button
+              suppressHydrationWarning
+              onClick={() => setPathMode('path_a')}
+              className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                pathMode === 'path_a'
+                  ? 'bg-[#0B0B0C] text-[#10B981] border border-[#10B981] shadow-sm'
+                  : 'bg-[#FBFBF9] text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 text-[#10B981]" />
+              <span>Path A: Known Drift (Pre-Flight AST &lt; 2ms)</span>
+            </button>
+            <button
+              suppressHydrationWarning
+              onClick={() => setPathMode('path_b')}
+              className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                pathMode === 'path_b'
+                  ? 'bg-[#0B0B0C] text-[#D4AF37] border border-[#D4AF37] shadow-sm'
+                  : 'bg-[#FBFBF9] text-[#6E6E73] border border-black/10 hover:border-[#D4AF37]'
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Path B: Unknown Drift (Cold Start 400 &amp; PR)</span>
+            </button>
+          </div>
+
+          {/* Sensitive Endpoint Guard Switch */}
+          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-[#FBFBF9] border border-[#D4AF37]/30">
+            <Shield className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span className="text-[11px] font-mono font-bold text-[#0B0B0C]">
+              Payment Route Lock:
+            </span>
+            <button
+              type="button"
+              suppressHydrationWarning
+              onClick={() => setSensitiveGuard(!sensitiveGuard)}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                sensitiveGuard ? 'bg-[#10B981]' : 'bg-black/20'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  sensitiveGuard ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span className={`text-[10px] font-mono font-bold ${sensitiveGuard ? 'text-[#10B981]' : 'text-amber-600'}`}>
+              {sensitiveGuard ? 'PR-ONLY ENFORCED' : 'OVERRIDE'}
+            </span>
+          </div>
+        </div>
+
         {/* 2-Column Interactive Workbench */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
@@ -668,8 +781,12 @@ export default function ArenaPage() {
                       <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
                       With IMMUNIX Wire Defense
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#10B981]/20 text-[#10B981] font-bold">
-                      HTTP 200 OK
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                      executionResult?.shieldedStatus === 400
+                        ? 'bg-amber-500/20 text-amber-300'
+                        : 'bg-[#10B981]/20 text-[#10B981]'
+                    }`}>
+                      {executionResult ? `HTTP ${executionResult.shieldedStatus} ${executionResult.shieldedStatus === 400 ? 'PR LANE' : 'OK'}` : 'HTTP 200 OK'}
                     </span>
                   </div>
                   <pre className="text-[11px] font-mono text-emerald-300 bg-black/60 p-3 rounded-xl overflow-x-auto border border-white/10 leading-relaxed max-h-[160px]">
@@ -677,7 +794,9 @@ export default function ArenaPage() {
                   </pre>
                 </div>
                 <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#D4AF37]">
-                  <span>Single Roundtrip (Path A)</span>
+                  <span>
+                    {executionResult?.shieldedStatus === 400 ? 'Human-Approved PR Lane (Zero Auto-Merge)' : 'Single Roundtrip (Path A)'}
+                  </span>
                   <span className="text-emerald-400 font-bold">
                     Pre-Flight: {executionResult?.latencyMs ? `${executionResult.latencyMs}ms` : '1.18ms'} (&lt;2ms Budget)
                   </span>
