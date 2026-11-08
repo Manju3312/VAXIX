@@ -30,7 +30,7 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
 
             <div className="mt-6 flex items-center gap-4 text-xs text-[#6E6E73] font-mono">
               <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-[#D4AF37]" /> SOC2 Type II Certified</span>
-              <span className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-[#10B981]" /> eBPF Native Kernel</span>
+              <span className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-[#10B981]" /> Fail-Open &lt; 2ms Sensor</span>
             </div>
           </div>
 
@@ -48,7 +48,7 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
 
             <div className="space-y-1.5 text-[11px] text-[#F3E5AB]">
               <div>• <span className="font-bold text-[#D4AF37]">whats_changed</span>(provider: &quot;stripe&quot;) ── Diff between runtime wire vs latest spec</div>
-              <div>• <span className="font-bold text-[#D4AF37]">inoculate_cluster</span>(antigen_id: &quot;ant_84f9...&quot;) ── Deploy hot-patch to Envoy sidecar</div>
+              <div>• <span className="font-bold text-[#D4AF37]">inoculate_cluster</span>(antigen_id: &quot;ant_84f9...&quot;) ── Deploy pre-flight rule to Envoy / SDK catalog</div>
               <div>• <span className="font-bold text-[#D4AF37]">probe_sandbox</span>(pr_number: 42) ── Execute unmocked synthetic verification probe</div>
             </div>
 

@@ -617,19 +617,19 @@ export default function ArenaPage() {
               {isExecuting ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-[#D4AF37]" />
-                  <span>Intercepting via eBPF Kernel...</span>
+                  <span>Applying Pre-Flight AST Rewrite...</span>
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-                  <span>Transmit Through Immune Wire Proxy</span>
+                  <span>Transmit Through In-Process Sensor</span>
                 </>
               )}
             </button>
 
             <div className="p-3 rounded-xl bg-[#FBFBF9] border border-[#D4AF37]/20 text-[11px] font-mono text-[#6E6E73] flex items-center justify-between">
-              <span>Socket Interception:</span>
-              <span className="text-emerald-700 font-bold">Rust WASM Filter L1</span>
+              <span>Sensor Execution Mode:</span>
+              <span className="text-emerald-700 font-bold">&lt; 1.2ms In-Process AST (15ms Fail-Open)</span>
             </div>
           </div>
 
@@ -677,9 +677,9 @@ export default function ArenaPage() {
                   </pre>
                 </div>
                 <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#D4AF37]">
-                  <span>0.00ms Production Downtime</span>
+                  <span>Single Roundtrip (Path A)</span>
                   <span className="text-emerald-400 font-bold">
-                    Lat: {executionResult?.latencyMs ? `${executionResult.latencyMs}ms` : '0.38ms'}
+                    Pre-Flight: {executionResult?.latencyMs ? `${executionResult.latencyMs}ms` : '1.18ms'} (&lt;2ms Budget)
                   </span>
                 </div>
               </div>

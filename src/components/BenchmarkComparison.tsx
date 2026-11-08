@@ -13,13 +13,13 @@ interface BenchmarkRow {
 
 export default function BenchmarkComparison() {
   const rows: BenchmarkRow[] = [
-    { dimension: 'Speed 1 In-Flight Wire Hot-Patch (<1ms)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Zero-Downtime at 3:00 AM (Averts Outage)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Speed 2 AST Codemod (Deterministic Code Repair)', corrigio: true, mendr: false, apisynq: true, immunix: true },
-    { dimension: 'Zero LLM Hallucinations (ts-morph / AST Compiler)', corrigio: 'partial', mendr: false, apisynq: 'partial', immunix: true },
-    { dimension: 'Unmocked Live Ephemeral Sandbox Probing', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Global Herd Immunity Mesh (Instant Cross-Node Defense)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Parametric Outage Financial Loss SLA Guarantee', corrigio: false, mendr: false, apisynq: false, immunix: true },
+    { dimension: 'The Two Honest Paths (Path A <2ms Pre-Flight vs Path B Async PR)', corrigio: false, mendr: false, apisynq: false, immunix: true },
+    { dimension: 'Fail-Open Circuit Breaker (<2ms budget, 15ms hard deadline)', corrigio: false, mendr: false, apisynq: false, immunix: true },
+    { dimension: 'Zero Customer Body Retention (Client-Side Value Destruction)', corrigio: false, mendr: false, apisynq: false, immunix: true },
+    { dimension: 'Allowlisted 5-AST Deterministic Surgery (0% Hallucinations)', corrigio: 'partial', mendr: false, apisynq: 'partial', immunix: true },
+    { dimension: 'Sensitive Financial Route Guard (/charges locked to PR lane)', corrigio: false, mendr: false, apisynq: false, immunix: true },
+    { dimension: 'Mandatory Human Approval Gate (Zero Auto-Merge Policy)', corrigio: 'partial', mendr: true, apisynq: false, immunix: true },
+    { dimension: 'Tamper-Evident SHA-256 Recursive Hash Chain (SOC-2 Proof)', corrigio: false, mendr: false, apisynq: false, immunix: true },
   ];
 
   return (

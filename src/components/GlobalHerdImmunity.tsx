@@ -127,9 +127,9 @@ export default function GlobalHerdImmunity() {
 
   const [tickerEvents, setTickerEvents] = useState<string[]>([
     'Tokyo ➔ Frankfurt: Antibody #ATB-8921 synchronized via Ed25519 gossip mesh (2.1ms)',
-    'New York US-East-1: Pre-emptively shielded against Stripe v2026 schema mutation',
+    'New York US-East-1: Pre-emptively shielded against Stripe 2025-03-31.basil schema drift',
     'Zurich Sovereign Vault: Ephemeral sandbox verified zero regression across 84 core APIs',
-    'Singapore SG-1: In-flight socket bridge handled 18,400 checkout calls with 0ms downtime',
+    'Singapore SG-1: Pre-flight in-process sensor handled 18,400 calls with <1.2ms added overhead',
   ]);
 
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function GlobalHerdImmunity() {
     const sequence = [
       { id: 'tokyo-01', text: '[0.0ms] Tokyo AP-1: Synthesized antibody #ATB-8921 from live Stripe webhook mutation' },
       { id: 'singapore-05', text: '[1.2ms] Singapore SG-1: Inoculated via Ed25519 gossip broadcast' },
-      { id: 'frankfurt-04', text: '[2.1ms] Frankfurt EU-1: Inoculated. eBPF socket bridge active' },
+      { id: 'frankfurt-04', text: '[2.1ms] Frankfurt EU-1: Inoculated. Pre-flight in-process sensor active' },
       { id: 'zurich-07', text: '[2.3ms] Zurich Vault CH-1: Inoculated. Zero financial transaction stall' },
       { id: 'london-03', text: '[2.8ms] London UK-1: Inoculated. Pre-emptively shielded' },
       { id: 'newyork-02', text: '[3.4ms] New York NY-1: Inoculated hours before US rollout reaches region' },
