@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ADAPTER: OpenAI Model & Inference Adapter
+ * VAXIX ADAPTER: OpenAI Model & Inference Adapter
  */
 
 import { z } from 'zod';

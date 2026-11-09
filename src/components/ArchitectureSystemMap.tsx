@@ -149,9 +149,9 @@ ORDER BY (vendor, http_status, timestamp);`,
     consumerApp: {
       id: 'consumerApp',
       stepNumber: 1,
-      title: 'Host Application & @immunix/sensor',
-      layerName: '1. Host Application with @immunix/sensor',
-      description: 'Customer application runtime wrapped by @immunix/sensor with an integrated Fail-Open Circuit Breaker. Strips all customer secrets client-side via extractRedactedShape() and guarantees zero application blocking (< 2ms p99 overhead).',
+      title: 'Host Application & @vaxix/sensor',
+      layerName: '1. Host Application with @vaxix/sensor',
+      description: 'Customer application runtime wrapped by @vaxix/sensor with an integrated Fail-Open Circuit Breaker. Strips all customer secrets client-side via extractRedactedShape() and guarantees zero application blocking (< 2ms p99 overhead).',
       metric: '< 2ms Fail-Open Budget (P99 Overhead)',
       technicalSpec: 'Node.js / Python in-process SDK wrapper with fail-open circuit breaker and client-side PII shredder.',
       codeSnippet: `// In-process sensor wrapper with Fail-Open Circuit Breaker
@@ -1117,7 +1117,7 @@ if (isSigValid) {
                   Empirical Latency Bounds &amp; Fallacy Resolution
                 </h3>
                 <p className="text-white/70 text-xs mt-2 leading-relaxed">
-                  Network calls that leave a cloud datacenter cannot defy the speed of light. Any claim of &quot;rescuing a 400 Bad Request in 0.4ms&quot; over the public internet is physically impossible. Immunix grounds all metrics in verifiable distributed systems reality.
+                  Network calls that leave a cloud datacenter cannot defy the speed of light. Any claim of &quot;rescuing a 400 Bad Request in 0.4ms&quot; over the public internet is physically impossible. Vaxix grounds all metrics in verifiable distributed systems reality.
                 </p>
               </div>
 
@@ -1148,10 +1148,10 @@ if (isSigValid) {
                   <h4 className="font-bold text-amber-400 text-sm uppercase">2. Fallacies Explicitly Resolved</h4>
                   <ul className="space-y-2 text-[11px] text-white/70 list-disc list-inside leading-relaxed">
                     <li>
-                      <strong className="text-white">eBPF TLS Ciphertext Limitation:</strong> Outbound HTTPS traffic is encrypted. eBPF socket probes only see ciphertext. Immunix executes all payload AST rewrites inside Envoy L7 before TLS encryption.
+                      <strong className="text-white">eBPF TLS Ciphertext Limitation:</strong> Outbound HTTPS traffic is encrypted. eBPF socket probes only see ciphertext. Vaxix executes all payload AST rewrites inside Envoy L7 before TLS encryption.
                     </li>
                     <li>
-                      <strong className="text-white">The 0.4ms Cold-Start Fallacy:</strong> When an upstream breaking change arrives unannounced, the initial request fails upstream. Immunix explicitly models Path B (Cold-Start Outage) followed by async healing and pre-emptive mesh inoculation.
+                      <strong className="text-white">The 0.4ms Cold-Start Fallacy:</strong> When an upstream breaking change arrives unannounced, the initial request fails upstream. Vaxix explicitly models Path B (Cold-Start Outage) followed by async healing and pre-emptive mesh inoculation.
                     </li>
                     <li>
                       <strong className="text-white">Poisoned-Fix Supply Chain Risk:</strong> Auto-merge is strictly forbidden. Human SRE must inspect and approve every pull request before KMS/HSM root key attestation.

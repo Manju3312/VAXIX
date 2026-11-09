@@ -29,7 +29,7 @@ export default function LoginPage() {
           token: `imx_session_${Date.now()}`,
           authenticatedAt: new Date().toISOString(),
         };
-        localStorage.setItem('immunix_session', JSON.stringify(session));
+        localStorage.setItem('vaxix_session', JSON.stringify(session));
         router.push('/dashboard');
       } else {
         setError('Please enter both email and sovereign credential.');
@@ -62,7 +62,7 @@ export default function LoginPage() {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="font-black text-xl tracking-wider text-[#0B0B0C] font-display">IMMUNIX</span>
+              <span className="font-black text-xl tracking-wider text-[#0B0B0C] font-display">VAXIX</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#D4AF37]/10 text-[#997D25] border border-[#D4AF37]/30 font-mono font-bold">2.4</span>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-medium -mt-0.5">Sovereign Mesh Console</span>
@@ -187,7 +187,7 @@ export default function LoginPage() {
 
       {/* Footer Strip */}
       <footer className="p-6 text-center text-xs text-[#6E6E73] font-mono">
-        © 2026 IMMUNIX Network, Inc. Sovereign Cloud Standard.
+        © 2026 VAXIX Network, Inc. Sovereign Cloud Standard.
       </footer>
     </div>
   );

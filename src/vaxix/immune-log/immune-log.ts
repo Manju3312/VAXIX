@@ -1,5 +1,5 @@
 /**
- * IMMUNIX IMMUNE LOG: Tamper-Evident SHA-256 Cryptographic Audit Ledger
+ * VAXIX IMMUNE LOG: Tamper-Evident SHA-256 Cryptographic Audit Ledger
  * 
  * Invariant (SOC-2 / PCI-DSS v4.0):
  * 1. Cryptographically linked hash chain:
@@ -90,7 +90,7 @@ export class ImmuneLogManager {
         this.append(
           'SENSOR_INGEST',
           'system',
-          'Immunix Tamper-Evident SHA-256 Ledger initialized (Genesis Block).',
+          'Vaxix Tamper-Evident SHA-256 Ledger initialized (Genesis Block).',
           { mode: 'SOVEREIGN_RESILIENCE', version: '2.5.0' },
           'sys_genesis'
         );
@@ -327,7 +327,7 @@ export class ImmuneLogManager {
     const entries = this.getEntries(100);
 
     return {
-      title: 'IMMUNIX Enterprise Sovereign Resilience & Cryptographic Evidence Pack',
+      title: 'VAXIX Enterprise Sovereign Resilience & Cryptographic Evidence Pack',
       standard: 'SOC-2 Type II & PCI-DSS v4.0 Appendix A',
       verificationStatus: verification.status,
       totalAuditedEntries: verification.totalEntries,

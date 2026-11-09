@@ -3,7 +3,7 @@
  * Implements:
  * - Downstream Consumer Microservices
  * - Envoy / Edge Ingress Gateway
- * - IMMUNIX WASM Kernel Filter
+ * - VAXIX WASM Kernel Filter
  * - In-Memory Lock-Free Antibody Trie
  * - Upstream SaaS / Internal API In-Flight Payload Rewrite
  */
@@ -34,7 +34,7 @@ export class LockFreeAntibodyTrie {
       if ('email_address' in copy && !('customer_email' in copy)) {
         copy.customer_email = copy.email_address;
       }
-      copy._immunix_wire_healed = true;
+      copy._vaxix_wire_healed = true;
       copy._wire_latency_ms = 0.38;
       return copy;
     });
@@ -45,7 +45,7 @@ export class LockFreeAntibodyTrie {
         status: 200,
         transaction_id: 'tx_rerouted_9814',
         cleared: true,
-        _immunix_rerouted: '/v1/charges ➔ /v2/checkout/pay',
+        _vaxix_rerouted: '/v1/charges ➔ /v2/checkout/pay',
         _wire_latency_ms: 0.42,
       };
     });
@@ -56,7 +56,7 @@ export class LockFreeAntibodyTrie {
       if (typeof copy.amount === 'string') {
         copy.amount = parseFloat(copy.amount);
       }
-      copy._immunix_type_coerced = true;
+      copy._vaxix_type_coerced = true;
       copy._wire_latency_ms = 0.29;
       return copy;
     });
@@ -110,7 +110,7 @@ export class LockFreeAntibodyTrie {
 // Global singleton instance for Data Plane
 export const globalAntibodyTrie = new LockFreeAntibodyTrie();
 
-// IMMUNIX WASM Kernel Filter Hook
+// VAXIX WASM Kernel Filter Hook
 export function executeWasmKernelFilter(
   route: string,
   rawPayload: Record<string, unknown>

@@ -8,18 +8,18 @@ interface BenchmarkRow {
   corrigio: boolean | 'partial';
   mendr: boolean | 'partial';
   apisynq: boolean | 'partial';
-  immunix: boolean | 'partial';
+  vaxix: boolean | 'partial';
 }
 
 export default function BenchmarkComparison() {
   const rows: BenchmarkRow[] = [
-    { dimension: 'The Two Honest Paths (Path A <2ms Pre-Flight vs Path B Async PR)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Fail-Open Circuit Breaker (<2ms budget, 15ms hard deadline)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Zero Customer Body Retention (Client-Side Value Destruction)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Allowlisted 5-AST Deterministic Surgery (0% Hallucinations)', corrigio: 'partial', mendr: false, apisynq: 'partial', immunix: true },
-    { dimension: 'Sensitive Financial Route Guard (/charges locked to PR lane)', corrigio: false, mendr: false, apisynq: false, immunix: true },
-    { dimension: 'Mandatory Human Approval Gate (Zero Auto-Merge Policy)', corrigio: 'partial', mendr: true, apisynq: false, immunix: true },
-    { dimension: 'Tamper-Evident SHA-256 Recursive Hash Chain (SOC-2 Proof)', corrigio: false, mendr: false, apisynq: false, immunix: true },
+    { dimension: 'The Two Honest Paths (Path A <2ms Pre-Flight vs Path B Async PR)', corrigio: false, mendr: false, apisynq: false, vaxix: true },
+    { dimension: 'Fail-Open Circuit Breaker (<2ms budget, 15ms hard deadline)', corrigio: false, mendr: false, apisynq: false, vaxix: true },
+    { dimension: 'Zero Customer Body Retention (Client-Side Value Destruction)', corrigio: false, mendr: false, apisynq: false, vaxix: true },
+    { dimension: 'Allowlisted 5-AST Deterministic Surgery (0% Hallucinations)', corrigio: 'partial', mendr: false, apisynq: 'partial', vaxix: true },
+    { dimension: 'Sensitive Financial Route Guard (/charges locked to PR lane)', corrigio: false, mendr: false, apisynq: false, vaxix: true },
+    { dimension: 'Mandatory Human Approval Gate (Zero Auto-Merge Policy)', corrigio: 'partial', mendr: true, apisynq: false, vaxix: true },
+    { dimension: 'Tamper-Evident SHA-256 Recursive Hash Chain (SOC-2 Proof)', corrigio: false, mendr: false, apisynq: false, vaxix: true },
   ];
 
   return (
@@ -42,7 +42,7 @@ export default function BenchmarkComparison() {
                 <th className="py-5 px-6 text-center">Mendr (K8s)</th>
                 <th className="py-5 px-6 text-center">APISynQ</th>
                 <th className="py-5 px-6 text-center bg-[#D4AF37]/10 text-[#0B0B0C] font-black border-x border-[#D4AF37]/30">
-                  🛡️ IMMUNIX
+                  🛡️ VAXIX
                 </th>
               </tr>
             </thead>
@@ -84,7 +84,7 @@ export default function BenchmarkComparison() {
                     )}
                   </td>
 
-                  {/* IMMUNIX */}
+                  {/* VAXIX */}
                   <td className="py-4.5 px-6 text-center bg-[#D4AF37]/5 font-bold text-[#0B0B0C] border-x border-[#D4AF37]/20">
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D4AF37]/15 text-[#997D25] border border-[#D4AF37]/30 text-xs font-mono font-bold">
                       <Check className="w-3.5 h-3.5 text-[#997D25]" />

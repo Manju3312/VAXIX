@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { executeWasmKernelFilter } from '@/lib/immunix-engine/data-plane';
+import { executeWasmKernelFilter } from '@/lib/vaxix-engine/data-plane';
 import {
   globalEventBroker,
   profileAnomaly,
@@ -7,12 +7,12 @@ import {
   executeAstGenomeEngine,
   runEphemeralSandboxVerifier,
   synthesizeGitHubPR,
-} from '@/lib/immunix-engine/control-plane';
+} from '@/lib/vaxix-engine/control-plane';
 import {
   sanitizePiiFromVaccine,
   signVaccinePayload,
   broadcastGossipSub,
-} from '@/lib/immunix-engine/herd-mesh';
+} from '@/lib/vaxix-engine/herd-mesh';
 
 export async function POST(req: NextRequest) {
   const overallStart = performance.now();
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
           nodes: {
             consumerMicroservice: { status: 'OUTBOUND_REQUEST_EMITTED', payload },
             envoyGateway: { status: 'HOOK_TRIGGERED', protocol: 'HTTP/2 + TLS 1.3' },
-            immunixWasmFilter: {
+            vaxixWasmFilter: {
               status: 'INTERCEPTED_AND_HEALED',
               healedPayload: dataPlaneResult.healedPayload,
               matchedAntibody: dataPlaneResult.matchedAntibody,
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
           nodes: {
             kafkaEventBroker: {
               status: 'TOPIC_INGEST_CONFIRMED',
-              topic: 'immunix.anomalies.stream',
+              topic: 'vaxix.anomalies.stream',
               queueDepth: globalEventBroker.size(),
             },
             antigenProfiler: {

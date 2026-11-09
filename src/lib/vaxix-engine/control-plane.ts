@@ -101,7 +101,7 @@ export function compileHotPatchRule(profile: AntigenProfile): HotPatchRule {
       if (profile.targetKey && profile.sourceKey && profile.targetKey in copy) {
         copy[profile.sourceKey] = copy[profile.targetKey];
       }
-      copy._immunix_hot_patched = true;
+      copy._vaxix_hot_patched = true;
       return copy;
     }
   );
@@ -195,7 +195,7 @@ export interface SynthesizedPR {
   branch: string;
   commitHash: string;
   title: string;
-  author: 'IMMUNIX-Genome-Bot[bot]';
+  author: 'VAXIX-Genome-Bot[bot]';
 }
 
 export function synthesizeGitHubPR(service: string, filename: string): SynthesizedPR {
@@ -205,10 +205,10 @@ export function synthesizeGitHubPR(service: string, filename: string): Synthesiz
   return {
     prNumber: prNum,
     prUrl: `https://github.com/enterprise/core-billing/pull/${prNum}`,
-    branch: `immunix/auto-heal-${service.toLowerCase().replace(/[^a-z]/g, '')}`,
+    branch: `vaxix/auto-heal-${service.toLowerCase().replace(/[^a-z]/g, '')}`,
     commitHash: commit,
     title: `fix(${service.split(' ')[0].toLowerCase()}): deterministic AST contract adapter for ${filename.split('/').pop()}`,
-    author: 'IMMUNIX-Genome-Bot[bot]',
+    author: 'VAXIX-Genome-Bot[bot]',
   };
 }
 

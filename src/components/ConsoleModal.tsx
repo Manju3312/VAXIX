@@ -41,7 +41,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
   const [savedKey] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       try {
-        return localStorage.getItem('immunix_master_key');
+        return localStorage.getItem('vaxix_master_key');
       } catch {
         return null;
       }
@@ -51,7 +51,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
   const [savedSlug] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       try {
-        return localStorage.getItem('immunix_tenant_slug');
+        return localStorage.getItem('vaxix_tenant_slug');
       } catch {
         return null;
       }
@@ -171,7 +171,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-heading font-extrabold text-white text-base tracking-tight">IMMUNIX</span>
+                <span className="font-heading font-extrabold text-white text-base tracking-tight">VAXIX</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-mono uppercase font-bold tracking-wider">
                   Sovereign Console v4.2
                 </span>
@@ -457,7 +457,7 @@ export default function ConsoleModal({ isOpen, onClose }: ConsoleModalProps) {
           {activeTab === 'terminal' && (
             <div className="rounded-2xl bg-black border border-[#D4AF37]/30 p-4 font-mono text-xs space-y-2 min-h-[300px]">
               <div className="text-[#6E6E73] pb-2 border-b border-white/10">
-                # IMMUNIX Autonomous Socket Stream — Kernel Ring Buffer
+                # VAXIX Autonomous Socket Stream — Kernel Ring Buffer
               </div>
               {consoleLogs.map((log, idx) => (
                 <div key={idx} className="leading-relaxed">

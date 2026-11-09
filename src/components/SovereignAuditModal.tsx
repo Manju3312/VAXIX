@@ -175,7 +175,7 @@ export default function SovereignAuditModal({
               <div className="p-3.5 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs text-[#997D25] flex items-start gap-2.5">
                 <Lock className="w-4 h-4 text-[#997D25] shrink-0 mt-0.5" />
                 <span>
-                  <strong>Zero-Data Retention Guarantee:</strong> IMMUNIX eBPF operates entirely in socket memory. No customer payloads or PII ever touch disks or third-party servers.
+                  <strong>Zero-Data Retention Guarantee:</strong> VAXIX eBPF operates entirely in socket memory. No customer payloads or PII ever touch disks or third-party servers.
                 </span>
               </div>
 

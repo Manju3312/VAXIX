@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { checkIsSensitiveEndpoint } from '@/immunix/antibody/dsl';
-import { extractRedactedShape } from '@/immunix/sensor/shape';
-import { immuneLog } from '@/immunix/immune-log/immune-log';
+import { checkIsSensitiveEndpoint } from '@/vaxix/antibody/dsl';
+import { extractRedactedShape } from '@/vaxix/sensor/shape';
+import { immuneLog } from '@/vaxix/immune-log/immune-log';
 
 export async function POST(req: NextRequest) {
   const startTime = performance.now();
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         amount: 4900,
         currency: 'usd',
         payment_method: 'tok_visa',
-        _immunix_preflight_ast: 'RENAME_FIELD_SOURCE_TO_PAYMENT_METHOD',
+        _vaxix_preflight_ast: 'RENAME_FIELD_SOURCE_TO_PAYMENT_METHOD',
       };
       astPatch = `// Deterministic AST Surgery (ts-morph / LibCST)
 - source: "tok_visa"
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       afterPayload = {
         to: '+15551234567',
         amount: 2500,
-        _immunix_rerouted: '/v1/charges ➔ /v2/checkout/pay',
+        _vaxix_rerouted: '/v1/charges ➔ /v2/checkout/pay',
       };
       astPatch = `// Deterministic AST Surgery
 - return await http.post('/v1/charges', payload);
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       afterPayload = {
         amount: 25000.0,
         currency: 'usd',
-        _immunix_type_coerced: 'string ➔ integer',
+        _vaxix_type_coerced: 'string ➔ integer',
       };
       astPatch = `// Deterministic AST Surgery: Coerce type
 - amount: String(cents)
@@ -72,9 +72,9 @@ export async function POST(req: NextRequest) {
       beforePayload = custom_payload;
       afterPayload = {
         ...custom_payload,
-        _immunix_healed: true,
+        _vaxix_healed: true,
       };
-      astPatch = '// Deterministic AST Surgery compiled by IMMUNIX compiler engine';
+      astPatch = '// Deterministic AST Surgery compiled by VAXIX compiler engine';
     } else {
       beforePayload = { amount: 2000, currency: 'usd', source: 'tok_visa' };
       afterPayload = { amount: 2000, currency: 'usd', payment_method: 'tok_visa' };

@@ -12,12 +12,12 @@ export async function GET() {
     return NextResponse.json(
       {
         status: 'HEALTHY',
-        service: 'IMMUNIX Sovereign Autonomous Immune Network',
+        service: 'VAXIX Sovereign Autonomous Immune Network',
         version: '2.4.0',
         timestamp: new Date().toISOString(),
         node_env: process.env.NODE_ENV || 'development',
-        cluster_id: process.env.IMMUNIX_CLUSTER_ID || 'aws-us-east-1-primary',
-        cluster_region: process.env.IMMUNIX_CLUSTER_REGION || 'us-east-1',
+        cluster_id: process.env.VAXIX_CLUSTER_ID || 'aws-us-east-1-primary',
+        cluster_region: process.env.VAXIX_CLUSTER_REGION || 'us-east-1',
         health_check_latency_ms: duration,
         topology: {
           tier1_radix_trie: 'ONLINE_HOT_CACHE',
@@ -41,17 +41,17 @@ export async function GET() {
           rss_mb: Math.round((mem.rss / 1024 / 1024) * 100) / 100,
         },
         ebpf_kernel_interceptor: {
-          enabled: process.env.IMMUNIX_EBPF_ENABLED === 'true',
-          latency_budget_ms: parseFloat(process.env.IMMUNIX_LATENCY_BUDGET_MS || '0.40'),
-          zero_payload_retention: process.env.IMMUNIX_ZERO_PAYLOAD_RETENTION === 'true',
+          enabled: process.env.VAXIX_EBPF_ENABLED === 'true',
+          latency_budget_ms: parseFloat(process.env.VAXIX_LATENCY_BUDGET_MS || '0.40'),
+          zero_payload_retention: process.env.VAXIX_ZERO_PAYLOAD_RETENTION === 'true',
         },
       },
       {
         status: 200,
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'X-Immunix-Node': process.env.IMMUNIX_CLUSTER_ID || 'aws-us-east-1-primary',
-          'X-Immunix-Status': 'INOCULATED',
+          'X-Vaxix-Node': process.env.VAXIX_CLUSTER_ID || 'aws-us-east-1-primary',
+          'X-Vaxix-Status': 'INOCULATED',
         },
       }
     );

@@ -1,9 +1,9 @@
 /**
  * DEMO APP: Customer Billing Service
- * Integrates with Stripe via the Immunix Sensor SDK
+ * Integrates with Stripe via the Vaxix Sensor SDK
  */
 
-import { createSensorClient } from '../../src/immunix/sensor';
+import { createSensorClient } from '../../src/vaxix/sensor';
 
 export interface ChargeResult {
   id: string;

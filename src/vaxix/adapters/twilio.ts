@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ADAPTER: Twilio Programmable Communications Adapter
+ * VAXIX ADAPTER: Twilio Programmable Communications Adapter
  */
 
 import { z } from 'zod';
@@ -33,7 +33,7 @@ export const twilioAdapter: VendorAdapter = {
       responseSchema: TwilioMessageResponseSchema,
       canaryPayload: {
         To: '+14155552671',
-        Body: 'Immunix Canary Test verification code: 894120',
+        Body: 'Vaxix Canary Test verification code: 894120',
       },
     },
   },

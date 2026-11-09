@@ -1,5 +1,5 @@
 /**
- * IMMUNIX SENSOR: Zero-Leak Redaction Engine
+ * VAXIX SENSOR: Zero-Leak Redaction Engine
  * 
  * Ensures no API keys, client secrets, JWTs, credit card PANs, or PII
  * ever appear in logs, storage, telemetry, or pull requests.

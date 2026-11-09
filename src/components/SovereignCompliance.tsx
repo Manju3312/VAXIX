@@ -71,7 +71,7 @@ export default function SovereignCompliance({ onOpenAudit }: ComplianceProps) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `immunix-soc2-pci-evidence-pack-${new Date().toISOString().substring(0, 10)}.json`;
+      a.download = `vaxix-soc2-pci-evidence-pack-${new Date().toISOString().substring(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       setDownloadSuccess(true);

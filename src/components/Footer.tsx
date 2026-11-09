@@ -21,7 +21,7 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
               <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Shield className="w-4 h-4 text-[#0B0B0C]" />
               </div>
-              <span className="font-black text-xl tracking-wider text-white font-display">IMMUNIX</span>
+              <span className="font-black text-xl tracking-wider text-white font-display">VAXIX</span>
             </Link>
 
             <p className="text-[#6E6E73] text-sm leading-relaxed max-w-sm">
@@ -39,9 +39,9 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
             <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[#D4AF37] mb-3">
               <div className="flex items-center gap-2">
                 <Terminal className="w-4 h-4" />
-                <span>IMMUNIX MODEL CONTEXT PROTOCOL (MCP)</span>
+                <span>VAXIX MODEL CONTEXT PROTOCOL (MCP)</span>
               </div>
-              <span className="text-[10px] text-white/40">mcp-server-immunix v2.0</span>
+              <span className="text-[10px] text-white/40">mcp-server-vaxix v2.0</span>
             </div>
 
             <p className="text-white/70 text-xs mb-3">AI Agents can query and control the immune network via standard MCP tools:</p>
@@ -77,7 +77,7 @@ export default function Footer({ onOpenConsole }: FooterProps = {}) {
 
         {/* Bottom: Legal & Sovereign Grid */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#6E6E73] font-sans">
-          <div>© 2026 IMMUNIX Network, Inc. Sovereign Cloud Standard. All rights reserved.</div>
+          <div>© 2026 VAXIX Network, Inc. Sovereign Cloud Standard. All rights reserved.</div>
           <div className="flex items-center gap-6 mt-4 sm:mt-0 font-medium">
             <a href="#sovereign-compliance" className="hover:text-white transition-colors">Security Disclosures</a>
             <a href="#sovereign-compliance" className="hover:text-white transition-colors">Zero-Knowledge Policy</a>

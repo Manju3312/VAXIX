@@ -275,7 +275,7 @@ export default function CommandPalette({
             <span>↵ Select</span>
             <span>ESC Close</span>
           </div>
-          <span className="text-[#D4AF37] font-semibold">IMMUNIX Sovereign Spotlight</span>
+          <span className="text-[#D4AF37] font-semibold">VAXIX Sovereign Spotlight</span>
         </div>
       </div>
     </div>

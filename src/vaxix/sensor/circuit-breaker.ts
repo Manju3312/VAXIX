@@ -1,9 +1,9 @@
 /**
- * IMMUNIX SENSOR: Fail-Open Circuit Breaker (Driftshot Architecture)
+ * VAXIX SENSOR: Fail-Open Circuit Breaker (Driftshot Architecture)
  * 
  * Safety Invariants:
  * 1. Execution budget: <= 15ms hard cutoff, < 2ms p99 overhead.
- * 2. If IMMUNIX encounters any internal error, timeout, or crash,
+ * 2. If VAXIX encounters any internal error, timeout, or crash,
  *    it FAILS OPEN immediately. The original vendor API call is NEVER blocked or failed.
  * 3. State machine: CLOSED (normal) -> OPEN (tripped, bypassing) -> HALF_OPEN (probing).
  */
@@ -85,7 +85,7 @@ export class CircuitBreaker {
       this.state = 'OPEN';
       this.lastStateChange = Date.now();
       console.warn(
-        `[IMMUNIX CircuitBreaker] ⚠️ Circuit Tripped to OPEN after ${this.consecutiveFailures} failures. Bypassing for ${this.resetTimeoutMs}ms. Failing open.`
+        `[VAXIX CircuitBreaker] ⚠️ Circuit Tripped to OPEN after ${this.consecutiveFailures} failures. Bypassing for ${this.resetTimeoutMs}ms. Failing open.`
       );
     }
   }
@@ -112,7 +112,7 @@ export class CircuitBreaker {
   async executeWithBudget<T>(
     task: () => Promise<T> | T,
     fallback: T | (() => T),
-    operationName = 'immunix_internal_op'
+    operationName = 'vaxix_internal_op'
   ): Promise<T> {
     this.totalExecutions += 1;
 
@@ -131,7 +131,7 @@ export class CircuitBreaker {
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
-          reject(new Error(`Immunix budget exceeded: ${this.timeoutBudgetMs}ms for ${operationName}`));
+          reject(new Error(`Vaxix budget exceeded: ${this.timeoutBudgetMs}ms for ${operationName}`));
         }, this.timeoutBudgetMs);
       });
 
@@ -150,7 +150,7 @@ export class CircuitBreaker {
       this.totalLatencyMs += elapsed;
 
       this.recordFailure();
-      console.warn(`[IMMUNIX CircuitBreaker] 🛡️ Internal op failed open: ${(err as Error).message}`);
+      console.warn(`[VAXIX CircuitBreaker] 🛡️ Internal op failed open: ${(err as Error).message}`);
       return resolveFallback(); // Fail open
     }
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { immuneLog } from '@/immunix/immune-log/immune-log';
+import { immuneLog } from '@/vaxix/immune-log/immune-log';
 
 export async function GET() {
   try {

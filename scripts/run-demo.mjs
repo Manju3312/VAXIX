@@ -1,5 +1,5 @@
 /**
- * IMMUNIX: SINGLE-COMMAND END-TO-END DEMO
+ * VAXIX: SINGLE-COMMAND END-TO-END DEMO
  * 
  * Demonstrates the full lifecycle:
  * 1. Sensor captures baseline traffic
@@ -21,17 +21,17 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
 // Import compiled or direct modules
-import { MockVendorServer } from '../src/immunix/mock-vendor/server.js';
-import { PathogenDetector } from '../src/immunix/detector/pathogen-detector.js';
-import { AntibodyGenerator } from '../src/immunix/antibody/antibody-generator.js';
-import { SandboxVerifier } from '../src/immunix/sandbox/sandbox-verifier.js';
-import { PullRequestBot } from '../src/immunix/pr-bot/pr-bot.js';
-import { immuneLog } from '../src/immunix/immune-log/immune-log.js';
+import { MockVendorServer } from '../src/vaxix/mock-vendor/server.js';
+import { PathogenDetector } from '../src/vaxix/detector/pathogen-detector.js';
+import { AntibodyGenerator } from '../src/vaxix/antibody/antibody-generator.js';
+import { SandboxVerifier } from '../src/vaxix/sandbox/sandbox-verifier.js';
+import { PullRequestBot } from '../src/vaxix/pr-bot/pr-bot.js';
+import { immuneLog } from '../src/vaxix/immune-log/immune-log.js';
 import { runBillingTests } from '../demo-app/src/billing.test.js';
 
-async function executeImmunixDemo() {
+async function executeVaxixDemo() {
   console.log('═══════════════════════════════════════════════════════════════════════════');
-  console.log('🧬 IMMUNIX: The Autonomous Immune System for Third-Party API Integrations');
+  console.log('🧬 VAXIX: The Autonomous Immune System for Third-Party API Integrations');
   console.log('   "Your integrations, immune to vendor surprises."');
   console.log('═══════════════════════════════════════════════════════════════════════════\n');
 
@@ -175,7 +175,7 @@ async function executeImmunixDemo() {
     // -------------------------------------------------------------------------
     // STEP 7: PR Bot (Opens Verified GitHub Pull Request)
     // -------------------------------------------------------------------------
-    console.log('▶ STEP 7: Opening Pull Request via Immunix PR Bot...');
+    console.log('▶ STEP 7: Opening Pull Request via Vaxix PR Bot...');
     const prBot = new PullRequestBot();
     const pullRequest = await prBot.openPullRequest(pathogen, antibody, verification, 'acme-corp/payment-service');
 
@@ -226,7 +226,7 @@ async function executeImmunixDemo() {
   }
 }
 
-executeImmunixDemo().catch((err) => {
+executeVaxixDemo().catch((err) => {
   console.error('❌ Demo Error:', err);
   process.exit(1);
 });

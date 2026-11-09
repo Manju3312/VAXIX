@@ -1,5 +1,5 @@
 # ==============================================================================
-# IMMUNIX Sovereign Next.js 16 Production Dockerfile
+# VAXIX Sovereign Next.js 16 Production Dockerfile
 # Caliber of Apple Pro / Stripe Press / Palantir Infrastructure
 # ==============================================================================
 

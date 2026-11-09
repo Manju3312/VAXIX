@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ADAPTER: Stripe Billing & Charges Adapter
+ * VAXIX ADAPTER: Stripe Billing & Charges Adapter
  * Standards: RFC 9745 (Deprecation), RFC 8594 (Sunset), RFC 9457 (Problem Details)
  */
 

@@ -1,5 +1,5 @@
 -- ==============================================================================
--- IMMUNIX 5-TIER DATA TOPOLOGY: TIER 3 & 4 POSTGRESQL 16 SCHEMA
+-- VAXIX 5-TIER DATA TOPOLOGY: TIER 3 & 4 POSTGRESQL 16 SCHEMA
 -- Enterprise Sovereign Cloud Architecture (pgvector + crypto + uuid-ossp)
 -- Standard: RFC-9457 Problem Details & NIST SP 800-207 Zero Trust
 -- ==============================================================================

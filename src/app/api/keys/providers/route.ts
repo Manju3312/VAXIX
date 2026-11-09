@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
     // 3. Cryptographic HSM Vault Manifest Export
     if (action === 'export_vault') {
       const manifest = {
-        vault_schema: 'immunix.hsm.vault.manifest.v2.4',
+        vault_schema: 'vaxix.hsm.vault.manifest.v2.4',
         standard: 'NIST SP 800-207 Zero-Trust & RFC-9457',
         cluster_id: 'aws-us-east-1-primary',
         ed25519_root_fingerprint: 'ed25519_pk_78a1bc490f2389dc912a7810b4',

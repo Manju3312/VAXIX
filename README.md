@@ -1,8 +1,8 @@
-# 🧬 Immunix
+# 🧬 Vaxix
 
 > **"Your integrations, immune to vendor surprises."**
 
-Immunix is an autonomous immune system for third-party API integrations. It detects when SaaS APIs change (schema drift, deprecations, retired endpoints) and automatically proposes a verified code fix as a pull request for human approval.
+Vaxix is an autonomous immune system for third-party API integrations. It detects when SaaS APIs change (schema drift, deprecations, retired endpoints) and automatically proposes a verified code fix as a pull request for human approval.
 
 ---
 
@@ -16,13 +16,13 @@ Modern software platforms rely on external SaaS APIs like **Stripe**, **OpenAI**
 
 When this happens, customer apps begin throwing `400 Bad Request`, `404 Not Found`, or `422 Unprocessable Entity`. Payments fail, checkout breaks, and engineers scramble at 3:00 AM to diagnose the breakage and fix it by hand.
 
-**Immunix changes this paradigm**: It detects drift early, isolates the upstream breaking change, generates a deterministic AST code fix, validates the fix in an isolated test sandbox, and opens a clean GitHub Pull Request for human review.
+**Vaxix changes this paradigm**: It detects drift early, isolates the upstream breaking change, generates a deterministic AST code fix, validates the fix in an isolated test sandbox, and opens a clean GitHub Pull Request for human review.
 
 ---
 
 ## 📖 Vocabulary
 
-Immunix uses biological immunology metaphors to describe API change management:
+Vaxix uses biological immunology metaphors to describe API change management:
 
 | Term | Definition |
 | :--- | :--- |
@@ -189,30 +189,30 @@ sequenceDiagram
 ## 🧩 Components Built
 
 ### 1. Sensor (Capture Layer)
-- SDK client / proxy wrapping outgoing vendor HTTP calls (`src/immunix/sensor/proxy.ts`).
+- SDK client / proxy wrapping outgoing vendor HTTP calls (`src/vaxix/sensor/proxy.ts`).
 - Operates locally in front of vendor calls before TLS encryption and after response decryption. Local inspection overhead is `< 1.0ms`.
 - Live payment and customer traffic is **never modified in-flight** without prior testing and human review.
-- **Zero-Leak Redactor** (`src/immunix/sensor/redactor.ts`): Strips raw API keys (`sk_live_...`, `ghp_...`, `Bearer`), credit card PANs, SSNs, and passwords before metadata storage.
+- **Zero-Leak Redactor** (`src/vaxix/sensor/redactor.ts`): Strips raw API keys (`sk_live_...`, `ghp_...`, `Bearer`), credit card PANs, SSNs, and passwords before metadata storage.
 
 ### 2. Adapters
-- One adapter per vendor so changes are a one-file fix (`src/immunix/adapters/`).
+- One adapter per vendor so changes are a one-file fix (`src/vaxix/adapters/`).
 - Ships with production adapters for **Stripe**, **OpenAI**, and **Twilio**.
 - Encapsulates expected Zod contract schemas, RFC 8594 `Sunset` and `Deprecation` header parsers, and canary probe payloads (e.g. Stripe `2025-03-31.basil`).
 
 ### 3. Pathogen Detector
-- Detects `FIELD_RENAMED`, `SUNSET_HEADER`, `TYPE_MUTATION`, `FIELD_REMOVED`, and 4xx spike anomalies (`src/immunix/detector/`).
+- Detects `FIELD_RENAMED`, `SUNSET_HEADER`, `TYPE_MUTATION`, `FIELD_REMOVED`, and 4xx spike anomalies (`src/vaxix/detector/`).
 - Runs scheduled canary probes against vendor sandboxes to detect drift before users encounter errors.
 
 ### 4. Antibody Generator
-- Deterministic Abstract Syntax Tree (AST) surgery powered by `ts-morph` and `LibCST` (`src/immunix/antibody/`).
+- Deterministic Abstract Syntax Tree (AST) surgery powered by `ts-morph` and `LibCST` (`src/vaxix/antibody/`).
 - Traverses codebase ASTs, pinpoints affected call sites, renames fields or reroutes URLs, and formats clean unified Git diffs with zero generative LLM hallucinations.
 
 ### 5. Sandbox Verifier
-- Executes the customer application's test suite against the vendor's test mode in an isolated container runner (`src/immunix/sandbox/`). Zero bare-metal KVM dependency.
+- Executes the customer application's test suite against the vendor's test mode in an isolated container runner (`src/vaxix/sandbox/`). Zero bare-metal KVM dependency.
 - Issues an Ed25519 cryptographic attestation certificate upon verification (`ed25519_cert_..._verified`).
 
 ### 6. Human Approval Gate & PR Bot
-- Synthesizes formatted GitHub Pull Requests containing upstream evidence, unified AST diffs, test logs, and plain-English explanations (`src/immunix/pr-bot/`).
+- Synthesizes formatted GitHub Pull Requests containing upstream evidence, unified AST diffs, test logs, and plain-English explanations (`src/vaxix/pr-bot/`).
 - **Strict Human Approval Gate**: Pull requests are held open until an authorized engineer reviews and approves them. Zero auto-merge. Prevents poisoned-fix supply-chain vulnerabilities.
 
 ### 7. Unified Storage Tier & Immune Log
@@ -229,7 +229,7 @@ sequenceDiagram
 
 ## 🚀 Quickstart: Running the End-to-End Demo
 
-Immunix includes a single-command demonstration executing the complete 8-step lifecycle:
+Vaxix includes a single-command demonstration executing the complete 8-step lifecycle:
 
 ```bash
 npm run demo
@@ -270,7 +270,7 @@ npm run build
 ## 📁 Repository Structure
 
 ```
-immunix/
+vaxix/
 ├── demo-app/                      # Sample customer application
 │   └── src/
 │       ├── billing.ts             # Customer billing service using Sensor SDK
@@ -280,11 +280,11 @@ immunix/
 │   └── test-sovereign-pipeline.mjs# Test verification suite
 ├── src/
 │   ├── app/
-│   │   ├── api/immunix/           # REST API exposing vendors, pathogens, logs
+│   │   ├── api/vaxix/           # REST API exposing vendors, pathogens, logs
 │   │   ├── arena/                 # Fullscreen chaos playground workbench
-│   │   ├── dashboard/             # Immunix 5-tab web dashboard
-│   │   └── page.tsx               # Immunix landing page
-│   └── immunix/                   # Core Immunix Monorepo Package
+│   │   ├── dashboard/             # Vaxix 5-tab web dashboard
+│   │   └── page.tsx               # Vaxix landing page
+│   └── vaxix/                   # Core Vaxix Monorepo Package
 │       ├── adapters/              # Vendor adapters (Stripe, OpenAI, Twilio)
 │       ├── antibody/              # ts-morph AST antibody generator
 │       ├── detector/              # Pathogen drift detector & canary runner

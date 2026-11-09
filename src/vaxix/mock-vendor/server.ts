@@ -1,5 +1,5 @@
 /**
- * IMMUNIX MOCK VENDOR SERVER
+ * VAXIX MOCK VENDOR SERVER
  * 
  * Simulates upstream vendor APIs (Stripe, Twilio, OpenAI) with controllable
  * schema drift, field renames, and RFC 8594 Sunset / Deprecation headers.
@@ -154,7 +154,7 @@ export class MockVendorServer {
                 choices: [
                   {
                     index: 0,
-                    message: { role: 'assistant', content: 'Immunix verified response.' },
+                    message: { role: 'assistant', content: 'Vaxix verified response.' },
                     finish_reason: 'stop',
                   },
                 ],

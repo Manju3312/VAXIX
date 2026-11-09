@@ -41,7 +41,7 @@ const PRESET_SCENARIOS = {
   "currency": "usd",
   "receipt_email": "cto@enterprise.com",
   "paid": true,
-  "_immunix_wire_bridge": "SYNTHESIZED_FIELD_ALIAS"
+  "_vaxix_wire_bridge": "SYNTHESIZED_FIELD_ALIAS"
 }`,
     astPatch: `// consumer-app/src/services/billing.ts (ts-morph AST Refactor)
 - const recipient = charge.customer_email;
@@ -64,7 +64,7 @@ const PRESET_SCENARIOS = {
   "dispatch_id": "dsp_9814a0f",
   "status": "delivered",
   "recipient": "+14155552671",
-  "_immunix_rerouted": "/v1/Messages ➔ /v2/Dispatches"
+  "_vaxix_rerouted": "/v1/Messages ➔ /v2/Dispatches"
 }`,
     astPatch: `// consumer-app/src/services/sms.ts (ts-morph AST Refactor)
 - return await http.post('/2010-04-01/Accounts/AC123/Messages.json', payload);
@@ -90,7 +90,7 @@ const PRESET_SCENARIOS = {
   "choices": [{
     "message": { "content": "Synthesizing sovereign schema successfully." }
   }],
-  "_immunix_envelope_bridged": "text-davinci-003 ➔ gpt-4o"
+  "_vaxix_envelope_bridged": "text-davinci-003 ➔ gpt-4o"
 }`,
     astPatch: `// consumer-app/src/ai/agent.ts (ts-morph AST Refactor)
 - const res = await openai.completions.create({ model: 'text-davinci-003', prompt });
@@ -112,7 +112,7 @@ const PRESET_SCENARIOS = {
   "checkout_id": "chk_live_2026",
   "status": "cleared",
   "total": 12500,
-  "_immunix_synthetic_bridge": "INJECTED_TENANT_SIGNATURE"
+  "_vaxix_synthetic_bridge": "INJECTED_TENANT_SIGNATURE"
 }`,
     astPatch: `// Custom AST Patch synthesized for user-defined endpoint
 + headers['X-Tenant-Signature'] = await signClusterToken();
@@ -349,7 +349,7 @@ export default function ArenaPage() {
       const current = presets[selectedScenario];
 
       // Stream detection into the unified SQLite immune log
-      fetch('/api/immunix', {
+      fetch('/api/vaxix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'trigger_canary', vendor: selectedScenario }),
@@ -438,7 +438,7 @@ export default function ArenaPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0B0B0C] border border-[#D4AF37] flex items-center justify-center shadow-md">
                 <Shield className="w-4 h-4 text-[#D4AF37]" />
               </div>
-              <span className="font-black text-lg tracking-wider text-[#0B0B0C] font-display">IMMUNIX</span>
+              <span className="font-black text-lg tracking-wider text-[#0B0B0C] font-display">VAXIX</span>
             </Link>
 
             <div className="h-6 w-px bg-black/10 hidden sm:block" />
@@ -758,7 +758,7 @@ export default function ArenaPage() {
                   <div className="flex items-center justify-between pb-3 border-b border-red-100 mb-3">
                     <span className="text-xs font-bold font-mono text-red-600 flex items-center gap-1.5">
                       <AlertTriangle className="w-4 h-4 text-red-500" />
-                      Without IMMUNIX
+                      Without VAXIX
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-red-800 font-bold">
                       {executionResult ? `HTTP ${executionResult.unshieldedStatus}` : 'HTTP 400'}
@@ -773,13 +773,13 @@ export default function ArenaPage() {
                 </div>
               </div>
 
-              {/* Shielded by IMMUNIX Card */}
+              {/* Shielded by VAXIX Card */}
               <div className="bg-[#0B0B0C] rounded-3xl p-5 border border-[#D4AF37] shadow-xl text-white flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
                     <span className="text-xs font-bold font-mono text-[#10B981] flex items-center gap-1.5">
                       <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
-                      With IMMUNIX Wire Defense
+                      With VAXIX Wire Defense
                     </span>
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
                       executionResult?.shieldedStatus === 400

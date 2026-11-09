@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ANTIBODY GENERATOR: AST Code Surgeon
+ * VAXIX ANTIBODY GENERATOR: AST Code Surgeon
  * 
  * Transforms detected Pathogen events into deterministic code repairs
  * using ts-morph for TypeScript / JavaScript and LibCST for Python.

@@ -1,18 +1,18 @@
-# 🛡️ IMMUNIX Sovereign Security & Cryptographic Disclosure
+# 🛡️ VAXIX Sovereign Security & Cryptographic Disclosure
 
 **Classification:** Enterprise Sovereign Cloud Standard  
-**Published by:** IMMUNIX Sovereign Defense Labs (`immunix.network`)  
+**Published by:** VAXIX Sovereign Defense Labs (`vaxix.network`)  
 **Audited Against:** SOC 2 Type II, ISO/IEC 27001, FIPS 140-3, FIPS 186-5  
 
 ---
 
 ## 1. Zero-Knowledge Credential Policy
 
-IMMUNIX enforces an absolute **Zero-Storage Architecture** for third-party upstream credentials:
+VAXIX enforces an absolute **Zero-Storage Architecture** for third-party upstream credentials:
 
 1. **Zero Upstream Secret Persistence:**
    - Client secrets for external vendors (Stripe `sk_live_...`, Twilio Auth Tokens, OpenAI API keys, Salesforce OAuth refresh tokens) are **never written to disk, persistent databases, or logs**.
-   - Outbound requests pass through the IMMUNIX eBPF socket interceptor via ephemeral Linux kernel ring buffers (`sock_recvmsg`), applying payload transformations entirely in volatile memory before releasing packets to user-space.
+   - Outbound requests pass through the VAXIX eBPF socket interceptor via ephemeral Linux kernel ring buffers (`sock_recvmsg`), applying payload transformations entirely in volatile memory before releasing packets to user-space.
 
 2. **Client Platform Key Vault:**
    - Platform keys (`imx_live_...` and `imx_test_...`) are salted with cryptographically secure random bytes and hashed using **Argon2id** (Memory: 64MB, Iterations: 3, Parallelism: 4) conforming to OWASP Password Storage standards.
@@ -40,7 +40,7 @@ When an enterprise cluster synthesizes a novel biological antibody rule:
 
 To report security vulnerabilities or request cryptographic verification certificates, contact our sovereign security team:
 
-* **Security Ingestion Endpoint:** `security@immunix.network`
+* **Security Ingestion Endpoint:** `security@vaxix.network`
 * **PGP Key Fingerprint:** `4A9F B120 73EC 991D 002B  8F3E 5D14 C8A9 E200 48B1`
 * **SLA for Critical Disclosures:** Initial response within **2 hours**; fix deployment within **24 hours**.
 

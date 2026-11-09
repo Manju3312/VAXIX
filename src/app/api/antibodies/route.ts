@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { AntibodyLifecycleManager, AntibodyLifecycleStage } from '@/immunix/antibody/lifecycle';
-import { immuneLog } from '@/immunix/immune-log/immune-log';
+import { AntibodyLifecycleManager, AntibodyLifecycleStage } from '@/vaxix/antibody/lifecycle';
+import { immuneLog } from '@/vaxix/immune-log/immune-log';
 
 export async function GET() {
   try {

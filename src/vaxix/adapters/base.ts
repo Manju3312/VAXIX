@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ADAPTERS: Modular Upstream SaaS Specification
+ * VAXIX ADAPTERS: Modular Upstream SaaS Specification
  * 
  * Each vendor has a dedicated adapter defining endpoint contracts,
  * Zod validation schemas, and canary payloads. Standardized against:

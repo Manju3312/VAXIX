@@ -1,5 +1,5 @@
 /**
- * IMMUNIX PATHOGEN DETECTOR: Schema Drift & Upstream Mutation Engine
+ * VAXIX PATHOGEN DETECTOR: Schema Drift & Upstream Mutation Engine
  * 
  * Invariants (Driftshot Architecture):
  * 1. Deterministic RFC Parsers:

@@ -54,7 +54,7 @@ export default function Navbar({ onOpenConsole, onOpenPalette }: NavbarProps = {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="font-black text-xl tracking-wider text-[#0B0B0C] font-display">IMMUNIX</span>
+              <span className="font-black text-xl tracking-wider text-[#0B0B0C] font-display">VAXIX</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#D4AF37]/10 text-[#997D25] border border-[#D4AF37]/30 font-mono font-bold">2.5</span>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-[#6E6E73] font-medium -mt-0.5">Sovereign Resilience &amp; Drift Containment</span>

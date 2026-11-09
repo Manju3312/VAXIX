@@ -24,9 +24,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IMMUNIX | The Autonomous Software Immune Network",
+  title: "VAXIX | The Autonomous Software Immune Network",
   description:
-    "Autonomous immune system for third-party API integrations. Immunix detects upstream SaaS schema drift, contains damage early, and automatically generates verified AST pull requests with mandatory human review.",
+    "Autonomous immune system for third-party API integrations. Vaxix detects upstream SaaS schema drift, contains damage early, and automatically generates verified AST pull requests with mandatory human review.",
   keywords: [
     "API Resilience",
     "Autonomous Immune System",
@@ -35,16 +35,16 @@ export const metadata: Metadata = {
     "Human in the Loop PR",
     "Enterprise Software",
   ],
-  authors: [{ name: "IMMUNIX Sovereign Defense Labs" }],
+  authors: [{ name: "VAXIX Sovereign Defense Labs" }],
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "IMMUNIX | The Autonomous Software Immune Network",
+    title: "VAXIX | The Autonomous Software Immune Network",
     description:
       "Your integrations, immune to vendor surprises. Detects upstream SaaS drift early, contains damage, and generates tested pull requests for humans to approve.",
-    url: "https://immunix.network",
-    siteName: "IMMUNIX Network",
+    url: "https://vaxix.network",
+    siteName: "VAXIX Network",
     locale: "en_US",
     type: "website",
   },

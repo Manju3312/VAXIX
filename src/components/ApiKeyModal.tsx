@@ -239,7 +239,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `immunix-vault-manifest-${Date.now()}.json`;
+    a.download = `vaxix-vault-manifest-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -650,7 +650,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
               <div className="bg-white/5 p-4 rounded-2xl border border-white/10 space-y-1">
                 <h4 className="font-bold text-white text-sm">Active Sovereign Data Topology &amp; Microservices</h4>
                 <p className="text-[#6E6E73] text-[11px]">
-                  All 5 tiers of the IMMUNIX architecture operational with hardware-isolated zero-knowledge guarantees.
+                  All 5 tiers of the VAXIX architecture operational with hardware-isolated zero-knowledge guarantees.
                 </p>
               </div>
 
@@ -711,7 +711,7 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                     10:1 streaming compression • 50,000+ RPS real-time anomaly buffer
                   </div>
                   <div className="text-[10px] text-emerald-400">
-                    Database: immunix_telemetry
+                    Database: vaxix_telemetry
                   </div>
                 </div>
 

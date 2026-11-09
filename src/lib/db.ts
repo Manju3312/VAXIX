@@ -7,7 +7,7 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const dbPath = path.join(dataDir, 'immunix.sqlite');
+const dbPath = path.join(dataDir, 'vaxix.sqlite');
 const db = new DatabaseSync(dbPath);
 
 // Enable high-performance SQLite WAL mode & pragmas
@@ -200,7 +200,7 @@ export interface ProviderVaultRecord {
 }
 
 /**
- * IMMUNIX 5-TIER POLYGLOT DATA TOPOLOGY (SQLite Embedded Engine)
+ * VAXIX 5-TIER POLYGLOT DATA TOPOLOGY (SQLite Embedded Engine)
  * --------------------------------------------------------------
  * Tier 1: Sub-millisecond In-Memory Radix Trie / Hot Cache
  * Tier 2: Columnar Telemetry & Anomaly Stream Store
@@ -990,7 +990,7 @@ export function provisionTenantWithAccess(data: {
   });
 
   const accessPassId = `PASS-IMX-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-  const clusterUrl = `https://${data.tier === 'sovereign-mesh' ? 'ch-zurich-vault' : 'us-east-1'}.immunix.network/v1`;
+  const clusterUrl = `https://${data.tier === 'sovereign-mesh' ? 'ch-zurich-vault' : 'us-east-1'}.vaxix.network/v1`;
   const licenseCertificate = `ed25519_cert_${Math.random().toString(36).substring(2, 14)}_${data.stripe_payment_id || 'zero_trust'}`;
 
   // Record payment transaction into immutable ledger

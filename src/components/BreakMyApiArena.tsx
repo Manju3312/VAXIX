@@ -57,8 +57,8 @@ Sunset: Wed, 01 Jan 2026 00:00:00 GMT
   "param": "source"
 }`,
       healedRes: `HTTP/1.1 200 OK
-X-Immunix-Path: Path-A-Pre-Flight
-X-Immunix-Overhead: 1.15ms
+X-Vaxix-Path: Path-A-Pre-Flight
+X-Vaxix-Overhead: 1.15ms
 Content-Type: application/json
 
 {
@@ -68,7 +68,7 @@ Content-Type: application/json
   "currency": "usd",
   "payment_method": "tok_visa",
   "paid": true,
-  "_immunix_preflight_ast": "RENAME_FIELD_SOURCE_TO_PAYMENT_METHOD"
+  "_vaxix_preflight_ast": "RENAME_FIELD_SOURCE_TO_PAYMENT_METHOD"
 }`,
       astDiff: `// consumer-app/src/services/billing.ts (ts-morph AST Refactor)
 - const payment = await stripe.charges.create({ source: token });
@@ -97,15 +97,15 @@ Sunset: Wed, 01 Jan 2026 00:00:00 GMT
   "message": "Endpoint /v1/charges is sunset. Relocated to /v2/checkout/pay"
 }`,
       healedRes: `HTTP/1.1 200 OK
-X-Immunix-Rerouted: /v1/charges ➔ /v2/checkout/pay
-X-Immunix-Overhead: 1.22ms
+X-Vaxix-Rerouted: /v1/charges ➔ /v2/checkout/pay
+X-Vaxix-Overhead: 1.22ms
 
 {
   "status": 200,
   "transaction_id": "tx_9814a0f",
   "cleared": true,
   "amount": 142500,
-  "_immunix_rerouted": "/v1/charges ➔ /v2/checkout/pay"
+  "_vaxix_rerouted": "/v1/charges ➔ /v2/checkout/pay"
 }`,
       astDiff: `// consumer-app/src/services/checkout.ts (ts-morph AST Refactor)
 - return await http.post('/v1/charges', payload);
@@ -132,14 +132,14 @@ Content-Type: application/problem+json
   "error": "Expected numerical float for field 'amount', received string: '25000.00'"
 }`,
       healedRes: `HTTP/1.1 200 OK
-X-Immunix-Type-Coerced: string->integer
-X-Immunix-Overhead: 0.95ms
+X-Vaxix-Type-Coerced: string->integer
+X-Vaxix-Overhead: 0.95ms
 
 {
   "invoice_id": "inv_8820",
   "amount": 25000,
   "tax": 1250,
-  "_immunix_type_coerced": "string ➔ integer"
+  "_vaxix_type_coerced": "string ➔ integer"
 }`,
       astDiff: `// consumer-app/src/schemas/invoice.ts (ts-morph AST Refactor)
 - amount: z.number(),
@@ -421,7 +421,7 @@ X-Immunix-Overhead: 0.95ms
                 <span className="w-3 h-3 rounded-full bg-[#EF4444]" />
                 <span className="w-3 h-3 rounded-full bg-[#F59E0B]" />
                 <span className="w-3 h-3 rounded-full bg-[#10B981]" />
-                <span className="ml-2 text-white/50 text-[11px] hidden sm:inline">immunix-driftshot://containment</span>
+                <span className="ml-2 text-white/50 text-[11px] hidden sm:inline">vaxix-driftshot://containment</span>
               </div>
 
               {/* View Switcher: Telemetry vs Wire Payloads vs AST Diff */}

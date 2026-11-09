@@ -28,7 +28,7 @@ export default function DualSpeedEngine() {
           </h2>
           <p className="mt-4 text-[#6E6E73] text-base sm:text-lg leading-relaxed">
             Why traditional API monitoring fails: alerts only tell you that production has crashed. 
-            IMMUNIX pairs zero-leak sensor telemetry with deterministic compiler AST refactoring and mandatory human review.
+            VAXIX pairs zero-leak sensor telemetry with deterministic compiler AST refactoring and mandatory human review.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export default function DualSpeedEngine() {
                   Zero-Leak Sensor Proxy &amp; Telemetry
                 </h3>
                 <p className="text-[#6E6E73] text-sm leading-relaxed">
-                  Attached within the microservice process or local sidecar, the IMMUNIX Sensor wraps outbound HTTP/TLS calls. 
+                  Attached within the microservice process or local sidecar, the VAXIX Sensor wraps outbound HTTP/TLS calls. 
                   It inspects unencrypted structural shapes before transmission and upon response receipt, detecting RFC 8594 Sunset/Deprecation headers while redacting all secrets and PII.
                 </p>
 
@@ -163,7 +163,7 @@ export default function DualSpeedEngine() {
                   Compiler AST Code Surgeon
                 </h3>
                 <p className="text-[#6E6E73] text-sm leading-relaxed">
-                  Instead of unreliable LLM prompt generation, IMMUNIX performs deterministic compiler surgery. 
+                  Instead of unreliable LLM prompt generation, VAXIX performs deterministic compiler surgery. 
                   Using <code>ts-morph</code> (TypeScript) and <code>LibCST</code> (Python), our engine visits syntax tree nodes directly, refactoring deprecated fields across all caller files with 0.0% hallucinations.
                 </p>
 
@@ -245,7 +245,7 @@ export default function DualSpeedEngine() {
                 </h3>
                 <p className="text-[#6E6E73] text-sm leading-relaxed">
                   Automated self-healing without human oversight creates a severe poisoned-fix supply-chain risk. 
-                  In IMMUNIX, every synthesized antibody MUST be reviewed and approved by an authorized engineer before it can merge into production.
+                  In VAXIX, every synthesized antibody MUST be reviewed and approved by an authorized engineer before it can merge into production.
                 </p>
 
                 <div className="space-y-3 pt-2">

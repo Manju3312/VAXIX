@@ -81,7 +81,7 @@ export default function Home() {
         {/* 6. Upstream Vendor Health Radar: Real-Time Egress Monitoring */}
         <VendorHealthRadar />
 
-        {/* 7. Architectural Benchmark: Corrigio vs Mendr vs APISynQ vs IMMUNIX */}
+        {/* 7. Architectural Benchmark: Corrigio vs Mendr vs APISynQ vs VAXIX */}
         <BenchmarkComparison />
 
         {/* 8. Model Context Protocol (MCP) Live Agent Arena */}

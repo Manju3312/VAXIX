@@ -1,5 +1,5 @@
 /**
- * IMMUNIX SENSOR: Sovereign HTTP Proxy & Telemetry Capture Layer (Two Honest Paths)
+ * VAXIX SENSOR: Sovereign HTTP Proxy & Telemetry Capture Layer (Two Honest Paths)
  * 
  * Invariants (Driftshot Architecture):
  * 1. Two Honest Paths:
@@ -91,7 +91,7 @@ export function createSensorClient(options: SensorOptions) {
       if (isSensitive) {
         // Invariant: Sensitive/financial routes are hard-locked against live in-flight rewrites
         console.warn(
-          `[IMMUNIX SENSOR] 🛡️ Sensitive endpoint detected: ${endpoint}. Live rewrite BLOCKED by policy. Routing to Human-Approved PR Lane.`
+          `[VAXIX SENSOR] 🛡️ Sensitive endpoint detected: ${endpoint}. Live rewrite BLOCKED by policy. Routing to Human-Approved PR Lane.`
         );
       } else {
         // Execute pre-flight rewrite within strict circuit breaker budget

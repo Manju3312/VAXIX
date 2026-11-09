@@ -24,11 +24,11 @@ export default function FinancialLossCalculator({ onOpenAudit }: FinancialLossCa
   const directRevenueAtRiskPerIncident = hourlyTransactionVolume * incidentMttrHours * 0.35;
   const totalAnnualLossPrevented = directRevenueAtRiskPerIncident * incidentsPerYear;
   const engineeringHoursSaved = incidentsPerYear * incidentMttrHours * 6;
-  const immunixAnnualCost = 24000;
-  const roiMultiplier = Math.round((totalAnnualLossPrevented / immunixAnnualCost) * 10) / 10;
+  const vaxixAnnualCost = 24000;
+  const roiMultiplier = Math.round((totalAnnualLossPrevented / vaxixAnnualCost) * 10) / 10;
 
   const downloadAuditReport = () => {
-    const reportText = `IMMUNIX SOVEREIGN RESILIENCE FINANCIAL IMPACT AUDIT
+    const reportText = `VAXIX SOVEREIGN RESILIENCE FINANCIAL IMPACT AUDIT
 ===================================================
 Generated: 2026-11-07
 Classification: Enterprise Confidential
@@ -42,18 +42,18 @@ PREDICTED LOSS PREVENTION & ROI:
 - Direct Transaction Revenue Protected: $${formatNumber(totalAnnualLossPrevented)} / year
 - Incident Engineering War-Room Hours Saved: ${engineeringHoursSaved} Engineer-Hours
 - Estimated SLA Penalty Avoidance: $${formatNumber(totalAnnualLossPrevented * 0.15)}
-- IMMUNIX Projected ROI Multiplier: ${roiMultiplier}x
+- VAXIX Projected ROI Multiplier: ${roiMultiplier}x
 - Underwritten Financial Loss Warranty: $5,000,000 Sovereign Indemnity
 
-IMMUNIX Sovereign Defense Labs
-https://immunix.network
+VAXIX Sovereign Defense Labs
+https://vaxix.network
 `;
 
     const blob = new Blob([reportText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `immunix-financial-roi-audit-${monthlyVolumeMillions}M.txt`;
+    a.download = `vaxix-financial-roi-audit-${monthlyVolumeMillions}M.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -108,7 +108,7 @@ https://immunix.network
             {/* Slider 2: MTTR Hours */}
             <div className="space-y-2 pt-2">
               <div className="flex justify-between items-center text-xs font-mono">
-                <span className="text-[#6E6E73]">Mean Time to Recover (MTTR) without IMMUNIX:</span>
+                <span className="text-[#6E6E73]">Mean Time to Recover (MTTR) without VAXIX:</span>
                 <span className="text-sm font-bold text-[#0B0B0C]">{incidentMttrHours} Hours</span>
               </div>
               <input
@@ -152,7 +152,7 @@ https://immunix.network
             </div>
 
             <div className="pt-4 p-4 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs font-mono text-[#997D25]">
-              <strong>Biological Analogy:</strong> Traditional monitoring detects fever hours after infection. IMMUNIX produces antibodies at the socket boundary in 0.38ms, extinguishing outages before revenue is lost.
+              <strong>Biological Analogy:</strong> Traditional monitoring detects fever hours after infection. VAXIX produces antibodies at the socket boundary in 0.38ms, extinguishing outages before revenue is lost.
             </div>
           </div>
 

@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ANTIBODY LIFECYCLE: Enforced 6-Stage State Machine
+ * VAXIX ANTIBODY LIFECYCLE: Enforced 6-Stage State Machine
  * 
  * Invariants:
  * 1. Strict State Progression:
@@ -105,7 +105,7 @@ export class AntibodyLifecycleManager {
     id: string,
     vendor: string,
     endpoint: string,
-    proposedBy = 'immunix_ast_synthesizer'
+    proposedBy = 'vaxix_ast_synthesizer'
   ): AntibodyLifecycleRecord {
     const isSensitive = checkIsSensitiveEndpoint(endpoint);
     const now = new Date().toISOString();

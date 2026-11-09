@@ -1,5 +1,5 @@
 /**
- * IMMUNIX ANTIBODY DSL: Allowlisted 5-Operation Declarative AST Grammar
+ * VAXIX ANTIBODY DSL: Allowlisted 5-Operation Declarative AST Grammar
  * 
  * Invariants:
  * 1. Restricts mutations strictly to 5 deterministic operations.

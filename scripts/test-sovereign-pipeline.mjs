@@ -1,5 +1,5 @@
 /**
- * IMMUNIX Sovereign Architecture Verification Suite
+ * VAXIX Sovereign Architecture Verification Suite
  * Tests all 3 planes and database operations:
  * 1. Data Plane: In-Memory Lock-Free Antibody Trie & WASM Filter
  * 2. Control Plane: ts-morph AST Genome Engine, Profiler, Rule Compiler
@@ -12,10 +12,10 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 
-console.log('🧬 STARTING IMMUNIX SOVEREIGN RESILIENCE TEST SUITE...\n');
+console.log('🧬 STARTING VAXIX SOVEREIGN RESILIENCE TEST SUITE...\n');
 
 // 1. Test Database
-const dbPath = path.join(process.cwd(), 'data', 'immunix.sqlite');
+const dbPath = path.join(process.cwd(), 'data', 'vaxix.sqlite');
 if (!fs.existsSync(dbPath)) {
   console.error('❌ FAIL: Database file not found at', dbPath);
   process.exit(1);
@@ -56,7 +56,7 @@ async function resolveBaseUrl() {
 
   for (const url of candidates) {
     if (await probeUrl(url)) {
-      console.log(`ℹ [RUNNER] Connected to live active IMMUNIX server at ${url}\n`);
+      console.log(`ℹ [RUNNER] Connected to live active VAXIX server at ${url}\n`);
       return { baseUrl: url, serverProc: null };
     }
   }
@@ -140,7 +140,7 @@ async function runHttpTests() {
     const duration = Math.round(performance.now() - simStart);
 
     console.log(`✓ [3-TIER PIPELINE] /api/pipeline/simulate (${duration}ms roundtrip):`);
-    console.log(`   - Data Plane: ${simData.planes.dataPlane.nodes.immunixWasmFilter.status} (${simData.planes.dataPlane.durationMs}ms)`);
+    console.log(`   - Data Plane: ${simData.planes.dataPlane.nodes.vaxixWasmFilter.status} (${simData.planes.dataPlane.durationMs}ms)`);
     console.log(`   - Control Plane: ${simData.planes.controlPlane.nodes.astGenomeEngine.engine} refactored deterministic AST`);
     console.log(`   - Herd Mesh: Ed25519 signature verified (${simData.planes.globalHerdMesh.nodes.gossipSubNetwork.gossip.propagationTimeMs}ms gossip broadcast)`);
 
@@ -216,7 +216,7 @@ async function runHttpTests() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: 'Chief Architect Test',
-        email: 'test@enterprise.immunix.network',
+        email: 'test@enterprise.vaxix.network',
         company: 'Sovereign Sovereign Ltd',
         cloud: 'AWS',
         tier: 'Enterprise Grid',
@@ -311,15 +311,15 @@ async function runHttpTests() {
       console.log('ℹ [PYTHON AI ENGINE] Python microservice in standby (:8001)');
     }
 
-    // 2.12 Test Unified Immunix Core API
-    const immunixRes = await fetch(`${baseUrl}/api/immunix`);
-    const immunixData = await immunixRes.json();
-    console.log(`✓ [IMMUNIX CORE API] /api/immunix: "${immunixData.tagline}"`);
-    console.log(`   - Connected Vendors: ${immunixData.vendors.length}`);
-    console.log(`   - Active Pathogens: ${immunixData.pathogens.length}`);
-    console.log(`   - Proposed Antibodies: ${immunixData.antibodies.length}`);
-    console.log(`   - Pull Requests: ${immunixData.pull_requests.length}`);
-    console.log(`   - Tamper-Evident Immune Logs: ${immunixData.immune_log.length}`);
+    // 2.12 Test Unified Vaxix Core API
+    const vaxixRes = await fetch(`${baseUrl}/api/vaxix`);
+    const vaxixData = await vaxixRes.json();
+    console.log(`✓ [VAXIX CORE API] /api/vaxix: "${vaxixData.tagline}"`);
+    console.log(`   - Connected Vendors: ${vaxixData.vendors.length}`);
+    console.log(`   - Active Pathogens: ${vaxixData.pathogens.length}`);
+    console.log(`   - Proposed Antibodies: ${vaxixData.antibodies.length}`);
+    console.log(`   - Pull Requests: ${vaxixData.pull_requests.length}`);
+    console.log(`   - Tamper-Evident Immune Logs: ${vaxixData.immune_log.length}`);
 
     console.log('\n🏛️ ALL SOVEREIGN ARCHITECTURE & HYBRID PYTHON ENDPOINTS PASSED WITH 100% SUCCESS.\n');
   } catch (err) {

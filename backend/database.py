@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "immunix.sqlite"))
+DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "vaxix.sqlite"))
 
 def get_db_connection() -> sqlite3.Connection:
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)

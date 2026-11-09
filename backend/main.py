@@ -17,7 +17,7 @@ from repair_engine import PythonASTRepairEngine
 from ml_anomaly import MLAnomalyDetector
 
 app = FastAPI(
-    title="IMMUNIX Sovereign Python AI Engine",
+    title="VAXIX Sovereign Python AI Engine",
     version="2.5.0",
     description="Python 3.12 LibCST & Scikit-learn AI Sovereign Drift Containment Microservice",
 )
@@ -195,7 +195,7 @@ def generate_sovereign_summary(prompt_text: str):
 
     protected = {
         "status": 200,
-        "status_text": "OK (Inoculated by IMMUNIX Pre-Flight)",
+        "status_text": "OK (Inoculated by VAXIX Pre-Flight)",
         "latency_ms": 1.15,
         "antibody_applied": "ATB-2810 (Pre-Flight AST Rewrite in SDK)",
         "healed_payload": healed_payload,
@@ -355,5 +355,5 @@ def create_key(req: ApiKeyCreateRequest):
         }
 
 if __name__ == "__main__":
-    print("🚀 Launching IMMUNIX Sovereign Python AI Engine on port 8001...")
+    print("🚀 Launching VAXIX Sovereign Python AI Engine on port 8001...")
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=False)

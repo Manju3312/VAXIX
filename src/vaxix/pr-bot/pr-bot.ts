@@ -1,5 +1,5 @@
 /**
- * IMMUNIX PR BOT: Human-in-the-Loop Pull Request Synthesizer
+ * VAXIX PR BOT: Human-in-the-Loop Pull Request Synthesizer
  * 
  * Generates verified pull requests containing unified AST diffs,
  * drift evidence, sandbox test results, and plain-English explanations.
@@ -35,7 +35,7 @@ export class PullRequestBot {
     antibody: AntibodyProposal,
     verification: SandboxVerificationResult
   ): string {
-    return `## 🧬 Immunix Automated Antibody Proposal
+    return `## 🧬 Vaxix Automated Antibody Proposal
 
 > **Tagline:** *Your integrations, immune to vendor surprises.*  
 > **Status:** 🛡️ Verified in Sandbox (${verification.duration_ms}ms) • Ready for Human Review
@@ -77,7 +77,7 @@ ${verification.test_output}
 ---
 
 ### ⚠️ 4. Human Approval Directive
-**Immunix Safety Principle:** Live payment and API integrations are never modified or auto-merged automatically. Please review the diff above and approve this pull request to merge into \`main\`.
+**Vaxix Safety Principle:** Live payment and API integrations are never modified or auto-merged automatically. Please review the diff above and approve this pull request to merge into \`main\`.
 `;
   }
 
@@ -95,7 +95,7 @@ ${verification.test_output}
     }
 
     const prNumber = this.prCounter++;
-    const branchName = `immunix/antibody-${pathogen.vendor}-pr${prNumber}`;
+    const branchName = `vaxix/antibody-${pathogen.vendor}-pr${prNumber}`;
     let title = `fix(${pathogen.vendor}): remediate upstream schema drift`;
     if (pathogen.mutation?.old_field && pathogen.mutation?.new_field) {
       title = `fix(${pathogen.vendor}): migrate '${pathogen.mutation.old_field}' to '${pathogen.mutation.new_field}'`;

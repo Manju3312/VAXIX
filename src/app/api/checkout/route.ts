@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
           currency: 'usd',
           payment_method: paymentMethodId,
           confirm: true,
-          description: `IMMUNIX ${plan.name} License Subscription`,
+          description: `VAXIX ${plan.name} License Subscription`,
           receipt_email: email,
           metadata: {
             company,
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       stripe_payment_id: stripePaymentId,
     });
 
-    const helmCommand = `helm install immunix-node oci://immunix.network/charts/sovereign-node \\
+    const helmCommand = `helm install vaxix-node oci://vaxix.network/charts/sovereign-node \\
   --set cluster.id="${access.tenant.slug}" \\
   --set auth.apiKey="${access.apiKey}" \\
   --set mesh.quorumVotes=14280`;

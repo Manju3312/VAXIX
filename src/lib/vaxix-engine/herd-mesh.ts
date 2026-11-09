@@ -42,7 +42,7 @@ export interface SignedVaccineBlock {
 
 export function signVaccinePayload(sanitized: SanitizedVaccinePayload, originCluster: string = 'US-East-1'): SignedVaccineBlock {
   // Generate sovereign Ed25519 signature proof
-  const dummySignature = crypto.createHmac('sha256', 'immunix_sovereign_root_consensus_key')
+  const dummySignature = crypto.createHmac('sha256', 'vaxix_sovereign_root_consensus_key')
     .update(sanitized.safeBytecodeHash + originCluster)
     .digest('hex');
 

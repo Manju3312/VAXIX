@@ -130,7 +130,7 @@ const pr412Data: GitHubPrModalData = {
   prNumber: 412,
   title: 'fix(stripe): adopt official email_address parameter',
   repo: 'acme-corp/payment-service',
-  branch: 'immunix/auto-heal-stripe-pr412',
+  branch: 'vaxix/auto-heal-stripe-pr412',
   targetBranch: 'main',
   status: 'passed',
   sandboxLatencyMs: 5.8,
@@ -154,7 +154,7 @@ const pr413Data: GitHubPrModalData = {
   prNumber: 413,
   title: 'fix(twilio): relocate /v1/charges ➔ /v2/checkout/pay',
   repo: 'acme-corp/crm-sync-worker',
-  branch: 'immunix/auto-heal-twilio-pr413',
+  branch: 'vaxix/auto-heal-twilio-pr413',
   targetBranch: 'main',
   status: 'passed',
   sandboxLatencyMs: 6.2,
@@ -177,7 +177,7 @@ export default function DashboardPage() {
   const [session] = useState<SessionData>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const rawSession = localStorage.getItem('immunix_session');
+        const rawSession = localStorage.getItem('vaxix_session');
         if (rawSession) return JSON.parse(rawSession);
       } catch {}
     }
@@ -233,7 +233,7 @@ export default function DashboardPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `immunix-soc2-evidence-pack-${new Date().toISOString().substring(0, 10)}.json`;
+      a.download = `vaxix-soc2-evidence-pack-${new Date().toISOString().substring(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       setEvidencePackDownloaded(true);
@@ -243,7 +243,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Live state from /api/immunix
+  // Live state from /api/vaxix
   const [vendors, setVendors] = useState<VendorHealthItem[]>([
     { id: 'stripe', name: 'Stripe Payments', baseUrl: 'https://api.stripe.com', endpointsCount: 2, status: 'HEALTHY', lastCanary: '3 minutes ago' },
     { id: 'twilio', name: 'Twilio Cloud', baseUrl: 'https://api.twilio.com', endpointsCount: 2, status: 'HEALTHY', lastCanary: '12 minutes ago' },
@@ -315,7 +315,7 @@ export default function DashboardPage() {
       id: 'pr_412',
       pr_number: 412,
       repository: 'acme-corp/payment-service',
-      branch: 'immunix/antibody-stripe-pr412',
+      branch: 'vaxix/antibody-stripe-pr412',
       title: "fix(stripe): adopt official 'email_address' parameter",
       status: 'OPEN',
       url: 'https://github.com/acme-corp/payment-service/pull/412',
@@ -325,7 +325,7 @@ export default function DashboardPage() {
       id: 'pr_413',
       pr_number: 413,
       repository: 'acme-corp/crm-sync-worker',
-      branch: 'immunix/antibody-twilio-pr413',
+      branch: 'vaxix/antibody-twilio-pr413',
       title: 'fix(twilio): relocate /v1/charges ➔ /v2/checkout/pay',
       status: 'OPEN',
       url: 'https://github.com/acme-corp/crm-sync-worker/pull/413',
@@ -338,7 +338,7 @@ export default function DashboardPage() {
       id: 'log_boot',
       event_type: 'SENSOR_INGEST',
       vendor: 'system',
-      message: 'Immunix Immune Log initialized. Safety protocols and redaction filters active.',
+      message: 'Vaxix Immune Log initialized. Safety protocols and redaction filters active.',
       metadata: { mode: 'MVP', zero_leak_guarantee: true },
       timestamp: '2026-11-08T03:00:00Z',
     },
@@ -414,7 +414,7 @@ export default function DashboardPage() {
 
   const refreshData = async () => {
     try {
-      const res = await fetch('/api/immunix');
+      const res = await fetch('/api/vaxix');
       if (!res.ok) return;
       const data = await res.json();
       if (data.vendors) setVendors(data.vendors);
@@ -425,7 +425,7 @@ export default function DashboardPage() {
     } catch {}
   };
 
-  // Initial client hydration check & fetch live immunix data
+  // Initial client hydration check & fetch live vaxix data
   useEffect(() => {
     let ignore = false;
 
@@ -438,7 +438,7 @@ export default function DashboardPage() {
       })
       .catch(() => {});
 
-    fetch('/api/immunix')
+    fetch('/api/vaxix')
       .then((res) => res.json())
       .then((data) => {
         if (!ignore) {
@@ -460,7 +460,7 @@ export default function DashboardPage() {
     setIsProbingVendor(vendorId);
     setProbeResultNotification(null);
     try {
-      const res = await fetch('/api/immunix', {
+      const res = await fetch('/api/vaxix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'trigger_canary', vendor: vendorId }),
@@ -485,7 +485,7 @@ export default function DashboardPage() {
   const handleSynthesizeAntibody = async (vendor: string) => {
     setIsSynthesizing(true);
     try {
-      const res = await fetch('/api/immunix', {
+      const res = await fetch('/api/vaxix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'synthesize_antibody', vendor }),
@@ -504,7 +504,7 @@ export default function DashboardPage() {
 
   const handleSimulateMerge = async (prNumber: number, repo: string) => {
     try {
-      const res = await fetch('/api/immunix', {
+      const res = await fetch('/api/vaxix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'simulate_merge', pr_number: prNumber, repo }),
@@ -545,7 +545,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     try {
-      localStorage.removeItem('immunix_session');
+      localStorage.removeItem('vaxix_session');
     } catch {}
     router.push('/login');
   };
@@ -562,7 +562,7 @@ export default function DashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0B0B0C] border border-[#D4AF37] flex items-center justify-center shadow-md">
                 <Shield className="w-4 h-4 text-[#D4AF37]" />
               </div>
-              <span className="font-black text-lg tracking-wider text-[#0B0B0C] font-display">IMMUNIX</span>
+              <span className="font-black text-lg tracking-wider text-[#0B0B0C] font-display">VAXIX</span>
             </Link>
 
             <div className="h-6 w-px bg-black/10 hidden sm:block" />
@@ -618,7 +618,7 @@ export default function DashboardPage() {
               Autonomous Software Immune System
             </h2>
             <p className="text-xs text-white/60 max-w-2xl">
-              Immunix sits between your application and upstream SaaS APIs. It detects drift early, isolates breaking schema changes as <strong>Pathogens</strong>, synthesizes deterministic <strong>Antibodies</strong>, and opens verified Pull Requests for human approval.
+              Vaxix sits between your application and upstream SaaS APIs. It detects drift early, isolates breaking schema changes as <strong>Pathogens</strong>, synthesizes deterministic <strong>Antibodies</strong>, and opens verified Pull Requests for human approval.
             </p>
           </div>
 
@@ -878,7 +878,7 @@ export default function DashboardPage() {
                 How Adapters Isolate Upstream Changes
               </div>
               <p className="text-white/70 leading-relaxed font-sans text-xs">
-                When Stripe, OpenAI or Twilio alters their request schema, deprecates a field, or sends an RFC 8594 <code>Sunset</code> header, Immunix captures it via the Sensor layer. You never have to modify upstream calls globally; an isolated one-file change in <code>src/immunix/adapters/&lt;vendor&gt;.ts</code> adapts your entire fleet.
+                When Stripe, OpenAI or Twilio alters their request schema, deprecates a field, or sends an RFC 8594 <code>Sunset</code> header, Vaxix captures it via the Sensor layer. You never have to modify upstream calls globally; an isolated one-file change in <code>src/vaxix/adapters/&lt;vendor&gt;.ts</code> adapts your entire fleet.
               </p>
             </div>
           </div>
@@ -1008,7 +1008,7 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-lg font-bold text-[#0B0B0C]">Proposed Antibodies (AST Refactorings)</h3>
                 <p className="text-xs text-[#6E6E73]">
-                  An <strong>Antibody</strong> is a verified fix rule. Immunix performs deterministic Abstract Syntax Tree surgery via <code>ts-morph</code>.
+                  An <strong>Antibody</strong> is a verified fix rule. Vaxix performs deterministic Abstract Syntax Tree surgery via <code>ts-morph</code>.
                 </p>
               </div>
 
@@ -1100,7 +1100,7 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-lg font-bold text-[#0B0B0C]">Automated Pull Requests (Human Approval Required)</h3>
                 <p className="text-xs text-[#6E6E73]">
-                  Immunix opens GitHub PRs containing reproduction steps, sandbox verification receipts, and minimal AST diffs. <strong>Zero code merges automatically.</strong>
+                  Vaxix opens GitHub PRs containing reproduction steps, sandbox verification receipts, and minimal AST diffs. <strong>Zero code merges automatically.</strong>
                 </p>
               </div>
 
@@ -1433,7 +1433,7 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-lg font-bold text-[#0B0B0C]">Sensor Configuration &amp; API Keys</h3>
                 <p className="text-xs text-[#6E6E73]">
-                  Hashed with Argon2id. The Immunix Sensor SDK wraps outgoing vendor calls and streams shape metadata safely.
+                  Hashed with Argon2id. The Vaxix Sensor SDK wraps outgoing vendor calls and streams shape metadata safely.
                 </p>
               </div>
 
@@ -1496,17 +1496,17 @@ export default function DashboardPage() {
             <div className="p-6 rounded-3xl bg-[#0B0B0C] text-[#F3E5AB] border border-[#D4AF37]/30 space-y-3 font-mono text-xs">
               <div className="text-[#D4AF37] font-bold uppercase tracking-wider flex items-center gap-2">
                 <Terminal className="w-4 h-4 text-[#D4AF37]" />
-                How to integrate the Immunix Sensor in your app (3 lines)
+                How to integrate the Vaxix Sensor in your app (3 lines)
               </div>
               <p className="text-white/70 font-sans text-xs">
-                Install <code>@immunix/sensor</code> and wrap standard node-fetch or client requests. Live payment payloads are never modified in-flight.
+                Install <code>@vaxix/sensor</code> and wrap standard node-fetch or client requests. Live payment payloads are never modified in-flight.
               </p>
               <pre className="p-4 rounded-2xl bg-black text-emerald-400 font-mono text-xs overflow-x-auto border border-white/10 leading-relaxed">
-{`import { createSensorProxy } from '@immunix/sensor';
+{`import { createSensorProxy } from '@vaxix/sensor';
 
 // 1. Wrap standard fetch with the zero-leak sensor
 const shieldedFetch = createSensorProxy({
-  apiKey: process.env.IMMUNIX_API_KEY,
+  apiKey: process.env.VAXIX_API_KEY,
   vendor: 'stripe',
   onPathogenDetected: (pathogen) => console.log('Drift caught:', pathogen.description)
 });

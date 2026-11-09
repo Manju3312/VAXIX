@@ -207,8 +207,8 @@ export default function StripeCheckoutModal({
       // Store provisioned key in localStorage for immediate live console session
       if (data.access_pass?.master_api_key) {
         try {
-          localStorage.setItem('immunix_master_key', data.access_pass.master_api_key);
-          localStorage.setItem('immunix_tenant_slug', data.access_pass.tenant_slug);
+          localStorage.setItem('vaxix_master_key', data.access_pass.master_api_key);
+          localStorage.setItem('vaxix_tenant_slug', data.access_pass.tenant_slug);
         } catch {
           // Ignore storage quota
         }
@@ -236,7 +236,7 @@ export default function StripeCheckoutModal({
   const handleDownloadCertificate = () => {
     if (!accessPass) return;
     const certData = {
-      issuer: 'IMMUNIX SOVEREIGN AUTONOMOUS NETWORK',
+      issuer: 'VAXIX SOVEREIGN AUTONOMOUS NETWORK',
       protocol: 'Ed25519-Byzantine-Consensus-v2',
       pass_id: accessPass.access_pass_id,
       tenant: {
@@ -257,7 +257,7 @@ export default function StripeCheckoutModal({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `immunix-license-${accessPass.tenant_slug}.json`;
+    a.download = `vaxix-license-${accessPass.tenant_slug}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

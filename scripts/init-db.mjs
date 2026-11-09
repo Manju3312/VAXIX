@@ -1,5 +1,5 @@
 /**
- * IMMUNIX Unified SQLite Database Initializer
+ * VAXIX Unified SQLite Database Initializer
  * Sets up WAL mode, foreign keys, and seeds all core tables.
  */
 
@@ -12,7 +12,7 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const dbPath = path.join(dataDir, 'immunix.sqlite');
+const dbPath = path.join(dataDir, 'vaxix.sqlite');
 const db = new DatabaseSync(dbPath);
 
 db.exec('PRAGMA journal_mode = WAL;');
@@ -283,7 +283,7 @@ if (prCount === 0) {
     'pr_412',
     412,
     'acme-corp/payment-service',
-    'immunix/antibody-stripe-pr412',
+    'vaxix/antibody-stripe-pr412',
     'main',
     "fix(stripe): adopt official 'email_address' parameter",
     "Refactored 3 call sites in 'src/services/billing.ts'. Upstream parameter renamed from customer_email to email_address. Zero live traffic modified.",
@@ -297,7 +297,7 @@ if (prCount === 0) {
     'pr_413',
     413,
     'acme-corp/crm-sync-worker',
-    'immunix/antibody-twilio-pr413',
+    'vaxix/antibody-twilio-pr413',
     'main',
     'fix(twilio): relocate /v1/charges ➔ /v2/checkout/pay',
     "Updated caller endpoints in 'src/services/checkout.ts'. Endpoint /v1/charges was permanently sunset by upstream vendor.",
@@ -317,7 +317,7 @@ if (logCount === 0) {
   `);
 
   const initialLogs = [
-    ['log_boot', 'SENSOR_INGEST', 'system', 'sys_0', 'Immunix Immune Log initialized. Safety protocols and redaction filters active.', JSON.stringify({ mode: 'MVP', zero_leak_guarantee: true }), '2026-11-08T03:00:00Z'],
+    ['log_boot', 'SENSOR_INGEST', 'system', 'sys_0', 'Vaxix Immune Log initialized. Safety protocols and redaction filters active.', JSON.stringify({ mode: 'MVP', zero_leak_guarantee: true }), '2026-11-08T03:00:00Z'],
     ['log_probe', 'CANARY_EXECUTED', 'stripe', 'can_1', 'Scheduled canary probe executed against /v1/payment_intents. HTTP 200 received.', JSON.stringify({ latency_ms: 42 }), '2026-11-08T03:15:00Z'],
     ['log_drift', 'PATHOGEN_DETECTED', 'stripe', 'path_stripe_rename_412', "Pathogen isolated: Upstream field 'customer_email' renamed to 'email_address' on /v1/payment_intents", JSON.stringify({ drift_type: 'FIELD_RENAMED', severity: 'CRITICAL' }), '2026-11-08T03:16:00Z'],
     ['log_atb', 'ANTIBODY_SYNTHESIZED', 'stripe', 'atb_stripe_412', 'Synthesized deterministic ts-morph AST antibody rule atb_stripe_412 for src/services/billing.ts', JSON.stringify({ strategy: 'AST_FIELD_RENAME' }), '2026-11-08T03:17:00Z'],

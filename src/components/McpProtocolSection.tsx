@@ -149,11 +149,11 @@ export default function McpProtocolSection() {
     const config = JSON.stringify(
       {
         mcpServers: {
-          immunix: {
+          vaxix: {
             command: 'npx',
-            args: ['-y', '@immunix/mcp-server', '--cluster=production'],
+            args: ['-y', '@vaxix/mcp-server', '--cluster=production'],
             env: {
-              IMMUNIX_API_KEY: 'imx_live_sec_99182a0b',
+              VAXIX_API_KEY: 'imx_live_sec_99182a0b',
             },
           },
         },

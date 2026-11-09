@@ -11,43 +11,43 @@ export default function ClusterDeployWizard() {
   const configs: Record<string, { title: string; filename: string; code: string }> = {
     k8s: {
       title: 'Kubernetes eBPF DaemonSet Manifest',
-      filename: 'immunix-daemonset.yaml',
+      filename: 'vaxix-daemonset.yaml',
       code: `apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: immunix-ebpf-mesh
+  name: vaxix-ebpf-mesh
   namespace: ${clusterNamespace}
   labels:
-    app.kubernetes.io/name: immunix-agent
-    immunix.network/tier: sovereign
+    app.kubernetes.io/name: vaxix-agent
+    vaxix.network/tier: sovereign
 spec:
   selector:
     matchLabels:
-      name: immunix-ebpf-mesh
+      name: vaxix-ebpf-mesh
   template:
     metadata:
       labels:
-        name: immunix-ebpf-mesh
+        name: vaxix-ebpf-mesh
       annotations:
-        immunix.network/ebpf-hook: "sock_recvmsg_v6.8"
-        immunix.network/latency-budget: "0.4ms"
+        vaxix.network/ebpf-hook: "sock_recvmsg_v6.8"
+        vaxix.network/latency-budget: "0.4ms"
     spec:
       hostNetwork: true
       hostPID: true
       containers:
       - name: ebpf-interceptor
-        image: ghcr.io/immunix/ebpf-agent:v4.2.0
+        image: ghcr.io/vaxix/ebpf-agent:v4.2.0
         securityContext:
           privileged: true
           capabilities:
             add: ["BPF", "NET_ADMIN", "SYS_ADMIN", "PERFMON"]
         env:
-        - name: IMMUNIX_CLUSTER_ID
+        - name: VAXIX_CLUSTER_ID
           value: "k8s-prod-us-east-1"
-        - name: IMMUNIX_SOVEREIGN_KEY
+        - name: VAXIX_SOVEREIGN_KEY
           valueFrom:
             secretKeyRef:
-              name: immunix-sovereign-credentials
+              name: vaxix-sovereign-credentials
               key: api-key
         resources:
           limits:
@@ -72,12 +72,12 @@ spec:
     helm: {
       title: 'Helm v3 Production Command',
       filename: 'helm-install.sh',
-      code: `# Add IMMUNIX Sovereign Defense Helm Repository
-helm repo add immunix https://charts.immunix.network
+      code: `# Add VAXIX Sovereign Defense Helm Repository
+helm repo add vaxix https://charts.vaxix.network
 helm repo update
 
 # Install eBPF In-Kernel Socket Inception Agent
-helm install immunix-mesh immunix/ebpf-agent \\
+helm install vaxix-mesh vaxix/ebpf-agent \\
   --namespace ${clusterNamespace} \\
   --create-namespace \\
   --set sovereign.clusterId="k8s-${clusterNamespace}-cluster" \\
@@ -88,13 +88,13 @@ helm install immunix-mesh immunix/ebpf-agent \\
   --set resources.limits.memory="256Mi"
 
 # Verify Sensor Agent Deployment
-kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=immunix-agent`,
+kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=vaxix-agent`,
     },
     terraform: {
       title: 'Terraform AWS EKS / GCP GKE Module',
       filename: 'main.tf',
-      code: `module "immunix_sovereign_mesh" {
-  source  = "immunix/sensor-agent/kubernetes"
+      code: `module "vaxix_sovereign_mesh" {
+  source  = "vaxix/sensor-agent/kubernetes"
   version = "~> 4.2.0"
 
   cluster_name       = "enterprise-core-eks"
@@ -108,7 +108,7 @@ kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=immunix-a
   global_herd_immunity_sync       = true
   
   # Cryptographic Root Verification
-  sovereign_root_key_ed25519      = var.immunix_root_key
+  sovereign_root_key_ed25519      = var.vaxix_root_key
   
   tags = {
     SecurityClassification = "Sovereign-Defense"
@@ -118,17 +118,17 @@ kubectl get daemonset -n ${clusterNamespace} -l app.kubernetes.io/name=immunix-a
     },
     systemd: {
       title: 'Bare-Metal Linux Systemd Agent Bootstrap',
-      filename: 'immunix-agent.service',
+      filename: 'vaxix-agent.service',
       code: `[Unit]
-Description=IMMUNIX Autonomous Software Immune Agent
+Description=VAXIX Autonomous Software Immune Agent
 After=network.target
-Documentation=https://immunix.network/docs/architecture
+Documentation=https://vaxix.network/docs/architecture
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/immunix
-ExecStart=/opt/immunix/bin/immunix-agent --cluster-id=baremetal-${clusterNamespace} --mode=proxy
+WorkingDirectory=/opt/vaxix
+ExecStart=/opt/vaxix/bin/vaxix-agent --cluster-id=baremetal-${clusterNamespace} --mode=proxy
 Restart=always
 RestartSec=3s
 LimitMEMLOCK=infinity

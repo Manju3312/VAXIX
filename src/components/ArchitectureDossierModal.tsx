@@ -23,7 +23,7 @@ export default function ArchitectureDossierModal({ isOpen, onClose }: Architectu
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-heading font-black text-lg text-[#0B0B0C]">
-                  IMMUNIX Sovereign Architecture Dossier
+                  VAXIX Sovereign Architecture Dossier
                 </h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#D4AF37]/20 text-[#997D25] font-bold">
                   WHITE PAPER v4.2
@@ -51,7 +51,7 @@ export default function ArchitectureDossierModal({ isOpen, onClose }: Architectu
             <p className="text-[#6E6E73]">
               Modern cloud software depends upon hundreds of third-party external APIs that evolve asynchronously without coordinated deployment schedules. 
               Traditional resilience paradigms rely on reactive error budgeting and manual incident responses. 
-              IMMUNIX introduces the world&apos;s first autonomous software immune network, deploying a dual-speed biological architecture that decouples wire-time survival (latency &lt; 0.4ms) from permanent genetic codebase refactoring.
+              VAXIX introduces the world&apos;s first autonomous software immune network, deploying a dual-speed biological architecture that decouples wire-time survival (latency &lt; 0.4ms) from permanent genetic codebase refactoring.
             </p>
           </div>
 
@@ -63,7 +63,7 @@ export default function ArchitectureDossierModal({ isOpen, onClose }: Architectu
             </div>
             <p className="text-[#0B0B0C]">
               Let S be the outgoing HTTP/TLS payload stream in the application runtime. 
-              IMMUNIX wraps the client transport locally to capture structural shapes and redact secrets before wire transit:
+              VAXIX wraps the client transport locally to capture structural shapes and redact secrets before wire transit:
             </p>
             <div className="p-3 rounded-xl bg-black text-[#D4AF37] overflow-x-auto">
               {`T_inspection(Payload) = T_redact + T_shape_extract + T_rfc8594_parse

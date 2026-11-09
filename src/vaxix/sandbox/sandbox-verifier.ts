@@ -1,5 +1,5 @@
 /**
- * IMMUNIX SANDBOX VERIFIER: Ephemeral Validation Engine
+ * VAXIX SANDBOX VERIFIER: Ephemeral Validation Engine
  * 
  * Executes proposed antibodies in an isolated sandbox against upstream
  * test mode and the customer application's existing test suite.
