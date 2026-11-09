@@ -141,6 +141,16 @@ export function applyDslRuleToPayload(
           cloned[op.to] = cloned[op.from];
           delete cloned[op.from];
         }
+      } else if (op.op === 'coerce_type') {
+        if (op.path in cloned) {
+          if (op.targetType === 'number' || op.targetType === 'integer') {
+            cloned[op.path] = Number(cloned[op.path]);
+          } else if (op.targetType === 'string') {
+            cloned[op.path] = String(cloned[op.path]);
+          } else if (op.targetType === 'boolean') {
+            cloned[op.path] = Boolean(cloned[op.path]);
+          }
+        }
       } else if (op.op === 'add_default') {
         if (!(op.path in cloned)) {
           cloned[op.path] = op.defaultValue;
@@ -153,6 +163,16 @@ export function applyDslRuleToPayload(
         if (op.target === 'body' && op.oldField in cloned) {
           cloned[op.newField] = cloned[op.oldField];
           delete cloned[op.oldField];
+        }
+      } else if (op.type === 'coerce_type') {
+        if (op.target === 'body' && op.field in cloned) {
+          if (op.toType === 'number' || op.toType === 'integer') {
+            cloned[op.field] = Number(cloned[op.field]);
+          } else if (op.toType === 'string') {
+            cloned[op.field] = String(cloned[op.field]);
+          } else if (op.toType === 'boolean') {
+            cloned[op.field] = Boolean(cloned[op.field]);
+          }
         }
       } else if (op.type === 'add_default') {
         if (op.target === 'body' && !(op.field in cloned)) {

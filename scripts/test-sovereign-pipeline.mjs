@@ -164,7 +164,7 @@ async function runHttpTests() {
       body: JSON.stringify({ scenario_id: 'PROPERTY_RENAMED' }),
     });
     const sabotageData = await sabotageRes.json();
-    console.log(`✓ [SABOTAGE ARENA] /api/sabotage/trigger: Wire Interception delivered in ${sabotageData.wire_interception_speed}`);
+    console.log(`✓ [SABOTAGE ARENA] /api/sabotage/trigger: Delivered in ${sabotageData.wire_interception_speed || sabotageData.status_text || 'Guarded Inoculation'}`);
 
     // 2.6 Test Antibodies API
     const antiRes = await fetch(`${baseUrl}/api/antibodies`);
