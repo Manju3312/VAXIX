@@ -43,7 +43,7 @@ export default function SovereignCompliance({ onOpenAudit }: ComplianceProps) {
       .then((data: AuditVerificationResponse) => {
         if (!ignore) setVerification(data);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       ignore = true;
@@ -294,11 +294,10 @@ export default function SovereignCompliance({ onOpenAudit }: ComplianceProps) {
               <button
                 suppressHydrationWarning
                 onClick={handleDownloadEvidencePack}
-                className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                  downloadSuccess
+                className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-all cursor-pointer ${downloadSuccess
                     ? 'bg-[#10B981] text-white border border-[#10B981]'
                     : 'bg-[#D4AF37] hover:bg-[#C29D2F] text-[#0B0B0C] border border-[#D4AF37]'
-                }`}
+                  }`}
               >
                 {downloadSuccess ? (
                   <>
@@ -388,11 +387,10 @@ export default function SovereignCompliance({ onOpenAudit }: ComplianceProps) {
                   key={fw}
                   suppressHydrationWarning
                   onClick={() => setActiveFramework(fw)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer uppercase ${
-                    activeFramework === fw
+                  className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer uppercase ${activeFramework === fw
                       ? 'bg-[#0B0B0C] text-white shadow-sm'
                       : 'text-[#6E6E73] hover:text-[#0B0B0C]'
-                  }`}
+                    }`}
                 >
                   {fw === 'soc2' ? 'SOC 2 Type II' : fw === 'pci' ? 'PCI-DSS v4' : fw === 'hipaa' ? 'HIPAA BAA' : 'FedRAMP'}
                 </button>
